@@ -198,9 +198,12 @@ public class BoardManager : MonoBehaviour
                     if (active_pieces[index])
                     {
                         selected_index = index;
+                        RefreshBlocks();
+                        CalculateMoves(index);
                     }
                     else if (selected_index >= 0)
                     {
+                        RefreshBlocks();
                         MovePiece(selected_index, block.GetPosition());
                         selected_index = -1;
                     }
@@ -219,45 +222,40 @@ public class BoardManager : MonoBehaviour
     
     private void CalculateMoves(int position)
     {
-        // Deselect all blocks.
-        foreach (GameObject d_block in blocks)
-        {
-            d_block.GetComponent<Block>().moveable = false;
-            d_block.GetComponent<SpriteRenderer>().material.color = d_block.GetComponent<Block>().color;
-        }
-
         try
         {
             // Right
             if (board_state[position + 1] == 0)
             {
-                blocks[position + 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f, 0.25f);
-                blocks[position + 1].GetComponent<Block>().moveable = true;
-
+                blocks[position + 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
             }
             // Left 
             if (board_state[position - 1] == 0)
             {
-                blocks[position - 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f, 0.25f);
-                blocks[position - 1].GetComponent<Block>().moveable = true;
+                blocks[position - 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
             }
             // Up
             if (board_state[position + 8] == 0)
             {
-                blocks[position + 8].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f, 0.25f);
-                blocks[position + 8].GetComponent<Block>().moveable = true;
+                blocks[position + 8].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
             }
             // Down
             if (board_state[position - 8] == 0)
             {
-                blocks[position - 8].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f, 0.25f);
-                blocks[position - 8].GetComponent<Block>().moveable = true;
+                blocks[position - 8].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
             }
         }
         catch (IndexOutOfRangeException e)
         {
             Debug.Log("Position off of the board");
         }
+    }
+
+    private void RefreshBlocks()
+    {
+        // Deselect all blocks.
+        foreach (GameObject d_block in blocks)
+            d_block.GetComponent<SpriteRenderer>().material.color = d_block.GetComponent<Block>().color;
     }
 
     // Print out board state for debugging.
