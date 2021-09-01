@@ -1,3 +1,1 @@
-# Chess
-
-# Hello World
+# Fuzzy Logic Chess
