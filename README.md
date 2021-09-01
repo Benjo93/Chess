@@ -1,3 +1,1 @@
-# Chess
-
-# Hello World
+# Senior Project - Fuzzy Logic Chess
