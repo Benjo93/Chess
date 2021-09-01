@@ -1,1 +1,1 @@
-# Fuzzy Logic Chess
+# Senior Project - Fuzzy Logic Chess
