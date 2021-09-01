@@ -197,8 +197,8 @@ public class BoardManager : MonoBehaviour
 
                     if (active_pieces[index])
                     {
-                        selected_index = index;
                         RefreshBlocks();
+                        selected_index = index;
                         CalculateMoves(index);
                     }
                     else if (selected_index >= 0)
