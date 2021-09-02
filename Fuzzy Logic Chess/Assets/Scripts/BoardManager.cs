@@ -13,13 +13,13 @@ public class BoardManager : MonoBehaviour
     public GameObject block;
 
     // Array of blocks for player interaction and piece positioning. 
-    private GameObject[] blocks = new GameObject[64];
+    private GameObject[,] blocks = new GameObject[8,8];
 
     // All active game object pieces on the board. 
-    private GameObject[] active_pieces = new GameObject[64];
+    private GameObject[,] active_pieces = new GameObject[8,8];
 
-    // The index of the piece that is currently selected, unselected = -1
-    private int selected_index; 
+    // The index of the piece that is currently selected, unselected = {-1 , -1}
+    private int[] selected_index; 
 
     /* 
      * Board State:
@@ -28,20 +28,9 @@ public class BoardManager : MonoBehaviour
      * Zero is an empty space. 
      * I'm not sure how we are doing the AI so this could change. 
      */ 
-    private int[] board_state = new int[]
-    {
-         2,  4,  3,  6,  5,  3,  4,  2,
-         1,  1,  1,  1,  0,  1,  1,  1,
-         0,  0,  0,  0,  0,  0,  0,  0,
-         0,  0,  0,  0,  0,  0,  0,  0,
-         0,  0,  0,  0,  1,  0,  0,  0,
-         0,  0,  0,  0,  0,  0,  0,  0,
-        -1, -1, -1, -1, -1, -1, -1, -1,
-        -2, -4, -3, -5, -6, -3, -4, -2
-    };
 
     // Alternate board state using a multidimensional array. 
-    private int[,] board_state_alt = new int[,]
+    private int[,] board_state = new int[,]
     {
         {  2,  4,  3,  6,  5,  3,  4,  2 },
         {  1,  1,  1,  1,  1,  1,  1,  1 },
@@ -54,27 +43,27 @@ public class BoardManager : MonoBehaviour
     };
 
     // Function called by the AI to get the current board state and to calculate the next move.
-    public int[] GetBoardState()
+    public int[,] GetBoardState()
     {
         // Potentially validate board state first.
         return board_state; 
     }
 
     // Function called by the AI after a decision has been made. 
-    public void MovePiece (int from, int to)
+    public void MovePiece (int[] from, int[] to)
     {
         // Validate move. 
-       
+
         // Update the pieces game object array. 
-        active_pieces[to] = active_pieces[from];
-        active_pieces[from] = null;
+        active_pieces[to[0], to[1]] = active_pieces[from[0], from[1]];
+        active_pieces[from[0],from[1]] = null;
 
         // Update the position of the piece.
-        active_pieces[to].transform.position = blocks[to].transform.position;
+        active_pieces[to[0],to[1]].transform.position = blocks[to[0],to[1]].transform.position;
 
         // Update the board state. 
-        board_state[to] = board_state[from];
-        board_state[from] = 0;
+        board_state[to[0], to[1]] = board_state[from[0], from[1]];
+        board_state[from[0], from[1]] = 0;
     }
 
     public void Attack()
@@ -86,17 +75,17 @@ public class BoardManager : MonoBehaviour
     void Start()
     {
         // Layout blocks Grid, 8x8
-        bool flip = true;
+        bool flip = false;
         int index = 0;
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < blocks.GetLength(0); i++)
         {
-            for (int j = 0; j < 8; j++)
+            for (int j = 0; j < blocks.GetLength(1); j++)
             {
                 GameObject theBlock = Instantiate(block, new Vector3(j, i, 0f), Quaternion.identity, transform);
-                blocks[index] = theBlock;
+                blocks[i,j] = theBlock;
 
                 Block block_attrs = theBlock.AddComponent<Block>();
-                block_attrs.SetPosition(index); 
+                block_attrs.SetPosition(i,j); 
                 theBlock.transform.name = "Block #" + index++;
 
                 Color b_color = theBlock.GetComponent<SpriteRenderer>().material.color = flip ? new Color32(157, 127, 97, 255) : new Color32(101, 82, 62, 255);
@@ -104,8 +93,7 @@ public class BoardManager : MonoBehaviour
                 if (index % 8 != 0) flip = !flip;
             }
         }
-
-        PopulateBoard();
+        PopulateBoardAlt();
     }
 
     /* 
@@ -114,60 +102,63 @@ public class BoardManager : MonoBehaviour
      * Each piece is contained in a static dictionary from the resources 
      * class called 'Chess', or something like that.
      */
-     
-    private void PopulateBoard()
+
+    private void PopulateBoardAlt()
     {
-        for (int p = 0; p < board_state.Length; p++)
+        for (int p = 0; p < board_state.GetLength(0); p++)
         {
-            switch (board_state[p])
+            for (int q = 0; q < board_state.GetLength(1); q++)
             {
-                case 1: // Pawn
-                    active_pieces[p] = Instantiate(Chess.PIECES["w_pawn"], blocks[p].transform.position, Quaternion.identity);
-                    break;
+                switch (board_state[p, q])
+                {
+                    case 1: // Pawn
+                        active_pieces[p, q] = Instantiate(Chess.PIECES["w_pawn"], blocks[p, q].transform.position, Quaternion.identity);
+                        break;
 
-                case 2: // Rook
-                    active_pieces[p] = Instantiate(Chess.PIECES["w_rook"], blocks[p].transform.position, Quaternion.identity);         
-                    break;
+                    case 2: // Rook
+                        active_pieces[p, q] = Instantiate(Chess.PIECES["w_rook"], blocks[p, q].transform.position, Quaternion.identity);
+                        break;
 
-                case 3: // Bishop
-                    active_pieces[p] = Instantiate(Chess.PIECES["w_bishop"], blocks[p].transform.position, Quaternion.identity);
-                    break;
+                    case 3: // Bishop
+                        active_pieces[p, q] = Instantiate(Chess.PIECES["w_bishop"], blocks[p, q].transform.position, Quaternion.identity);
+                        break;
 
-                case 4: // Knight
-                    active_pieces[p] = Instantiate(Chess.PIECES["w_knight"], blocks[p].transform.position, Quaternion.identity);
-                    break;
+                    case 4: // Knight
+                        active_pieces[p, q] = Instantiate(Chess.PIECES["w_knight"], blocks[p, q].transform.position, Quaternion.identity);
+                        break;
 
-                case 5: // Queen
-                    active_pieces[p] = Instantiate(Chess.PIECES["w_queen"], blocks[p].transform.position, Quaternion.identity);
-                    break;
+                    case 5: // Queen
+                        active_pieces[p, q] = Instantiate(Chess.PIECES["w_queen"], blocks[p, q].transform.position, Quaternion.identity);
+                        break;
 
-                case 6: // King
-                    active_pieces[p] = Instantiate(Chess.PIECES["w_king"], blocks[p].transform.position, Quaternion.identity);
-                    break;
+                    case 6: // King
+                        active_pieces[p, q] = Instantiate(Chess.PIECES["w_king"], blocks[p, q].transform.position, Quaternion.identity);
+                        break;
 
-                case -1: // Pawn
-                    active_pieces[p] = Instantiate(Chess.PIECES["b_pawn"], blocks[p].transform.position, Quaternion.identity);
-                    break;
+                    case -1: // Pawn
+                        active_pieces[p, q] = Instantiate(Chess.PIECES["b_pawn"], blocks[p, q].transform.position, Quaternion.identity);
+                        break;
 
-                case -2: // Rook
-                    active_pieces[p] = Instantiate(Chess.PIECES["b_rook"], blocks[p].transform.position, Quaternion.identity);
-                    break;
+                    case -2: // Rook
+                        active_pieces[p, q] = Instantiate(Chess.PIECES["b_rook"], blocks[p, q].transform.position, Quaternion.identity);
+                        break;
 
-                case -3: // Bishop
-                    active_pieces[p] = Instantiate(Chess.PIECES["b_bishop"], blocks[p].transform.position, Quaternion.identity);
-                    break;
+                    case -3: // Bishop
+                        active_pieces[p, q] = Instantiate(Chess.PIECES["b_bishop"], blocks[p, q].transform.position, Quaternion.identity);
+                        break;
 
-                case -4: // Knight
-                    active_pieces[p] = Instantiate(Chess.PIECES["b_knight"], blocks[p].transform.position, Quaternion.identity);
-                    break;
+                    case -4: // Knight
+                        active_pieces[p, q] = Instantiate(Chess.PIECES["b_knight"], blocks[p, q].transform.position, Quaternion.identity);
+                        break;
 
-                case -5: // Queen
-                    active_pieces[p] = Instantiate(Chess.PIECES["b_queen"], blocks[p].transform.position, Quaternion.identity);
-                    break;
+                    case -5: // Queen
+                        active_pieces[p, q] = Instantiate(Chess.PIECES["b_queen"], blocks[p, q].transform.position, Quaternion.identity);
+                        break;
 
-                case -6: // King
-                    active_pieces[p] = Instantiate(Chess.PIECES["b_king"], blocks[p].transform.position, Quaternion.identity);
-                    break;
+                    case -6: // King
+                        active_pieces[p, q] = Instantiate(Chess.PIECES["b_king"], blocks[p, q].transform.position, Quaternion.identity);
+                        break;
+                }
             }
         }
     }
@@ -193,19 +184,19 @@ public class BoardManager : MonoBehaviour
 
                 if (block)
                 {
-                    int index = block.GetPosition();
+                    int[] index = block.GetPosition();
 
-                    if (active_pieces[index])
+                    if (active_pieces[index[0],index[1]])
                     {
                         RefreshBlocks();
                         selected_index = index;
                         CalculateMoves(index);
                     }
-                    else if (selected_index >= 0)
+                    else if (selected_index[0] >= 0 && selected_index[1] >= 0)
                     {
                         RefreshBlocks();
                         MovePiece(selected_index, block.GetPosition());
-                        selected_index = -1;
+                        selected_index = new int[2] {-1, -1};
                     }
                     ShowPositions();
                 }
@@ -220,29 +211,54 @@ public class BoardManager : MonoBehaviour
      * want to display all possible moves in game. 
      */
     
-    private void CalculateMoves(int position)
+    private void CalculateMoves(int[] position)
     {
+        // Right
         try
         {
-            // Right
-            if (board_state[position + 1] == 0)
+            if (board_state[position[0], position[1] + 1] == 0)
             {
-                blocks[position + 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
+                blocks[position[0], position[1] + 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
             }
-            // Left 
-            if (board_state[position - 1] == 0)
+        }
+        catch (IndexOutOfRangeException e)
+        {
+            Debug.Log("Position off of the board");
+        }
+
+        // Left 
+        try
+        {
+            if (board_state[position[0], position[1] - 1] == 0)
             {
-                blocks[position - 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
+                blocks[position[0], position[1] - 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
             }
-            // Up
-            if (board_state[position + 8] == 0)
+        }
+        catch (IndexOutOfRangeException e)
+        {
+            Debug.Log("Position off of the board");
+        }
+
+        // Up
+        try
+        {
+            if (board_state[position[0] + 1, position[1]] == 0)
             {
-                blocks[position + 8].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
+                blocks[position[0] + 1, position[1]].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
             }
-            // Down
-            if (board_state[position - 8] == 0)
+        }
+        catch (IndexOutOfRangeException e)
+        {
+            Debug.Log("Position off of the board");
+        }
+
+        // Down
+        try
+        {
+            if (board_state[position[0] - 1, position[1]] == 0)
             {
-                blocks[position - 8].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
+                Debug.Log("TEST");
+                blocks[position[0] - 1, position[1]].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
             }
         }
         catch (IndexOutOfRangeException e)
