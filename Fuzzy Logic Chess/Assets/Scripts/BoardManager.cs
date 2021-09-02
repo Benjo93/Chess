@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /* 
@@ -19,7 +20,7 @@ public class BoardManager : MonoBehaviour
     private GameObject[,] active_pieces = new GameObject[8,8];
 
     // The index of the piece that is currently selected, unselected = {-1 , -1}
-    private int[] selected_index; 
+    private int[] selected_index;
 
     /* 
      * Board State:
@@ -190,7 +191,7 @@ public class BoardManager : MonoBehaviour
                     {
                         RefreshBlocks();
                         selected_index = index;
-                        CalculateMoves(index);
+                        CalculateMoves(index[0], index[1], 3);
                     }
                     else if (selected_index[0] >= 0 && selected_index[1] >= 0)
                     {
@@ -210,15 +211,21 @@ public class BoardManager : MonoBehaviour
      * a method that asks the AI to return all possible moves to update the UI, only if we 
      * want to display all possible moves in game. 
      */
-    
-    private void CalculateMoves(int[] position)
+
+    private void CalculateMoves (int col, int row, int moves_count)
     {
-        // Right
+        // End if there are no more moves remaining.
+        if (moves_count <= 0) return;
+
         try
         {
-            if (board_state[position[0], position[1] + 1] == 0)
+            // Check if right block is empty. 
+            if (board_state[col, row + 1] == 0)
             {
-                blocks[position[0], position[1] + 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
+                blocks[col, row + 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
+
+                // Call Calculate Moves one the block to the right.
+                CalculateMoves(col, row + 1, moves_count - 1);
             }
         }
         catch (IndexOutOfRangeException e)
@@ -226,12 +233,15 @@ public class BoardManager : MonoBehaviour
             Debug.Log("Position off of the board");
         }
 
-        // Left 
         try
         {
-            if (board_state[position[0], position[1] - 1] == 0)
+            // Check if right block is empty. 
+            if (board_state[col, row - 1] == 0)
             {
-                blocks[position[0], position[1] - 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
+                blocks[col, row - 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
+
+                // Call Calculate Moves one the block to the left.
+                CalculateMoves(col, row - 1, moves_count - 1);
             }
         }
         catch (IndexOutOfRangeException e)
@@ -239,12 +249,15 @@ public class BoardManager : MonoBehaviour
             Debug.Log("Position off of the board");
         }
 
-        // Up
         try
         {
-            if (board_state[position[0] + 1, position[1]] == 0)
+            // Check if right block is empty. 
+            if (board_state[col - 1, row] == 0)
             {
-                blocks[position[0] + 1, position[1]].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
+                blocks[col - 1, row].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
+
+                // Call Calculate Moves on the block that's down one.
+                CalculateMoves(col - 1, row, moves_count - 1);
             }
         }
         catch (IndexOutOfRangeException e)
@@ -252,13 +265,15 @@ public class BoardManager : MonoBehaviour
             Debug.Log("Position off of the board");
         }
 
-        // Down
         try
         {
-            if (board_state[position[0] - 1, position[1]] == 0)
+            // Check if right block is empty. 
+            if (board_state[col + 1, row] == 0)
             {
-                Debug.Log("TEST");
-                blocks[position[0] - 1, position[1]].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
+                blocks[col + 1, row].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
+
+                // Call Calculate Moves one the block that's up one.
+                CalculateMoves(col + 1, row, moves_count - 1);
             }
         }
         catch (IndexOutOfRangeException e)
