@@ -2,18 +2,18 @@ using UnityEngine;
 
 public class Block : MonoBehaviour
 {
-    private int position;
+    private int[] position;
     // State, color, etc..
 
     public Color color;
     public bool moveable; 
 
-    public void SetPosition(int position)
+    public void SetPosition(int row, int column)
     {
-        this.position = position; 
+        this.position = new int[2] { row, column };
     }
 
-    public int GetPosition()
+    public int[] GetPosition()
     {
         return position; 
     }
