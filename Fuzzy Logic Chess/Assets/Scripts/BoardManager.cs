@@ -235,7 +235,7 @@ public class BoardManager : MonoBehaviour
 
         try
         {
-            // Check if right block is empty. 
+            // Check if left block is empty. 
             if (board_state[col, row - 1] == 0)
             {
                 blocks[col, row - 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
@@ -251,7 +251,7 @@ public class BoardManager : MonoBehaviour
 
         try
         {
-            // Check if right block is empty. 
+            // Check if down block is empty. 
             if (board_state[col - 1, row] == 0)
             {
                 blocks[col - 1, row].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
@@ -267,7 +267,7 @@ public class BoardManager : MonoBehaviour
 
         try
         {
-            // Check if right block is empty. 
+            // Check if up block is empty. 
             if (board_state[col + 1, row] == 0)
             {
                 blocks[col + 1, row].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
