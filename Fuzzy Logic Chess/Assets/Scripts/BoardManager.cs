@@ -33,14 +33,14 @@ public class BoardManager : MonoBehaviour
     // Alternate board state using a multidimensional array. 
     private int[,] board_state = new int[,]
     {
-        {  2,  4,  3,  6,  5,  3,  4,  2 },
-        {  1,  1,  1,  1,  1,  1,  1,  1 },
-        {  0,  0,  0,  0,  0,  0,  0,  0 },
-        {  0,  0,  0,  0,  0,  0,  0,  0 },
-        {  0,  0,  0,  0,  0,  0,  0,  0 },
-        {  0,  0,  0,  0,  0,  0,  0,  0 },
-        { -1, -1, -1, -1, -1, -1, -1, -1 },
         { -2, -4, -3, -6, -5, -3, -4, -2 },
+        { -1, -1, -1, -1, -1, -1, -1, -1 },
+        {  0,  0,  0,  0,  0,  0,  0,  0 },
+        {  0,  0,  0,  0,  0,  0,  0,  0 },
+        {  0,  0,  0,  0,  0,  0,  0,  0 },
+        {  0,  0,  0,  0,  0,  0,  0,  0 },
+        {  1,  1,  1,  1,  1,  1,  1,  1 },
+        {  2,  4,  3,  6,  5,  3,  4,  2 },
     };
 
     // Function called by the AI to get the current board state and to calculate the next move.
@@ -76,13 +76,14 @@ public class BoardManager : MonoBehaviour
     void Start()
     {
         // Layout blocks Grid, 8x8
-        bool flip = false;
+        bool flip = true;
         int index = 0;
         for (int i = 0; i < blocks.GetLength(0); i++)
         {
             for (int j = 0; j < blocks.GetLength(1); j++)
             {
-                GameObject theBlock = Instantiate(block, new Vector3(j, i, 0f), Quaternion.identity, transform);
+                // Y-axis positioning on reverse Cartisian to compensate for 2D array orientation 
+                GameObject theBlock = Instantiate(block, new Vector3(j, blocks.GetLength(1) - i, 0f), Quaternion.identity, transform);
                 blocks[i,j] = theBlock;
 
                 Block block_attrs = theBlock.AddComponent<Block>();
@@ -94,7 +95,7 @@ public class BoardManager : MonoBehaviour
                 if (index % 8 != 0) flip = !flip;
             }
         }
-        PopulateBoardAlt();
+        PopulateBoard();
     }
 
     /* 
@@ -104,7 +105,7 @@ public class BoardManager : MonoBehaviour
      * class called 'Chess', or something like that.
      */
 
-    private void PopulateBoardAlt()
+    private void PopulateBoard()
     {
         for (int p = 0; p < board_state.GetLength(0); p++)
         {
@@ -186,12 +187,11 @@ public class BoardManager : MonoBehaviour
                 if (block)
                 {
                     int[] index = block.GetPosition();
-
                     if (active_pieces[index[0],index[1]])
                     {
                         RefreshBlocks();
                         selected_index = index;
-                        CalculateMoves(index[0], index[1], 3);
+                        CalculateMoves(index[0], index[1], 1);
                     }
                     else if (selected_index[0] >= 0 && selected_index[1] >= 0)
                     {
@@ -216,10 +216,10 @@ public class BoardManager : MonoBehaviour
     {
         // End if there are no more moves remaining.
         if (moves_count <= 0) return;
-
+        
         try
         {
-            // Check if right block is empty. 
+            // Check if east block is empty. 
             if (board_state[col, row + 1] == 0)
             {
                 blocks[col, row + 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
@@ -232,10 +232,10 @@ public class BoardManager : MonoBehaviour
         {
             Debug.Log("Position off of the board");
         }
-
+        
         try
         {
-            // Check if right block is empty. 
+            // Check if west block is empty. 
             if (board_state[col, row - 1] == 0)
             {
                 blocks[col, row - 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
@@ -251,7 +251,7 @@ public class BoardManager : MonoBehaviour
 
         try
         {
-            // Check if right block is empty. 
+            // Check if north block is empty. 
             if (board_state[col - 1, row] == 0)
             {
                 blocks[col - 1, row].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
@@ -267,7 +267,7 @@ public class BoardManager : MonoBehaviour
 
         try
         {
-            // Check if right block is empty. 
+            // Check if south block is empty. 
             if (board_state[col + 1, row] == 0)
             {
                 blocks[col + 1, row].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
