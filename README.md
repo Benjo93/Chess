@@ -29,4 +29,6 @@ May capture from 2 squares away in any direction.
 Moves 1 space
 Move forward or forward diagonally
 This game does not have promotions.
-Chart for attacking/defending
+
+# Chart for attacking/defending
+![image](https://user-images.githubusercontent.com/13397606/132258857-52bf6c8e-a600-4381-9b85-af6a2f081c61.png)
