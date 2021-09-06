@@ -42,4 +42,15 @@ public class Chess : MonoBehaviour
         return roll_needed[attacker, defender];
     }
 
+    // Library of colors used in the GUI and chess board.
+    public static class Colors
+    {
+        public static Color HOVER = Color.white;
+
+        public static Color W_MOVE = Color.green;
+        public static Color W_ATTACK = Color.red;
+
+        public static Color B_MOVE = Color.magenta;
+        public static Color B_ATTACK = Color.cyan;
+    }
 }
