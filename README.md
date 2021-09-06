@@ -1,5 +1,25 @@
 # Senior Project - Fuzzy Logic Chess
 
+## Fuzzy-Logic Medieval Chess Corp Command
+The Corp Command F-L Medieval Chess variant builds on F-L Chess Medieval Chess to create gameplay  resembling  a  medieval  battle,  using the  standard  chess  board, with  real-world command  and  control considerations. The "armies" of chess pieces for command are divided into three "corp": 
+
+A1.The King and Bishops are CORP commanders, each with one command authority that can be used in each turn. <br />
+A2. Up to three actions may be taken in each turn, one by each corp. Corp command actions ARE NOT required in any turn, so zero to three actions may be taken in a turn. <br />
+A3. Command authority may not be transferred from one commander to another. <br />
+A4.The "left" side Bishop commands the three left pawns and the left-side Knight. <br />
+A5. The "right" side Bishop commands the three right pawns and the right-side Knight. <br />
+A6. The King commands the Queen, the two rooks (archers), and the remaining two center pawns <br />
+
+A7. Each commander (King and Bishops) may command one action (move or capture) per turn, only for their commanded pieces. <br />
+B1. The King may delegate any of its pieces to be commanded by either Bishop, at any time, but no more than one delegation action per turn. Limited to up to SIX pieces that can be commanded by a Bishop (no limitation on the King). A delegation continues, but may be recalled by the King in any turn, but this recall counts as a delegation action(a King may NOT delegate and recall in the same turn). <br />
+
+C1. When a Bishop is captured, his commanded pieces revert to the command of the King, but his command authority is lost (the army may make one fewer action per turn, a serious disadvantage). <br /> 
+C2. The game ends when the King is captured (the Bishops do not fight on without the King, but surrender). <br />
+
+D1. COMMANDER’S MOVEMENT: The commanders (King and Bishops) may each move one square (but not attack/capture) in a player turn, without expending their command authority. Attacking/capturing by the King or Bishop “spends” that command authority for that corp. The King may spend his command authority to move up to three squares. Bishops may move up to two squares by spending their command authority. <br />
+
+
+
 ## King
 -Begins with authority over himself, center two pawns, the queen, and rooks. <br />
 -May move one square without losing authority. <br />
