@@ -22,6 +22,7 @@ public class BoardManager : MonoBehaviour
     // The index of the piece that is currently selected, unselected = {-1 , -1}
     private int[] selected_index = new int[] { -1, -1 };
 
+    // The index the mouse is currently hovering over.
     private int[] hovered_index = new int[] { 0, 0 }; 
 
     /* 
@@ -87,11 +88,7 @@ public class BoardManager : MonoBehaviour
         {
             for (int j = 0; j < blocks.GetLength(1); j++)
             {
-<<<<<<< Updated upstream
-                GameObject theBlock = Instantiate(block, new Vector3(j, i, 0f), Quaternion.identity, transform);
-=======
                 GameObject theBlock = Instantiate(block, new Vector3(j, blocks.GetLength(1) - i, 0f), Quaternion.identity, transform);
->>>>>>> Stashed changes
                 blocks[i,j] = theBlock;
 
                 Block block_attrs = theBlock.AddComponent<Block>();
@@ -103,7 +100,7 @@ public class BoardManager : MonoBehaviour
                 if (index % 8 != 0) flip = !flip;
             }
         }
-        PopulateBoardAlt();
+        PopulateBoard();
     }
 
     /* 
@@ -113,7 +110,7 @@ public class BoardManager : MonoBehaviour
      * class called 'Chess', or something like that.
      */
 
-    private void PopulateBoardAlt()
+    private void PopulateBoard()
     {
         for (int p = 0; p < board_state.GetLength(0); p++)
         {
@@ -208,15 +205,6 @@ public class BoardManager : MonoBehaviour
                 // Hovering.
                 if (index != hovered_index)
                 {
-<<<<<<< Updated upstream
-                    int[] index = block.GetPosition();
-
-                    if (active_pieces[index[0],index[1]])
-                    {
-                        RefreshBlocks();
-                        selected_index = index;
-                        CalculateMoves(index[0], index[1], 3);
-=======
                     blocks[hovered_index[0], hovered_index[1]].GetComponent<Block>().CurrentColor();
                     hovered_index = index;
                     blocks[index[0], index[1]].GetComponent<Block>().HoverColor();
@@ -231,7 +219,6 @@ public class BoardManager : MonoBehaviour
                         selected_index = index;
                         Piece piece = active_pieces[index[0], index[1]].GetComponent<Piece>();
                         CalculateMoves(index[0], index[1], piece.GetNumberOfMoves()); // Number of moves depends on the type of piece.
->>>>>>> Stashed changes
                     }
                     else if (selected_index[0] >= 0 && selected_index[1] >= 0)
                     {
@@ -253,65 +240,6 @@ public class BoardManager : MonoBehaviour
 
     private void CalculateMoves(int col, int row, int m)
     {
-<<<<<<< Updated upstream
-        // End if there are no more moves remaining.
-        if (moves_count <= 0) return;
-
-        try
-        {
-            // Check if right block is empty. 
-            if (board_state[col, row + 1] == 0)
-            {
-                blocks[col, row + 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
-
-                // Call Calculate Moves one the block to the right.
-                CalculateMoves(col, row + 1, moves_count - 1);
-            }
-        }
-        catch (IndexOutOfRangeException e)
-        {
-            Debug.Log("Position off of the board");
-        }
-
-        try
-        {
-            // Check if left block is empty. 
-            if (board_state[col, row - 1] == 0)
-            {
-                blocks[col, row - 1].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
-
-                // Call Calculate Moves one the block to the left.
-                CalculateMoves(col, row - 1, moves_count - 1);
-            }
-        }
-        catch (IndexOutOfRangeException e)
-        {
-            Debug.Log("Position off of the board");
-        }
-
-        try
-        {
-            // Check if down block is empty. 
-            if (board_state[col - 1, row] == 0)
-            {
-                blocks[col - 1, row].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
-
-                // Call Calculate Moves on the block that's down one.
-                CalculateMoves(col - 1, row, moves_count - 1);
-            }
-        }
-        catch (IndexOutOfRangeException e)
-        {
-            Debug.Log("Position off of the board");
-        }
-
-        try
-        {
-            // Check if up block is empty. 
-            if (board_state[col + 1, row] == 0)
-            {
-                blocks[col + 1, row].GetComponent<SpriteRenderer>().material.color = new Color(0f, 1f, 0f);
-=======
         CM_Recursive(col + 1, row, m); // Up
         CM_Recursive(col - 1, row, m); // Down
         CM_Recursive(col, row + 1, m); // Left
@@ -325,7 +253,6 @@ public class BoardManager : MonoBehaviour
     private void CM_Recursive (int col, int row, int m)
     {
         if (m <= 0 || col >= 8 || col < 0 || row >= 8 || row < 0) return;
->>>>>>> Stashed changes
 
         // Check if the current block is empty. 
         if (board_state[col, row] == 0)
