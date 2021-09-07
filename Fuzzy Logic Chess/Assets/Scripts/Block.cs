@@ -14,7 +14,7 @@ public class Block : MonoBehaviour
     }
     public int[] GetPosition()
     {
-        return position; 
+        return position;
     }
 
     // Color.
@@ -26,7 +26,7 @@ public class Block : MonoBehaviour
     public void ChangeColor(Color new_color)
     {
         GetComponent<SpriteRenderer>().material.color = new_color;
-        current_color = new_color; 
+        current_color = new_color;
     }
     public void HoverColor()
     {
@@ -39,6 +39,6 @@ public class Block : MonoBehaviour
     public void InitialColor()
     {
         GetComponent<SpriteRenderer>().material.color = initial_color;
-        current_color = initial_color; 
+        current_color = initial_color;
     }
 }

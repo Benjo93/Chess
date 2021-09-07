@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Commander : MonoBehaviour
 {
-    private List<Piece> pieces; 
+    private List<Piece> pieces;
 
     public List<Piece> GetPieces()
     {

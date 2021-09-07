@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 /* 
@@ -9,15 +7,22 @@ using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
-    private Commander commander;
-    private int number_of_moves;
+    private string p_name;
+    private int n_moves;
+    int[] position = new int[2];
 
     private Vector3 destination;
     private bool moving = false;
 
-    private void Start()
+    internal void InitializePiece(string p_name, int row, int col, int n_moves)
     {
-        destination = transform.position; 
+        destination = transform.position;
+
+        this.p_name = p_name;
+        this.n_moves = n_moves;
+
+        position[0] = row;
+        position[1] = col;
     }
 
     private void Update()
@@ -29,26 +34,17 @@ public class Piece : MonoBehaviour
         }
     }
 
-    public void MovePiece(Vector3 new_position)
+    public void MovePiece(Vector3 new_position, int row, int col)
     {
+        position[0] = row;
+        position[1] = col;
+
         destination = new_position;
         moving = true;
     }
 
-    public void SetCommander(Commander commander)
-    {
-        this.commander = commander; 
-    }
-    public Commander GetCommander()
-    {
-        return commander; 
-    }
-    public void SetNumberOfMoves(int number_of_moves)
-    {
-        this.number_of_moves = number_of_moves; 
-    }
     public int GetNumberOfMoves()
     {
-        return number_of_moves;
+        return n_moves;
     }
 }

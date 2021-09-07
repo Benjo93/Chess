@@ -14,10 +14,10 @@ public class BoardManager : MonoBehaviour
     public GameObject block;
 
     // Array of blocks for player interaction and piece positioning. 
-    private GameObject[,] blocks = new GameObject[8,8];
+    private GameObject[,] blocks = new GameObject[8, 8];
 
     // All active game object pieces on the board. 
-    private GameObject[,] active_pieces = new GameObject[8,8];
+    private GameObject[,] active_pieces = new GameObject[8, 8];
 
     // The index of the piece that is currently selected, unselected = {-1 , -1}
     private int[] selected_index = new int[] { -1, -1 };
@@ -53,17 +53,17 @@ public class BoardManager : MonoBehaviour
     public int[,] GetBoardState()
     {
         // Potentially validate board state first.
-        return board_state; 
+        return board_state;
     }
 
     // Function called by the AI after a decision has been made. 
-    public void MovePiece (int[] from, int[] to)
+    public void MovePiece(int[] from, int[] to)
     {
         // Validate move. 
 
         // Update the pieces game object array. 
         active_pieces[to[0], to[1]] = active_pieces[from[0], from[1]];
-        active_pieces[from[0],from[1]] = null;
+        active_pieces[from[0], from[1]] = null;
 
         // Instant position update.
         //active_pieces[to[0],to[1]].transform.position = blocks[to[0],to[1]].transform.position;
@@ -92,10 +92,10 @@ public class BoardManager : MonoBehaviour
             for (int j = 0; j < blocks.GetLength(1); j++)
             {
                 GameObject theBlock = Instantiate(block, new Vector3(j, blocks.GetLength(1) - i, 0f), Quaternion.identity, transform);
-                blocks[i,j] = theBlock;
+                blocks[i, j] = theBlock;
 
                 Block block_attrs = theBlock.AddComponent<Block>();
-                block_attrs.SetPosition(i,j); 
+                block_attrs.SetPosition(i, j);
                 theBlock.transform.name = "Block #" + index++;
 
                 Color b_color = theBlock.GetComponent<SpriteRenderer>().material.color = flip ? new Color32(157, 127, 97, 255) : new Color32(101, 82, 62, 255);
@@ -247,7 +247,7 @@ public class BoardManager : MonoBehaviour
         CM_Recursive(col - 1, row - 1, m); // Down and Left
     }
 
-    private void CM_Recursive (int col, int row, int m)
+    private void CM_Recursive(int col, int row, int m)
     {
         if (m <= 0 || col >= 8 || col < 0 || row >= 8 || row < 0) return;
 
@@ -255,7 +255,7 @@ public class BoardManager : MonoBehaviour
         if (board_state[col, row] == 0)
         {
             blocks[col, row].GetComponent<Block>().ChangeColor(Chess.Colors.W_MOVE);
-            CalculateMoves (col, row, m - 1);
+            CalculateMoves(col, row, m - 1);
         }
     }
 
