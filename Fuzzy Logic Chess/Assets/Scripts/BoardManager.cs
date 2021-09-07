@@ -23,7 +23,10 @@ public class BoardManager : MonoBehaviour
     private int[] selected_index = new int[] { -1, -1 };
 
     // The index the mouse is currently hovering over.
-    private int[] hovered_index = new int[] { 0, 0 }; 
+    private int[] hovered_index = new int[] { 0, 0 };
+
+    // The Piece class of the selected piece.
+    private Piece selected_piece;
 
     /* 
      * Board State:
@@ -31,7 +34,7 @@ public class BoardManager : MonoBehaviour
      * Positive represents white and negative represents black. 
      * Zero is an empty space. 
      * I'm not sure how we are doing the AI so this could change. 
-     */ 
+     */
 
     // Alternate board state using a multidimensional array. 
     private int[,] board_state = new int[,]
@@ -43,7 +46,7 @@ public class BoardManager : MonoBehaviour
         {  0,  0,  0,  0,  0,  0,  0,  0 },
         {  0,  0,  0,  0,  0,  0,  0,  0 },
         { -1, -1, -1, -1, -1, -1, -1, -1 },
-        { -2, -4, -3, -6, -5, -3, -4, -2 },
+        { -2, -4, -3, -5, -6, -3, -4, -2 },
     };
 
     // Function called by the AI to get the current board state and to calculate the next move.
@@ -66,7 +69,7 @@ public class BoardManager : MonoBehaviour
         //active_pieces[to[0],to[1]].transform.position = blocks[to[0],to[1]].transform.position;
 
         // Slow position update.
-        active_pieces[to[0], to[1]].GetComponent<Piece>().MovePiece(blocks[to[0], to[1]].transform.position);
+        active_pieces[to[0], to[1]].GetComponent<Piece>().MovePiece(blocks[to[0], to[1]].transform.position, to[0], to[1]);
 
         // Update the board state. 
         board_state[to[0], to[1]] = board_state[from[0], from[1]];
@@ -120,62 +123,62 @@ public class BoardManager : MonoBehaviour
                 {
                     case 1: // Pawn
                         active_pieces[p, q] = Instantiate(Chess.PIECES["w_pawn"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().SetNumberOfMoves(1);
+                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("w_pawn", p, q, 1);
                         break;
 
                     case 2: // Rook
                         active_pieces[p, q] = Instantiate(Chess.PIECES["w_rook"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().SetNumberOfMoves(2);
+                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("w_rook", p, q, 2);
                         break;
 
                     case 3: // Bishop
                         active_pieces[p, q] = Instantiate(Chess.PIECES["w_bishop"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().SetNumberOfMoves(1);
+                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("w_bishop", p, q, 1);
                         break;
 
                     case 4: // Knight
                         active_pieces[p, q] = Instantiate(Chess.PIECES["w_knight"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().SetNumberOfMoves(4);
+                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("w_knight", p, q, 4);
                         break;
 
                     case 5: // Queen
                         active_pieces[p, q] = Instantiate(Chess.PIECES["w_queen"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().SetNumberOfMoves(3);
+                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("w_queen", p, q, 3);
                         break;
 
                     case 6: // King
                         active_pieces[p, q] = Instantiate(Chess.PIECES["w_king"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().SetNumberOfMoves(3);
+                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("w_king", p, q, 3);
                         break;
 
                     case -1: // Pawn
                         active_pieces[p, q] = Instantiate(Chess.PIECES["b_pawn"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().SetNumberOfMoves(1);
+                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("b_pawn", p, q, 1);
                         break;
 
                     case -2: // Rook
                         active_pieces[p, q] = Instantiate(Chess.PIECES["b_rook"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().SetNumberOfMoves(2);
+                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("b_rook", p, q, 2);
                         break;
 
                     case -3: // Bishop
                         active_pieces[p, q] = Instantiate(Chess.PIECES["b_bishop"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().SetNumberOfMoves(1);
+                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("b_bishop", p, q, 1);
                         break;
 
                     case -4: // Knight
                         active_pieces[p, q] = Instantiate(Chess.PIECES["b_knight"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().SetNumberOfMoves(4);
+                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("b_knight", p, q, 4);
                         break;
 
                     case -5: // Queen
                         active_pieces[p, q] = Instantiate(Chess.PIECES["b_queen"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().SetNumberOfMoves(3);
+                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("b_queen", p, q, 3);
                         break;
 
                     case -6: // King
                         active_pieces[p, q] = Instantiate(Chess.PIECES["b_king"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().SetNumberOfMoves(3);
+                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("b_king", p, q, 3);
                         break;
                 }
             }
@@ -184,12 +187,6 @@ public class BoardManager : MonoBehaviour
 
     private void Update()
     {
-        /* 
-         * This will proabably all end up in the Game Manager class, which would handle 
-         * requesting a move from the player or AI. 
-         * For this, I am just storing the index of the clicked block and calling
-         * the move function with the two indexes.       
-         */
 
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
@@ -217,8 +214,8 @@ public class BoardManager : MonoBehaviour
                     {
                         RefreshBlocks();
                         selected_index = index;
-                        Piece piece = active_pieces[index[0], index[1]].GetComponent<Piece>();
-                        CalculateMoves(index[0], index[1], piece.GetNumberOfMoves()); // Number of moves depends on the type of piece.
+                        selected_piece = active_pieces[index[0], index[1]].GetComponent<Piece>();
+                        CalculateMoves(index[0], index[1], selected_piece.GetNumberOfMoves()); // Number of moves depends on the type of piece.
                     }
                     else if (selected_index[0] >= 0 && selected_index[1] >= 0)
                     {
