@@ -216,11 +216,11 @@ public class BoardManager : MonoBehaviour
                         selected_index = index;
                         selected_piece = active_pieces[index[0], index[1]].GetComponent<Piece>();
                         // list of coordinates of movable blocks
-                        List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves()); 
-                        RecolorBlockList(availableMoves);
+                        List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves());
+                        SetBlockListMovable(availableMoves);
                     }
                     // clickable if empty and is within range
-                    else if (selected_index[0] >= 0 && selected_index[1] >= 0 && blocks[index[0], index[1]].GetComponent<Block>().IsMovable()) 
+                    else if (selected_index[0] >= 0 && selected_index[1] >= 0 && blocks[index[0], index[1]].GetComponent<Block>().IsMovable())
                     {
                         RefreshBlocks();
                         MovePiece(selected_index, block.GetPosition());
@@ -257,7 +257,8 @@ public class BoardManager : MonoBehaviour
     {
         Queue<int[]> buildQueue = new Queue<int[]>();
         Queue<int[]> currentQueue = new Queue<int[]>();
-        do {
+        do
+        {
 
             /* NOTE: If you can express the validation for the adjacent blocks better
              * or more optimized, please feel free.  All adjacent blocks needs to be 
@@ -268,17 +269,17 @@ public class BoardManager : MonoBehaviour
             {
                 if (IsValidBlock(row + 1, col)) // Down
                 {
-                  //  ProcessBlock(row + 1, col, list);
+                    ProcessBlock(row + 1, col, list);
                     buildQueue.Enqueue(new int[2] { row + 1, col });
                 }
                 if (col < 7 && IsValidBlock(row + 1, col + 1)) // Down Right
                 {
-                 //   ProcessBlock(row + 1, col + 1, list);
+                    ProcessBlock(row + 1, col + 1, list);
                     buildQueue.Enqueue(new int[2] { row + 1, col + 1 });
                 }
                 if (col > 0 && IsValidBlock(row + 1, col - 1)) // Down Left
                 {
-                   // ProcessBlock(row + 1, col - 1, list);
+                    ProcessBlock(row + 1, col - 1, list);
                     buildQueue.Enqueue(new int[2] { row + 1, col - 1 });
                 }
             }
@@ -286,28 +287,28 @@ public class BoardManager : MonoBehaviour
             {
                 if (IsValidBlock(row - 1, col)) // Up
                 {
-                   // ProcessBlock(row - 1, col, list);
+                    ProcessBlock(row - 1, col, list);
                     buildQueue.Enqueue(new int[2] { row - 1, col });
                 }
                 if (col < 7 && IsValidBlock(row - 1, col + 1)) // Up Right
                 {
-                  //  ProcessBlock(row - 1, col + 1, list);
+                    ProcessBlock(row - 1, col + 1, list);
                     buildQueue.Enqueue(new int[2] { row - 1, col + 1 });
                 }
                 if (col > 0 && IsValidBlock(row - 1, col - 1)) // Up Left
                 {
-                  //  ProcessBlock(row - 1, col - 1, list);
+                    ProcessBlock(row - 1, col - 1, list);
                     buildQueue.Enqueue(new int[2] { row - 1, col - 1 });
                 }
             }
             if (col > 0 && IsValidBlock(row, col - 1)) // Left
             {
-               // ProcessBlock(row, col - 1, list);
+                ProcessBlock(row, col - 1, list);
                 buildQueue.Enqueue(new int[2] { row, col - 1 });
             }
             if (col < 7 && IsValidBlock(row, col + 1)) // Right
             {
-                //ProcessBlock(row, col + 1, list);
+                ProcessBlock(row, col + 1, list);
                 buildQueue.Enqueue(new int[2] { row, col + 1 });
             }
 
@@ -322,9 +323,7 @@ public class BoardManager : MonoBehaviour
                 m--;
             }
 
-            int[] currPos = currentQueue.Peek();
-            ProcessBlock(currPos[0], currPos[1], list);
-            currentQueue.Dequeue();
+            int[] currPos = currentQueue.Dequeue();
             row = currPos[0];
             col = currPos[1];
 
@@ -333,18 +332,18 @@ public class BoardManager : MonoBehaviour
 
     /*
      * Process Block:
-     * Adds and marks the block coordinates as visited
+     * Adds and marks the block coordinates as visited. Helper function to make
+     * CalculateMovesFIFO() shorter.
      * Pre-condition:
      * The block coordinate given is valid.
      * Post-condition:
      * The coordinates are added into the given list and its block's visited
      * and movable attributes are now true.
      */
-            private void ProcessBlock(int row, int col, List<int[]> list)
+    private void ProcessBlock(int row, int col, List<int[]> list)
     {
         list.Add(new int[] { row, col });
         blocks[row, col].GetComponent<Block>().SetVisited(true);
-        blocks[row, col].GetComponent<Block>().SetMovable(true);
     }
 
     /*
@@ -359,10 +358,11 @@ public class BoardManager : MonoBehaviour
     }
 
 
-    private void RecolorBlockList(List<int[]> list)
+    private void SetBlockListMovable(List<int[]> list)
     {
         foreach (int[] pos in list)
         {
+            blocks[pos[0], pos[1]].GetComponent<Block>().SetMovable(true);
             blocks[pos[0], pos[1]].GetComponent<Block>().ChangeColor(Chess.Colors.W_MOVE);
         }
     }
@@ -376,7 +376,7 @@ public class BoardManager : MonoBehaviour
             d_block.GetComponent<Block>().SetVisited(false);
             d_block.GetComponent<Block>().SetMovable(false);
         }
-            
+
     }
 
     // Print out board state for debugging.
