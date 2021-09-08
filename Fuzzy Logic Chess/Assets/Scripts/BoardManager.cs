@@ -210,6 +210,7 @@ public class BoardManager : MonoBehaviour
                 // Clicking.
                 if (Input.GetMouseButtonDown(0))
                 {
+                    
                     if (active_pieces[index[0], index[1]])
                     {
                         RefreshBlocks();
@@ -226,6 +227,10 @@ public class BoardManager : MonoBehaviour
                         MovePiece(selected_index, block.GetPosition());
                         selected_index = new int[2] { -1, -1 };
                     }
+                    else
+                    {
+                        RefreshBlocks();
+                    }
                 }
             }
         }
@@ -233,28 +238,18 @@ public class BoardManager : MonoBehaviour
 
     /*
      * Get Moves List:
+     * Uses Queues for breadth first search.  The queues are separated between
+     * the current generation (m) and the next generation (m-1).  When the 
+     * current generation is depleted, the next generation becomes the current
+     * generation and a new generation is created.
      * Post-condition:
      * Returns a list of coordinates of all movable blocks given an initial
      * position and available moves. 
      */
 
-    private List<int[]> GetMovesList(int row, int col, int moves)
+    private List<int[]> GetMovesList(int row, int col, int m)
     {
-        List<int[]> movesList = new List<int[]>();
-        CalculateMovesFIFO(row, col, moves, movesList);
-        return movesList;
-    }
-
-    /*
-     * Calculate Moves FIFO
-     * Uses Queues for breadth first search.  The queues are separated between
-     * the current generation (m) and the next generation (m-1).  When the 
-     * current generation is depleted, the next generation becomes the current
-     * generation and a new generation is created.
-     */
-
-    private void CalculateMovesFIFO(int row, int col, int m, List<int[]> list)
-    {
+        List<int[]> list = new List<int[]>();
         Queue<int[]> buildQueue = new Queue<int[]>();
         Queue<int[]> currentQueue = new Queue<int[]>();
         do
@@ -328,12 +323,13 @@ public class BoardManager : MonoBehaviour
             col = currPos[1];
 
         } while (m > 0);
+        return list;
     }
 
     /*
      * Process Block:
      * Adds and marks the block coordinates as visited. Helper function to make
-     * CalculateMovesFIFO() shorter.
+     * GetMovesList() shorter.
      * Pre-condition:
      * The block coordinate given is valid.
      * Post-condition:

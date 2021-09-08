@@ -9,7 +9,7 @@ public class Piece : MonoBehaviour
 {
     private string p_name;
     private int n_moves;
-    int[] position = new int[2];
+    int[] position = new int[2]; // Do we need this? If we need this we have to change this every time the piece moves.
 
     private Vector3 destination;
     private bool moving = false;
