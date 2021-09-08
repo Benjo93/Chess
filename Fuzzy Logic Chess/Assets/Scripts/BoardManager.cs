@@ -38,7 +38,7 @@ public class BoardManager : MonoBehaviour
         {  0,  0,  0,  0,  0,  0,  0,  0 },
         {  0,  0,  0,  0,  0,  0,  0,  0 },
         { -1, -1, -1, -1, -1, -1, -1, -1 },
-        { -2, -4, -3, -5, -6, -3, -4, -2 },
+        { -2, -4, -3, -6, -5, -3, -4, -2 },
     };
 
     private void Start()
@@ -186,6 +186,10 @@ public class BoardManager : MonoBehaviour
                         MovePiece(selected_index, block.GetPosition());
                         selected_index = new int[2] { -1, -1 };
                     }
+                    else
+                    {
+                        RefreshBlocks();
+                    }
                 }
             }
         }
@@ -302,9 +306,19 @@ public class BoardManager : MonoBehaviour
                 m--;
             }
 
-            int[] currPos = currentQueue.Dequeue();
-            row = currPos[0];
-            col = currPos[1];
+            if (currentQueue.Count > 0)
+            {
+                int[] currPos = currentQueue.Dequeue();
+                row = currPos[0];
+                col = currPos[1];
+            }
+            /* if there are no spaces left but you have more moves, move count
+             * becomes 0.
+             */
+            else
+            {
+                m = 0;
+            }
 
         } while (m > 0);
         return list;
