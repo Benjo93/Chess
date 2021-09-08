@@ -9,10 +9,6 @@ public class Piece : MonoBehaviour
 {
     private string p_name;
     private int n_moves;
-<<<<<<< Updated upstream
-    int[] position = new int[2];
-=======
->>>>>>> Stashed changes
 
     private Vector3 destination;
     private bool moving = false;

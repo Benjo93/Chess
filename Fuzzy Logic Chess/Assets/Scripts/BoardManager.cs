@@ -170,17 +170,6 @@ public class BoardManager : MonoBehaviour
                 // Clicking.
                 if (Input.GetMouseButtonDown(0))
                 {
-<<<<<<< Updated upstream
-                    if (active_pieces[index[0], index[1]])
-                    {
-                        RefreshBlocks();
-                        selected_index = index;
-                        selected_piece = active_pieces[index[0], index[1]].GetComponent<Piece>();
-                        CalculateMoves(index[0], index[1], selected_piece.GetNumberOfMoves()); // Number of moves depends on the type of piece.
-                    }
-                    else if (selected_index[0] >= 0 && selected_index[1] >= 0)
-=======
-
                     if (pieces[index[0], index[1]])
                     {
                         RefreshBlocks();
@@ -192,7 +181,6 @@ public class BoardManager : MonoBehaviour
                     }
                     // clickable if empty and is within range
                     else if (selected_index[0] >= 0 && selected_index[1] >= 0 && blocks[index[0], index[1]].IsMovable())
->>>>>>> Stashed changes
                     {
                         RefreshBlocks();
                         MovePiece(selected_index, block.GetPosition());
@@ -233,71 +221,142 @@ public class BoardManager : MonoBehaviour
     }
 
     /*
-     * Calculate Moves:
-     * Will probably be handled outside of this class by the AI components, could instead be 
-     * a method that asks the AI to return all possible moves to update the UI, only if we 
-     * want to display all possible moves in game. 
+     * Get Moves List:
+     * Uses Queues for breadth first search.  The queues are separated between
+     * the current generation (m) and the next generation (m-1).  When the 
+     * current generation is depleted, the next generation becomes the current
+     * generation and a new generation is created.
+     * Post-condition:
+     * Returns a list of coordinates of all movable blocks given an initial
+     * position and available moves. 
      */
 
-    private void CalculateMoves(int col, int row, int m)
+    private List<int[]> GetMovesList(int row, int col, int m)
     {
-<<<<<<< Updated upstream
-        CM_Recursive(col + 1, row, m); // Up
-        CM_Recursive(col - 1, row, m); // Down
-        CM_Recursive(col, row + 1, m); // Left
-        CM_Recursive(col, row - 1, m); // Right
-        CM_Recursive(col + 1, row + 1, m); // Up and Right
-        CM_Recursive(col + 1, row - 1, m); // Up and Left
-        CM_Recursive(col - 1, row + 1, m); // Down and Right
-        CM_Recursive(col - 1, row - 1, m); // Down and Left
-=======
-        list.Add(new int[] { row, col });
-        blocks[row, col].SetVisited(true);
->>>>>>> Stashed changes
-    }
-
-    private void CM_Recursive(int col, int row, int m)
-    {
-<<<<<<< Updated upstream
-        if (m <= 0 || col >= 8 || col < 0 || row >= 8 || row < 0) return;
-
-        // Check if the current block is empty. 
-        if (board_state[col, row] == 0)
+        List<int[]> list = new List<int[]>();
+        Queue<int[]> buildQueue = new Queue<int[]>();
+        Queue<int[]> currentQueue = new Queue<int[]>();
+        do
         {
-            blocks[col, row].GetComponent<Block>().ChangeColor(Chess.Colors.W_MOVE);
-            CalculateMoves(col, row, m - 1);
-=======
-        //return board_state[row, col] == 0 && !blocks_alt[row, col].IsVisited();
 
-        // Check if move is valid without referencing the integer board state.
-        // Check if there is no active piece at the row/col and make sure it is not visited.
-        return !pieces[row, col] && !blocks[row, col].IsVisited();
+            /* NOTE: If you can express the validation for the adjacent blocks better
+             * or more optimized, please feel free.  All adjacent blocks needs to be 
+             * validated and passed to ProcessBlock() before any of them can be
+             * dequeued.  Can't ProcessBlock() while Dequeueing.
+             */
+            if (row < 7)
+            {
+                if (IsValidBlock(row + 1, col)) // Down
+                {
+                    ProcessBlock(row + 1, col, list);
+                    buildQueue.Enqueue(new int[2] { row + 1, col });
+                }
+                if (col < 7 && IsValidBlock(row + 1, col + 1)) // Down Right
+                {
+                    ProcessBlock(row + 1, col + 1, list);
+                    buildQueue.Enqueue(new int[2] { row + 1, col + 1 });
+                }
+                if (col > 0 && IsValidBlock(row + 1, col - 1)) // Down Left
+                {
+                    ProcessBlock(row + 1, col - 1, list);
+                    buildQueue.Enqueue(new int[2] { row + 1, col - 1 });
+                }
+            }
+            if (row > 0)
+            {
+                if (IsValidBlock(row - 1, col)) // Up
+                {
+                    ProcessBlock(row - 1, col, list);
+                    buildQueue.Enqueue(new int[2] { row - 1, col });
+                }
+                if (col < 7 && IsValidBlock(row - 1, col + 1)) // Up Right
+                {
+                    ProcessBlock(row - 1, col + 1, list);
+                    buildQueue.Enqueue(new int[2] { row - 1, col + 1 });
+                }
+                if (col > 0 && IsValidBlock(row - 1, col - 1)) // Up Left
+                {
+                    ProcessBlock(row - 1, col - 1, list);
+                    buildQueue.Enqueue(new int[2] { row - 1, col - 1 });
+                }
+            }
+            if (col > 0 && IsValidBlock(row, col - 1)) // Left
+            {
+                ProcessBlock(row, col - 1, list);
+                buildQueue.Enqueue(new int[2] { row, col - 1 });
+            }
+            if (col < 7 && IsValidBlock(row, col + 1)) // Right
+            {
+                ProcessBlock(row, col + 1, list);
+                buildQueue.Enqueue(new int[2] { row, col + 1 });
+            }
+
+            /* switches to the next generation if the current generation
+             * has been depleted.
+             */
+
+            if (currentQueue.Count <= 0)
+            {
+                currentQueue = buildQueue;
+                buildQueue = new Queue<int[]>();
+                m--;
+            }
+
+            int[] currPos = currentQueue.Dequeue();
+            row = currPos[0];
+            col = currPos[1];
+
+        } while (m > 0);
+        return list;
     }
+
+    /*
+     * Process Block:
+     * Adds and marks the block coordinates as visited. Helper function to make
+     * GetMovesList() shorter.
+     * Pre-condition:
+     * The block coordinate given is valid.
+     * Post-condition:
+     * The coordinates are added into the given list and its block's visited
+     * and movable attributes are now true.
+     */
+    private void ProcessBlock(int row, int col, List<int[]> list)
+    {
+        list.Add(new int[] { row, col });
+        blocks[row, col].GetComponent<Block>().SetVisited(true);
+    }
+
+    /*
+     * Is Valid Block:
+     * Post-condition:
+     * Validates if the block, based on the coordinates given, is empty and has
+     * not been visited yet.
+     */
+    private bool IsValidBlock(int row, int col)
+    {
+        //return board_state[row, col] == 0 && !blocks[row, col].GetComponent<Block>().IsVisited();
+        return !pieces[row, col] && !blocks[row, col].GetComponent<Block>().IsVisited();
+    }
+
 
     private void SetBlockListMovable(List<int[]> list)
     {
         foreach (int[] pos in list)
         {
-            blocks[pos[0], pos[1]].SetMovable(true);
-            blocks[pos[0], pos[1]].ChangeColor(Chess.Colors.W_SELECTED);
->>>>>>> Stashed changes
+            blocks[pos[0], pos[1]].GetComponent<Block>().SetMovable(true);
+            blocks[pos[0], pos[1]].GetComponent<Block>().ChangeColor(Chess.Colors.W_SELECTED);
         }
     }
 
     private void RefreshBlocks()
     {
         // Deselect all blocks.
-<<<<<<< Updated upstream
-        foreach (GameObject d_block in blocks)
-            d_block.GetComponent<Block>().InitialColor();
-=======
         foreach (Block block in blocks)
         {
             block.InitialColor();
             block.SetVisited(false);
             block.SetMovable(false);
         }
->>>>>>> Stashed changes
     }
 
     // Print out board state for debugging.
