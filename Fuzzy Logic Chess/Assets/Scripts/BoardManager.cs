@@ -215,9 +215,12 @@ public class BoardManager : MonoBehaviour
                         RefreshBlocks();
                         selected_index = index;
                         selected_piece = active_pieces[index[0], index[1]].GetComponent<Piece>();
-                        CalculateMoves(index[0], index[1], selected_piece.GetNumberOfMoves()); // Number of moves depends on the type of piece.
+                        // list of coordinates of movable blocks
+                        List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves()); 
+                        RecolorBlockList(availableMoves);
                     }
-                    else if (selected_index[0] >= 0 && selected_index[1] >= 0)
+                    // clickable if empty and is within range
+                    else if (selected_index[0] >= 0 && selected_index[1] >= 0 && blocks[index[0], index[1]].GetComponent<Block>().IsMovable()) 
                     {
                         RefreshBlocks();
                         MovePiece(selected_index, block.GetPosition());
@@ -229,33 +232,138 @@ public class BoardManager : MonoBehaviour
     }
 
     /*
-     * Calculate Moves:
-     * Will probably be handled outside of this class by the AI components, could instead be 
-     * a method that asks the AI to return all possible moves to update the UI, only if we 
-     * want to display all possible moves in game. 
+     * Get Moves List:
+     * Post-condition:
+     * Returns a list of coordinates of all movable blocks given an initial
+     * position and available moves. 
      */
 
-    private void CalculateMoves(int col, int row, int m)
+    private List<int[]> GetMovesList(int row, int col, int moves)
     {
-        CM_Recursive(col + 1, row, m); // Up
-        CM_Recursive(col - 1, row, m); // Down
-        CM_Recursive(col, row + 1, m); // Left
-        CM_Recursive(col, row - 1, m); // Right
-        CM_Recursive(col + 1, row + 1, m); // Up and Right
-        CM_Recursive(col + 1, row - 1, m); // Up and Left
-        CM_Recursive(col - 1, row + 1, m); // Down and Right
-        CM_Recursive(col - 1, row - 1, m); // Down and Left
+        List<int[]> movesList = new List<int[]>();
+        CalculateMovesFIFO(row, col, moves, movesList);
+        return movesList;
     }
 
-    private void CM_Recursive(int col, int row, int m)
-    {
-        if (m <= 0 || col >= 8 || col < 0 || row >= 8 || row < 0) return;
+    /*
+     * Calculate Moves FIFO
+     * Uses Queues for breadth first search.  The queues are separated between
+     * the current generation (m) and the next generation (m-1).  When the 
+     * current generation is depleted, the next generation becomes the current
+     * generation and a new generation is created.
+     */
 
-        // Check if the current block is empty. 
-        if (board_state[col, row] == 0)
+    private void CalculateMovesFIFO(int row, int col, int m, List<int[]> list)
+    {
+        Queue<int[]> buildQueue = new Queue<int[]>();
+        Queue<int[]> currentQueue = new Queue<int[]>();
+        do {
+
+            /* NOTE: If you can express the validation for the adjacent blocks better
+             * or more optimized, please feel free.  All adjacent blocks needs to be 
+             * validated and passed to ProcessBlock() before any of them can be
+             * dequeued.  Can't ProcessBlock() while Dequeueing.
+             */
+            if (row < 7)
+            {
+                if (IsValidBlock(row + 1, col)) // Down
+                {
+                  //  ProcessBlock(row + 1, col, list);
+                    buildQueue.Enqueue(new int[2] { row + 1, col });
+                }
+                if (col < 7 && IsValidBlock(row + 1, col + 1)) // Down Right
+                {
+                 //   ProcessBlock(row + 1, col + 1, list);
+                    buildQueue.Enqueue(new int[2] { row + 1, col + 1 });
+                }
+                if (col > 0 && IsValidBlock(row + 1, col - 1)) // Down Left
+                {
+                   // ProcessBlock(row + 1, col - 1, list);
+                    buildQueue.Enqueue(new int[2] { row + 1, col - 1 });
+                }
+            }
+            if (row > 0)
+            {
+                if (IsValidBlock(row - 1, col)) // Up
+                {
+                   // ProcessBlock(row - 1, col, list);
+                    buildQueue.Enqueue(new int[2] { row - 1, col });
+                }
+                if (col < 7 && IsValidBlock(row - 1, col + 1)) // Up Right
+                {
+                  //  ProcessBlock(row - 1, col + 1, list);
+                    buildQueue.Enqueue(new int[2] { row - 1, col + 1 });
+                }
+                if (col > 0 && IsValidBlock(row - 1, col - 1)) // Up Left
+                {
+                  //  ProcessBlock(row - 1, col - 1, list);
+                    buildQueue.Enqueue(new int[2] { row - 1, col - 1 });
+                }
+            }
+            if (col > 0 && IsValidBlock(row, col - 1)) // Left
+            {
+               // ProcessBlock(row, col - 1, list);
+                buildQueue.Enqueue(new int[2] { row, col - 1 });
+            }
+            if (col < 7 && IsValidBlock(row, col + 1)) // Right
+            {
+                //ProcessBlock(row, col + 1, list);
+                buildQueue.Enqueue(new int[2] { row, col + 1 });
+            }
+
+            /* switches to the next generation if the current generation
+             * has been depleted.
+             */
+
+            if (currentQueue.Count <= 0)
+            {
+                currentQueue = buildQueue;
+                buildQueue = new Queue<int[]>();
+                m--;
+            }
+
+            int[] currPos = currentQueue.Peek();
+            ProcessBlock(currPos[0], currPos[1], list);
+            currentQueue.Dequeue();
+            row = currPos[0];
+            col = currPos[1];
+
+        } while (m > 0);
+    }
+
+    /*
+     * Process Block:
+     * Adds and marks the block coordinates as visited
+     * Pre-condition:
+     * The block coordinate given is valid.
+     * Post-condition:
+     * The coordinates are added into the given list and its block's visited
+     * and movable attributes are now true.
+     */
+            private void ProcessBlock(int row, int col, List<int[]> list)
+    {
+        list.Add(new int[] { row, col });
+        blocks[row, col].GetComponent<Block>().SetVisited(true);
+        blocks[row, col].GetComponent<Block>().SetMovable(true);
+    }
+
+    /*
+     * Is Valid Block:
+     * Post-condition:
+     * Validates if the block, based on the coordinates given, is empty and has
+     * not been visited yet.
+     */
+    private bool IsValidBlock(int row, int col)
+    {
+        return board_state[row, col] == 0 && !blocks[row, col].GetComponent<Block>().IsVisited();
+    }
+
+
+    private void RecolorBlockList(List<int[]> list)
+    {
+        foreach (int[] pos in list)
         {
-            blocks[col, row].GetComponent<Block>().ChangeColor(Chess.Colors.W_MOVE);
-            CalculateMoves(col, row, m - 1);
+            blocks[pos[0], pos[1]].GetComponent<Block>().ChangeColor(Chess.Colors.W_MOVE);
         }
     }
 
@@ -263,7 +371,12 @@ public class BoardManager : MonoBehaviour
     {
         // Deselect all blocks.
         foreach (GameObject d_block in blocks)
+        {
             d_block.GetComponent<Block>().InitialColor();
+            d_block.GetComponent<Block>().SetVisited(false);
+            d_block.GetComponent<Block>().SetMovable(false);
+        }
+            
     }
 
     // Print out board state for debugging.

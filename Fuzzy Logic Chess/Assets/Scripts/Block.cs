@@ -6,6 +6,8 @@ public class Block : MonoBehaviour
 
     public Color initial_color;
     private Color current_color;
+    private bool movable = false;
+    private bool visited = false;
 
     // Position.
     public void SetPosition(int row, int column)
@@ -40,5 +42,21 @@ public class Block : MonoBehaviour
     {
         GetComponent<SpriteRenderer>().material.color = initial_color;
         current_color = initial_color;
+    }
+    public bool IsVisited()
+    {
+        return visited;
+    }
+    public void SetVisited(bool b)
+    {
+        visited = b;
+    }
+    public bool IsMovable()
+    {
+        return movable;
+    }
+    public void SetMovable(bool b)
+    {
+        movable = b;
     }
 }
