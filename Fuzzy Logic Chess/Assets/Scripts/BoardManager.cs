@@ -13,11 +13,14 @@ public class BoardManager : MonoBehaviour
     // Clickable Game Object assigned in unity. 
     public GameObject block;
 
-    // Array of blocks for player interaction and piece positioning. 
-    private GameObject[,] blocks = new GameObject[8, 8];
+    // Array of blocks representing each chess board square. 
+    private Block[,] blocks = new Block[8, 8];
 
-    // All active game object pieces on the board. 
-    private GameObject[,] active_pieces = new GameObject[8, 8];
+    // Array of pieces currently in play.
+    private Piece[,] pieces = new Piece[8, 8];
+
+    // The 'Piece' component of the currently selected piece.
+    private Piece selected_piece;
 
     // The index of the piece that is currently selected, unselected = {-1 , -1}
     private int[] selected_index = new int[] { -1, -1 };
@@ -25,19 +28,8 @@ public class BoardManager : MonoBehaviour
     // The index the mouse is currently hovering over.
     private int[] hovered_index = new int[] { 0, 0 };
 
-    // The Piece class of the selected piece.
-    private Piece selected_piece;
-
-    /* 
-     * Board State:
-     * Integer array to track positions of all pieces. 
-     * Positive represents white and negative represents black. 
-     * Zero is an empty space. 
-     * I'm not sure how we are doing the AI so this could change. 
-     */
-
-    // Alternate board state using a multidimensional array. 
-    private int[,] board_state = new int[,]
+    // Used when initializing the board before a game.
+    private int[,] board_init = new int[,]
     {
         {  2,  4,  3,  6,  5,  3,  4,  2 },
         {  1,  1,  1,  1,  1,  1,  1,  1 },
@@ -49,40 +41,7 @@ public class BoardManager : MonoBehaviour
         { -2, -4, -3, -5, -6, -3, -4, -2 },
     };
 
-    // Function called by the AI to get the current board state and to calculate the next move.
-    public int[,] GetBoardState()
-    {
-        // Potentially validate board state first.
-        return board_state;
-    }
-
-    // Function called by the AI after a decision has been made. 
-    public void MovePiece(int[] from, int[] to)
-    {
-        // Validate move. 
-
-        // Update the pieces game object array. 
-        active_pieces[to[0], to[1]] = active_pieces[from[0], from[1]];
-        active_pieces[from[0], from[1]] = null;
-
-        // Instant position update.
-        //active_pieces[to[0],to[1]].transform.position = blocks[to[0],to[1]].transform.position;
-
-        // Slow position update.
-        active_pieces[to[0], to[1]].GetComponent<Piece>().MovePiece(blocks[to[0], to[1]].transform.position, to[0], to[1]);
-
-        // Update the board state. 
-        board_state[to[0], to[1]] = board_state[from[0], from[1]];
-        board_state[from[0], from[1]] = 0;
-    }
-
-    public void Attack()
-    {
-        // Move piece and update board state / pieces.
-        // Send the captured piece to the captured box.
-    }
-
-    void Start()
+    private void Start()
     {
         // Layout blocks Grid, 8x8
         bool flip = false;
@@ -91,125 +50,127 @@ public class BoardManager : MonoBehaviour
         {
             for (int j = 0; j < blocks.GetLength(1); j++)
             {
-                GameObject theBlock = Instantiate(block, new Vector3(j, blocks.GetLength(1) - i, 0f), Quaternion.identity, transform);
-                blocks[i, j] = theBlock;
+                // Set the blocks array to the component 'Block' from the instantiated game object.
+                blocks[i, j] = Instantiate(block, new Vector3(j, blocks.GetLength(1) - i, 0f), Quaternion.identity, transform).AddComponent<Block>();
+                blocks[i, j].SetPosition(i, j);
+                blocks[i, j].transform.name = "Block #" + index++;
 
-                Block block_attrs = theBlock.AddComponent<Block>();
-                block_attrs.SetPosition(i, j);
-                theBlock.transform.name = "Block #" + index++;
-
-                Color b_color = theBlock.GetComponent<SpriteRenderer>().material.color = flip ? new Color32(157, 127, 97, 255) : new Color32(101, 82, 62, 255);
-                block_attrs.SetColor(b_color);
+                blocks[i, j].SetColor(blocks[i, j].GetComponent<SpriteRenderer>().material.color = flip
+                    ? Chess.Colors.BOARD_DARK : Chess.Colors.BOARD_DARK);
                 if (index % 8 != 0) flip = !flip;
             }
         }
-        PopulateBoard();
+        InitializeBoard();
     }
 
     /* 
-     * Populate Board:
-     * Initialize the pieces on the board according to the board state array.
+     * Initialize Board:
+     * Initialize the pieces on the board according to the board_init array.
      * Each piece is contained in a static dictionary from the resources 
      * class called 'Chess', or something like that.
      */
 
-    private void PopulateBoard()
+    private void InitializeBoard()
     {
-        for (int p = 0; p < board_state.GetLength(0); p++)
+        for (int p = 0; p < board_init.GetLength(0); p++)
         {
-            for (int q = 0; q < board_state.GetLength(1); q++)
+            for (int q = 0; q < board_init.GetLength(1); q++)
             {
-                switch (board_state[p, q])
+                switch (board_init[p, q])
                 {
                     case 1: // Pawn
-                        active_pieces[p, q] = Instantiate(Chess.PIECES["w_pawn"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("w_pawn", p, q, 1);
+                        pieces[p, q] = Instantiate(Chess.PIECES["w_pawn"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("w_pawn", 1);
                         break;
 
                     case 2: // Rook
-                        active_pieces[p, q] = Instantiate(Chess.PIECES["w_rook"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("w_rook", p, q, 2);
+                        pieces[p, q] = Instantiate(Chess.PIECES["w_rook"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("w_rook", 2);
                         break;
 
                     case 3: // Bishop
-                        active_pieces[p, q] = Instantiate(Chess.PIECES["w_bishop"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("w_bishop", p, q, 1);
+                        pieces[p, q] = Instantiate(Chess.PIECES["w_bishop"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("w_bishop", 1);
                         break;
 
                     case 4: // Knight
-                        active_pieces[p, q] = Instantiate(Chess.PIECES["w_knight"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("w_knight", p, q, 4);
+                        pieces[p, q] = Instantiate(Chess.PIECES["w_knight"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("w_knight", 4);
                         break;
 
                     case 5: // Queen
-                        active_pieces[p, q] = Instantiate(Chess.PIECES["w_queen"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("w_queen", p, q, 3);
+                        pieces[p, q] = Instantiate(Chess.PIECES["w_queen"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("w_queen", 3);
                         break;
 
                     case 6: // King
-                        active_pieces[p, q] = Instantiate(Chess.PIECES["w_king"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("w_king", p, q, 3);
+                        pieces[p, q] = Instantiate(Chess.PIECES["w_king"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("w_king", 3);
                         break;
 
                     case -1: // Pawn
-                        active_pieces[p, q] = Instantiate(Chess.PIECES["b_pawn"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("b_pawn", p, q, 1);
+                        pieces[p, q] = Instantiate(Chess.PIECES["b_pawn"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("b_pawn", 1);
                         break;
 
                     case -2: // Rook
-                        active_pieces[p, q] = Instantiate(Chess.PIECES["b_rook"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("b_rook", p, q, 2);
+                        pieces[p, q] = Instantiate(Chess.PIECES["b_rook"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("b_rook", 2);
                         break;
 
                     case -3: // Bishop
-                        active_pieces[p, q] = Instantiate(Chess.PIECES["b_bishop"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("b_bishop", p, q, 1);
+                        pieces[p, q] = Instantiate(Chess.PIECES["b_bishop"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("b_bishop", 1);
                         break;
 
                     case -4: // Knight
-                        active_pieces[p, q] = Instantiate(Chess.PIECES["b_knight"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("b_knight", p, q, 4);
+                        pieces[p, q] = Instantiate(Chess.PIECES["b_knight"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("b_knight", 4);
                         break;
 
                     case -5: // Queen
-                        active_pieces[p, q] = Instantiate(Chess.PIECES["b_queen"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("b_queen", p, q, 3);
+                        pieces[p, q] = Instantiate(Chess.PIECES["b_queen"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("b_queen", 3);
                         break;
 
                     case -6: // King
-                        active_pieces[p, q] = Instantiate(Chess.PIECES["b_king"], blocks[p, q].transform.position, Quaternion.identity);
-                        active_pieces[p, q].AddComponent<Piece>().InitializePiece("b_king", p, q, 3);
+                        pieces[p, q] = Instantiate(Chess.PIECES["b_king"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("b_king", 3);
                         break;
                 }
             }
         }
     }
 
+    // Built-in Unity function that is called every frame.
     private void Update()
     {
+        // Cast a line in to where the mouse is on the screen.
+        RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
 
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero);
-
+        // Check if something is being detected.
         if (hit.collider)
         {
             Block block = hit.transform.gameObject.GetComponent<Block>();
 
+            // Check if the object is a block.
             if (block)
             {
+                // Get the position of the block. 
                 int[] index = block.GetPosition();
 
                 // Hovering.
                 if (index != hovered_index)
                 {
-                    blocks[hovered_index[0], hovered_index[1]].GetComponent<Block>().CurrentColor();
+                    blocks[hovered_index[0], hovered_index[1]].CurrentColor();
                     hovered_index = index;
-                    blocks[index[0], index[1]].GetComponent<Block>().HoverColor();
+                    blocks[index[0], index[1]].HoverColor();
                 }
 
                 // Clicking.
                 if (Input.GetMouseButtonDown(0))
                 {
+<<<<<<< Updated upstream
                     if (active_pieces[index[0], index[1]])
                     {
                         RefreshBlocks();
@@ -218,6 +179,20 @@ public class BoardManager : MonoBehaviour
                         CalculateMoves(index[0], index[1], selected_piece.GetNumberOfMoves()); // Number of moves depends on the type of piece.
                     }
                     else if (selected_index[0] >= 0 && selected_index[1] >= 0)
+=======
+
+                    if (pieces[index[0], index[1]])
+                    {
+                        RefreshBlocks();
+                        selected_index = index;
+                        selected_piece = pieces[index[0], index[1]];
+                        // list of coordinates of movable blocks
+                        List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves());
+                        SetBlockListMovable(availableMoves);
+                    }
+                    // clickable if empty and is within range
+                    else if (selected_index[0] >= 0 && selected_index[1] >= 0 && blocks[index[0], index[1]].IsMovable())
+>>>>>>> Stashed changes
                     {
                         RefreshBlocks();
                         MovePiece(selected_index, block.GetPosition());
@@ -226,6 +201,35 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    // Function called by the AI to get the current board state and to calculate the next move.
+    public Piece[,] GetBoardState()
+    {
+        // Potentially validate board state first.
+        return pieces;
+    }
+
+    // Function called by the AI after a decision has been made. 
+    public void MovePiece(int[] from, int[] to)
+    {
+        // Validate move. 
+
+        // Update the pieces game object array. 
+        pieces[to[0], to[1]] = pieces[from[0], from[1]];
+        pieces[from[0], from[1]] = null;
+
+        // Slow position update.
+        pieces[to[0], to[1]].MovePiece(blocks[to[0], to[1]].transform.position, to[0], to[1]);
+
+        // Instant position update.
+        //active_pieces[to[0],to[1]].transform.position = blocks[to[0],to[1]].transform.position;
+    }
+
+    public void Attack()
+    {
+        // Move piece and update board state / pieces.
+        // Send the captured piece to the captured box.
     }
 
     /*
@@ -237,6 +241,7 @@ public class BoardManager : MonoBehaviour
 
     private void CalculateMoves(int col, int row, int m)
     {
+<<<<<<< Updated upstream
         CM_Recursive(col + 1, row, m); // Up
         CM_Recursive(col - 1, row, m); // Down
         CM_Recursive(col, row + 1, m); // Left
@@ -245,10 +250,15 @@ public class BoardManager : MonoBehaviour
         CM_Recursive(col + 1, row - 1, m); // Up and Left
         CM_Recursive(col - 1, row + 1, m); // Down and Right
         CM_Recursive(col - 1, row - 1, m); // Down and Left
+=======
+        list.Add(new int[] { row, col });
+        blocks[row, col].SetVisited(true);
+>>>>>>> Stashed changes
     }
 
     private void CM_Recursive(int col, int row, int m)
     {
+<<<<<<< Updated upstream
         if (m <= 0 || col >= 8 || col < 0 || row >= 8 || row < 0) return;
 
         // Check if the current block is empty. 
@@ -256,14 +266,38 @@ public class BoardManager : MonoBehaviour
         {
             blocks[col, row].GetComponent<Block>().ChangeColor(Chess.Colors.W_MOVE);
             CalculateMoves(col, row, m - 1);
+=======
+        //return board_state[row, col] == 0 && !blocks_alt[row, col].IsVisited();
+
+        // Check if move is valid without referencing the integer board state.
+        // Check if there is no active piece at the row/col and make sure it is not visited.
+        return !pieces[row, col] && !blocks[row, col].IsVisited();
+    }
+
+    private void SetBlockListMovable(List<int[]> list)
+    {
+        foreach (int[] pos in list)
+        {
+            blocks[pos[0], pos[1]].SetMovable(true);
+            blocks[pos[0], pos[1]].ChangeColor(Chess.Colors.W_SELECTED);
+>>>>>>> Stashed changes
         }
     }
 
     private void RefreshBlocks()
     {
         // Deselect all blocks.
+<<<<<<< Updated upstream
         foreach (GameObject d_block in blocks)
             d_block.GetComponent<Block>().InitialColor();
+=======
+        foreach (Block block in blocks)
+        {
+            block.InitialColor();
+            block.SetVisited(false);
+            block.SetMovable(false);
+        }
+>>>>>>> Stashed changes
     }
 
     // Print out board state for debugging.
@@ -271,7 +305,7 @@ public class BoardManager : MonoBehaviour
     {
         string output = "";
         int index = 0;
-        foreach (int position in board_state)
+        foreach (int position in board_init)
         {
             output += position + "   ";
             if (index++ >= 7)

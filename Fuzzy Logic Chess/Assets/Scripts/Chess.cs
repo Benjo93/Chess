@@ -45,12 +45,16 @@ public class Chess : MonoBehaviour
     // Library of colors used in the GUI and chess board.
     public static class Colors
     {
-        public static Color HOVER = Color.white;
 
-        public static Color W_MOVE = Color.green;
+        public static Color BOARD_LIGHT = new Color32(157, 127, 97, 255);
+        public static Color BOARD_DARK = new Color32(101, 82, 62, 255);
+
+        public static Color BOARD_HOVER = Color.white;
+
+        public static Color W_SELECTED = Color.green;
         public static Color W_ATTACK = Color.red;
 
-        public static Color B_MOVE = Color.magenta;
+        public static Color B_SELECTED = Color.magenta;
         public static Color B_ATTACK = Color.cyan;
     }
 }
