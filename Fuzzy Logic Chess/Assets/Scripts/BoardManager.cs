@@ -183,7 +183,7 @@ public class BoardManager : MonoBehaviour
                     else if (selected_index[0] >= 0 && selected_index[1] >= 0 && blocks[index[0], index[1]].IsMovable())
                     {
                         RefreshBlocks();
-                        MovePiece(selected_index, block.GetPosition());
+                        MovePiece(selected_index, block.GetPosition(), selected_piece.GetNumberOfMoves());
                         selected_index = new int[2] { -1, -1 };
                     }
                     else
@@ -203,19 +203,19 @@ public class BoardManager : MonoBehaviour
     }
 
     // Function called by the AI after a decision has been made. 
-    public void MovePiece(int[] from, int[] to)
+    public void MovePiece(int[] from, int[] to, int max_moves)
     {
         // Validate move. 
+
+        // Find the best path. 
+        List<int[]> path = FindPath(from, to, new List<int[]> { from }, max_moves);
+
+        // Slow position update.
+        pieces[from[0], from[1]].MovePiece(GetPathPositions(path));
 
         // Update the pieces game object array. 
         pieces[to[0], to[1]] = pieces[from[0], from[1]];
         pieces[from[0], from[1]] = null;
-
-        // Slow position update.
-        pieces[to[0], to[1]].MovePiece(blocks[to[0], to[1]].transform.position, to[0], to[1]);
-
-        // Instant position update.
-        //active_pieces[to[0],to[1]].transform.position = blocks[to[0],to[1]].transform.position;
     }
 
     public void Attack()
@@ -337,7 +337,7 @@ public class BoardManager : MonoBehaviour
     private void ProcessBlock(int row, int col, List<int[]> list)
     {
         list.Add(new int[] { row, col });
-        blocks[row, col].GetComponent<Block>().SetVisited(true);
+        blocks[row, col].SetVisited(true);
     }
 
     /*
@@ -348,18 +348,87 @@ public class BoardManager : MonoBehaviour
      */
     private bool IsValidBlock(int row, int col)
     {
-        //return board_state[row, col] == 0 && !blocks[row, col].GetComponent<Block>().IsVisited();
-        return !pieces[row, col] && !blocks[row, col].GetComponent<Block>().IsVisited();
-    }
+        bool within_board = row >= 0 && col >= 0 && row < 8 && col < 8;
+        return within_board && !pieces[row, col] && !blocks[row, col].IsVisited();
 
+    }
 
     private void SetBlockListMovable(List<int[]> list)
     {
         foreach (int[] pos in list)
         {
-            blocks[pos[0], pos[1]].GetComponent<Block>().SetMovable(true);
-            blocks[pos[0], pos[1]].GetComponent<Block>().ChangeColor(Chess.Colors.W_SELECTED);
+            blocks[pos[0], pos[1]].SetMovable(true);
+            blocks[pos[0], pos[1]].ChangeColor(Chess.Colors.W_SELECTED);
         }
+    }
+
+    // List of all directions to simplify things.
+    private int[,] dir = new int[,] { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 }, { -1, 1 }, { 1, -1 }, { 1, 1 }, { -1, -1 } };
+
+    /*
+     * FindPath:
+     * Path-finding function that recursivley finds the closest block to the destination. 
+     * The closest node is added to a list until the destination is reached.
+     */
+    private List<int[]> FindPath(int[] current, int[] destination, List<int[]> path, int max_moves)
+    {
+        // Destination has been reached.
+        if (current[0] == destination[0] && current[1] == destination[1]) return path;
+
+        // Initialize cost and current node.
+        float cost = Mathf.Infinity;
+        int[] closest = current;
+
+        // Iterate through all directions.
+        for (int d = 0; d < 8; d++)
+        {
+            // Reference each node in every direction.
+            int[] node = new int[] { current[0] + dir[d, 0], current[1] + dir[d, 1] };
+
+            // If the path was longer than max moves, reset the path. The redundant nodes are now all visited.
+            if (max_moves < 0) return FindPath(path[0], destination, new List<int[]> { path[0] }, path.Count - 1);
+
+            // Check if node at direction d is valid.
+            if (!IsValidBlock(node[0], node[1])) continue;
+
+            // Calculate the difference between the current node and the destination. 
+            int[] diff = new int[] { destination[0] - node[0], destination[1] - node[1] };
+
+            // Calculate the cost of each possible move (magnitude of the distance to the destination).
+            float n_cost = Mathf.Sqrt(diff[0] * diff[0] + diff[1] * diff[1]);
+
+            // Check if current node has the lowest cost.
+            if (n_cost < cost)
+            {
+                cost = n_cost;
+                closest = node;
+            }
+        }
+        // Visit the node and add it to the path.
+        path.Add(closest);
+        blocks[closest[0], closest[1]].SetVisited(true);
+        return FindPath(closest, destination, path, max_moves - 1);
+    }
+
+    /*
+     * GetPathPositions:
+     * Returns a list of vector 3 positions used to move the piece along the path. 
+     */
+    private List<Vector3> GetPathPositions(List<int[]> path)
+    {
+        List<Vector3> positions = new List<Vector3>();
+        foreach (int[] p in path)
+        {
+            positions.Add(blocks[p[0], p[1]].transform.position);
+
+            // Highlight path.
+            blocks[p[0], p[1]].ChangeColor(Color.grey);
+        }
+
+        // Highlight destination.
+        blocks[path[path.Count-1][0], path[path.Count-1][1]].ChangeColor(Color.cyan);
+
+        return positions;
     }
 
     private void RefreshBlocks()

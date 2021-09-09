@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /* 
@@ -9,14 +10,14 @@ public class Piece : MonoBehaviour
 {
     private string p_name;
     private int n_moves;
+    private float move_speed = 10f;
 
-    private Vector3 destination;
-    private bool moving = false;
+    private List<Vector3> path;
+    private int path_index;
+    private bool moving;
 
     internal Piece InitializePiece(string p_name, int n_moves)
     {
-        destination = transform.position;
-
         this.p_name = p_name;
         this.n_moves = n_moves;
 
@@ -27,14 +28,16 @@ public class Piece : MonoBehaviour
     {
         if (moving)
         {
-            transform.position = Vector3.MoveTowards(transform.position, destination, Time.deltaTime * 10f);
-            if (transform.position == destination) moving = false;
+            transform.position = Vector3.Lerp(transform.position, path[path_index], Time.deltaTime * move_speed);
+            if ((transform.position - path[path_index]).magnitude <= 0.025f) path_index++;
+            if (path_index >= path.Count) moving = false;
         }
     }
 
-    public void MovePiece(Vector3 new_position, int row, int col)
+    public void MovePiece(List<Vector3> path)
     {
-        destination = new_position;
+        this.path = path;
+        path_index = 0;
         moving = true;
     }
 
