@@ -1,30 +1,21 @@
-using UnityEngine;
+/* 
+ * Player:
+ * Abstract class inherited by ai and human. 
+ * Contains name, team, color, etc...
+ */
 
-public class Player : MonoBehaviour
+public abstract class Player
 {
-    public string player_name;
-    private GameManager gm;
-    private BoardManager bm;
+    public string name;
+    protected GameManager gm;
+    protected BoardManager bm;
 
-    // Assigned in the inspector for now. 
-    public enum Type { Human, AI }
-
-    public bool making_move; 
-
-    public void InitializePlayer (string player_name, GameManager game_manager, BoardManager board_manager)
+    public Player(string name, GameManager gm, BoardManager bm)
     {
-        this.player_name = player_name;
-        gm = game_manager;
-        bm = board_manager;
-
-        // Type of player, etc..
+        this.name = name;
+        this.gm = gm;
+        this.bm = bm; 
     }
 
-    public void Move()
-    {
-        // Pass move to the board manager.
-
-        Debug.Log("Current Player: " + player_name);
-        //bm.RequestUserInput();
-    }
+    public abstract void Move();
 }
