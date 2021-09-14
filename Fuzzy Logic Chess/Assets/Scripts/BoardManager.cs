@@ -31,7 +31,7 @@ public class BoardManager : MonoBehaviour
     private int[] hovered_index = new int[] { 0, 0 };
 
     // Boolean to track whether the player is making a move.
-    private bool user_input_requested;
+    private bool input_requested;
 
     // Used when initializing the board before a game.
     private int[,] board_init = new int[,]
@@ -151,7 +151,7 @@ public class BoardManager : MonoBehaviour
     private void Update()
     {
         // Check if the player is making a move.
-        if (!user_input_requested) return;
+        if (!input_requested) return;
 
         // Cast a line in to where the mouse is on the screen.
         RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
@@ -202,7 +202,7 @@ public class BoardManager : MonoBehaviour
                         // Move the piece.
                         MovePiece(selected_index, block.GetPosition(), selected_piece.GetNumberOfMoves());
 
-                        user_input_requested = false;
+                        input_requested = false;
                         gm.CompleteGameState();
                     }
                     else
@@ -224,7 +224,7 @@ public class BoardManager : MonoBehaviour
     // Function called by human players to make a move.
     public void RequestInput(string message)
     {
-        user_input_requested = true;
+        input_requested = true;
         Debug.Log(message);
     }
 
