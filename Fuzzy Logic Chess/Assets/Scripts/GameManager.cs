@@ -17,6 +17,8 @@ public class GameManager : MonoBehaviour
     private enum Game_State { move_one, move_two, move_three, end_turn }
     private Game_State game_state = Game_State.move_one;
 
+    private int moves_left = 6; 
+
     private void Start()
     {
         // Create players with session data. 
@@ -44,44 +46,37 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         // Randomly select a player to go first.
-        team = Random.Range(0, 2) == 0 ? Team.black : Team.white;
+        //team = Random.Range(0, 2) == 0 ? Team.black : Team.white;
+
+        // Assign black to go first for demo.
+        team = Team.white;
 
         // Initiate the first move.
-        CompleteGameState();
+        CompleteGameState(0);
     }
 
     // Called from the board manager after move has been made.
-    public void CompleteGameState()
+    public void CompleteGameState(int moves_used)
     {
-        // Process the current state. 
-        switch (game_state)
-        {
-            case Game_State.move_one:
-                Debug.Log("Move One");
-                players[(int)team].Move();
-                break;
+        moves_left -= moves_used;
 
-            case Game_State.move_two:
-                Debug.Log("Move Two");
-                players[(int)team].Move();
-                break;
+        if (moves_left > 0) players[(int)team].Move();      
+        else EndTurn();
+    }
 
-            case Game_State.move_three:
-                Debug.Log("Move Three");
-                players[(int)team].Move();
-                break;
-        }
+    public void EndTurn()
+    {
+        // Reset all piece colors and moves. 
+        bm.RefreshPieces();
+        bm.RefreshBlocks();
 
-        // Move to the next game state.
-        game_state++;
-        if (game_state == Game_State.end_turn)
-        {
-            // Go to next player.
-            team = team == Team.black ? Team.white : Team.black;
+        // Go to next player.
+        team = team == Team.black ? Team.white : Team.black;
 
-            // Set the game state to begin turn.
-            game_state = Game_State.move_one;
-        }
+        // Reset moves to 6 (maximum)
+        moves_left = 6;
+
+        CompleteGameState(0);
     }
 
     public string GetTeam()
