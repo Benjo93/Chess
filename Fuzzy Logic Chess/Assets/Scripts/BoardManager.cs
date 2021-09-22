@@ -534,7 +534,6 @@ public class BoardManager : MonoBehaviour
 
     public void RefreshBlocks()
     {
-        // Deselect all blocks.
         foreach (Block block in blocks)
         {
             block.InitialColor();
