@@ -349,7 +349,7 @@ public class BoardManager : MonoBehaviour
              * validated and passed to ProcessBlock() before any of them can be
              * dequeued.  Can't ProcessBlock() while Dequeueing.
              */
-            if (row < 7)
+            if (row < 7 && pieces[row,col].GetPName() != "b_pawn")
             {
                 if (IsValidBlock(row + 1, col)) // Down
                 {
@@ -367,7 +367,7 @@ public class BoardManager : MonoBehaviour
                     buildQueue.Enqueue(new int[2] { row + 1, col - 1 });
                 }
             }
-            if (row > 0)
+            if (row > 0 && pieces[row, col].GetPName() != "w_pawn")
             {
                 if (IsValidBlock(row - 1, col)) // Up
                 {
@@ -385,12 +385,12 @@ public class BoardManager : MonoBehaviour
                     buildQueue.Enqueue(new int[2] { row - 1, col - 1 });
                 }
             }
-            if (col > 0 && IsValidBlock(row, col - 1)) // Left
+            if (col > 0 && IsValidBlock(row, col - 1) && pieces[row, col].GetPName() != "b_pawn" && pieces[row, col].GetPName() != "w_pawn") // Left
             {
                 ProcessBlock(row, col - 1, list);
                 buildQueue.Enqueue(new int[2] { row, col - 1 });
             }
-            if (col < 7 && IsValidBlock(row, col + 1)) // Right
+            if (col < 7 && IsValidBlock(row, col + 1) && pieces[row, col].GetPName() != "b_pawn" && pieces[row, col].GetPName() != "w_pawn") // Right
             {
                 ProcessBlock(row, col + 1, list);
                 buildQueue.Enqueue(new int[2] { row, col + 1 });
