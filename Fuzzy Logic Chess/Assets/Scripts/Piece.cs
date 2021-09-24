@@ -16,22 +16,22 @@ public class Piece : MonoBehaviour
 
     private string team;
 
-    public int[] position; 
+    public int[] position;
 
     private List<Vector3> path;
     private int path_index;
     private bool moving;
 
     public Commander commander;
-    public bool is_commander; 
-    public bool has_moved; 
+    public bool is_commander;
+    public bool has_moved;
 
     internal Piece InitializePiece(string p_name, string team, int n_moves, int[] position)
     {
         this.p_name = p_name;
         this.team = team;
         this.n_moves = n_moves;
-        this.position = position; 
+        this.position = position;
 
         return this;
     }
@@ -64,7 +64,7 @@ public class Piece : MonoBehaviour
             {
                 commander.UseCommandAuthority();
                 // Uses 2 out of 6 moves.
-                return 2; 
+                return 2;
             }
         }
         else // If this is not a commander. 
@@ -76,23 +76,28 @@ public class Piece : MonoBehaviour
         }
 
         // Uses only 1 out of 6 moves.
-        return 1; 
+        return 1;
     }
 
     public Commander MakeIntoCommander()
     {
         is_commander = true;
         commander = gameObject.AddComponent<Commander>();
-        commander.default_moves = n_moves; 
-        return commander; 
+        commander.default_moves = n_moves;
+        return commander;
     }
 
     public Commander GetCommander()
     {
         // If this is a commander piece. 
-        if (GetComponent<Commander>()) return GetComponent<Commander>();  
+        if (GetComponent<Commander>()) return GetComponent<Commander>();
         // If this is not a commander piece.
         else return commander;
+    }
+
+    public string GetPName()
+    { 
+        return p_name; 
     }
 
     public int GetNumberOfMoves()
@@ -109,6 +114,6 @@ public class Piece : MonoBehaviour
     {
         GetComponent<SpriteRenderer>().material.color = new Color(1f, 1f, 1f, 1f);
         has_moved = false;
-        if (is_commander) n_moves = commander.default_moves; 
+        if (is_commander) n_moves = commander.default_moves;
     }
 }

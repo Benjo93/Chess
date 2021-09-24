@@ -7,6 +7,7 @@ public class Block : MonoBehaviour
     public Color initial_color;
     private Color current_color;
     private bool movable = false;
+    private bool attackable = false;
     private bool visited = false;
 
     // Position.
@@ -58,5 +59,13 @@ public class Block : MonoBehaviour
     public void SetMovable(bool b)
     {
         movable = b;
+    }
+    public bool IsAttackable()
+    {
+        return attackable;
+    }
+    public void SetAttackable(bool b)
+    {
+        attackable = b;
     }
 }
