@@ -46,6 +46,11 @@ public class Piece : MonoBehaviour
         }
     }
 
+    public string GetPName()
+    {
+        return p_name;
+    }
+
     public int MovePiece(List<Vector3> path, int[] new_position)
     {
         this.path = path;
