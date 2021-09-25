@@ -8,6 +8,7 @@ public class Block : MonoBehaviour
     private Color current_color;
     private bool movable = false;
     private bool visited = false;
+    private bool attackable = false; 
 
     // Position.
     public void SetPosition(int row, int column)
@@ -26,7 +27,7 @@ public class Block : MonoBehaviour
         current_color = color;
     }
     public void ChangeColor(Color new_color)
-    {
+    {        
         GetComponent<SpriteRenderer>().material.color = new_color;
         current_color = new_color;
     }
@@ -58,5 +59,13 @@ public class Block : MonoBehaviour
     public void SetMovable(bool b)
     {
         movable = b;
+    }
+    public bool IsAttackable()
+    {
+        return attackable; 
+    }
+    public void SetAttackable(bool a)
+    {
+        attackable = a;
     }
 }

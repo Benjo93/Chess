@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,6 +15,10 @@ public class Chess : MonoBehaviour
     // Pubic dictionary to access the chess pieces by name. 
     public static Dictionary<string, GameObject> PIECES = new Dictionary<string, GameObject>();
 
+    public AudioSource[] sounds; 
+
+    public static Dictionary<string, AudioSource> SOUNDS = new Dictionary<string, AudioSource>();
+
     // Array of integers that correspond to the die roll needed for the column row pair. 
     private static int[,] roll_needed = new int[,]
     {
@@ -29,6 +34,7 @@ public class Chess : MonoBehaviour
     {
         // Asign all pieces to dictionary at runtime. 
         foreach (GameObject piece in pieces) PIECES.Add(piece.transform.name, piece);
+        foreach (AudioSource sound in sounds) SOUNDS.Add(sound.transform.name, sound);
     }
 
     /* 
@@ -39,7 +45,7 @@ public class Chess : MonoBehaviour
 
     public static int RollNeeded(int attacker, int defender)
     {
-        return roll_needed[attacker, defender];
+        return roll_needed[6 - Math.Abs(attacker), 6 - Math.Abs(defender)];
     }
 
     // Library of colors used in the GUI and chess board.
@@ -51,10 +57,10 @@ public class Chess : MonoBehaviour
 
         public static Color BOARD_HOVER = Color.white;
 
-        public static Color W_SELECTED = Color.green;
+        public static Color W_SELECTED = Color.cyan;
         public static Color W_ATTACK = Color.red;
 
         public static Color B_SELECTED = Color.cyan;
-        public static Color B_ATTACK = Color.cyan;
+        public static Color B_ATTACK = Color.red;
     }
 }
