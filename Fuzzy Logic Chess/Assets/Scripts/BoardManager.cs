@@ -10,7 +10,7 @@ using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
-    public GameManager gm; 
+    public GameManager gm;
 
     // Clickable Game Object assigned in unity. 
     public GameObject block;
@@ -49,7 +49,7 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         // Layout blocks Grid, 8x8
-        bool flip = false;
+        bool flip = true;
         int index = 0;
         for (int i = 0; i < blocks.GetLength(0); i++)
         {
@@ -299,7 +299,7 @@ public class BoardManager : MonoBehaviour
         // Update the pieces game object array. 
         pieces[to[0], to[1]] = pieces[from[0], from[1]];
         pieces[from[0], from[1]] = null;
-   
+
         selected_piece = null;
         input_requested = false;
 
@@ -320,9 +320,40 @@ public class BoardManager : MonoBehaviour
         {
             int[] index = piece.position;
             blocks[index[0], index[1]].ChangeColor(Color.cyan);
-        }    
+        }
 
         // Possibly return pieces for AI. 
+    }
+
+    /*
+     * Get Attackable List:
+     * Post-condition:
+     * Returns a list of coordinates of all adjacent blocks with enemy
+     * pieces. Rooks have a range of 2. 
+     */
+    private List<int[]> GetAttackableList(int row, int col)
+    {
+        List<int[]> newList = new List<int[]>();
+        bool isWhitePiece = pieces[row, col].GetTeam().Equals("white");
+        int range = 1;
+        if (pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook"))
+            range = pieces[row, col].GetNumberOfMoves(); ;
+        int west = Mathf.Max(0, row - range);
+        int east = Mathf.Min(7, row + range);
+        int north = Mathf.Max(0, col - range);
+        int south = Mathf.Min(7, col + range);
+        for (int i = west; i <= east; i++)
+        {
+            for (int j = north; j <= south; j++)
+            {
+                if (pieces[i, j])
+                {
+                    if (pieces[i, j].GetTeam().Equals("white") != isWhitePiece)
+                        newList.Add(new int[] { i, j });
+                }
+            }
+        }
+        return newList;
     }
 
     /*
@@ -335,7 +366,6 @@ public class BoardManager : MonoBehaviour
      * Returns a list of coordinates of all movable blocks given an initial
      * position and available moves. 
      */
-
     private List<int[]> GetMovesList(int row, int col, int m)
     {
         List<int[]> list = new List<int[]>();
@@ -343,13 +373,12 @@ public class BoardManager : MonoBehaviour
         Queue<int[]> currentQueue = new Queue<int[]>();
         do
         {
-
             /* NOTE: If you can express the validation for the adjacent blocks better
              * or more optimized, please feel free.  All adjacent blocks needs to be 
              * validated and passed to ProcessBlock() before any of them can be
              * dequeued.  Can't ProcessBlock() while Dequeueing.
              */
-            if (row < 7 && pieces[row,col].GetPName() != "b_pawn")
+            if (row < 7 && pieces[row, col].GetPName() != "b_pawn")
             {
                 if (IsValidBlock(row + 1, col)) // Down
                 {
@@ -463,6 +492,14 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    private void SetBlockListAttackable(List<int[]> list, string team)
+    {
+        foreach (int[] pos in list)
+        {
+            blocks[pos[0], pos[1]].ChangeColor(team == "white" ? Chess.Colors.W_ATTACK : Chess.Colors.B_ATTACK);
+        }
+    }
+
     // List of all directions to simplify things.
     private int[,] dir = new int[,] { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 }, { -1, 1 }, { 1, -1 }, { 1, 1 }, { -1, -1 } };
 
@@ -527,7 +564,7 @@ public class BoardManager : MonoBehaviour
         }
 
         // Highlight destination.
-        blocks[path[path.Count-1][0], path[path.Count-1][1]].ChangeColor(Color.cyan);
+        blocks[path[path.Count - 1][0], path[path.Count - 1][1]].ChangeColor(Color.cyan);
 
         return positions;
     }
@@ -547,7 +584,7 @@ public class BoardManager : MonoBehaviour
     {
         foreach (Piece piece in pieces)
         {
-            if (piece) piece.ResetPiece();        
+            if (piece) piece.ResetPiece();
         }
     }
 

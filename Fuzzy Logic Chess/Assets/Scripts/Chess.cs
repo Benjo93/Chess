@@ -55,6 +55,6 @@ public class Chess : MonoBehaviour
         public static Color W_ATTACK = Color.red;
 
         public static Color B_SELECTED = Color.cyan;
-        public static Color B_ATTACK = Color.cyan;
+        public static Color B_ATTACK = Color.red;
     }
 }
