@@ -70,7 +70,6 @@ public class Piece : MonoBehaviour
      * Then the update function handles iterating through each vector position in the path.
      * 
      */
-
     public int MovePiece(List<Vector3> path, int[] new_position)
     {
         this.path = path;
@@ -159,7 +158,6 @@ public class Piece : MonoBehaviour
         has_moved = false;
         if (is_commander) n_moves = commander.default_moves; 
     }
-
     public string GetPName()
     {
         return p_name; 
