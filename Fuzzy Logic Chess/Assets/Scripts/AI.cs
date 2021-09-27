@@ -14,6 +14,7 @@ public class AI : Player
      * To access the board manager, use bm:
      * bm.GetBoardState() -> Returns an 2D integer array of the board state (-6 to 6, 0 is empty).
      * bm.GetAllPieces() -> Returns a list of all pieces to acces their attributes.
+     * bm.GetCorpState() -> Returns a 2D array of where each corp is located on the board.
      * bm.Move(from, to) -> Called after AI has computed its best move, moves the piece on the board. 
      * bm.Attack(from, to) -> Called if AI has decided to attack, returns true if attack was successful, false if unsuccessful.
      * 
