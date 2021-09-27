@@ -825,6 +825,8 @@ public class BoardManager : MonoBehaviour
             pieces[to[0], to[1]] = pieces[from[0], from[1]];
             pieces[from[0], from[1]] = null;
 
+            // Send given piece to capture table
+
             selected_piece = null;
             input_requested = false;
 
