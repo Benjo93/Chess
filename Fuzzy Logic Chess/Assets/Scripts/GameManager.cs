@@ -57,7 +57,7 @@ public class GameManager : MonoBehaviour
     {
         moves_left -= moves_used;
 
-        if (moves_left > 0) players[(int)team].Move();      
+        if (moves_left > 0) players[(int)team].BeginMove();      
         else EndTurn();
     }
 

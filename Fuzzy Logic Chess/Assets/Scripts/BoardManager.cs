@@ -13,7 +13,7 @@ public class BoardManager : MonoBehaviour
     public GameManager gm;
 
     // Reference the game dice.
-    public Dice dice;
+    public Dice dice; 
 
     // Clickable Game Object assigned in unity. 
     public GameObject block;
@@ -23,6 +23,9 @@ public class BoardManager : MonoBehaviour
 
     // Array of pieces currently in play.
     private Piece[,] pieces = new Piece[8, 8];
+
+    // List of all commanders
+    private List<Commander> corps = new List<Commander>();
 
     // The 'Piece' component of the currently selected piece.
     private Piece selected_piece;
@@ -52,7 +55,7 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         // Layout blocks Grid, 8x8
-        bool flip = true;
+        bool flip = false;
         int index = 0;
         for (int rank = 0; rank < blocks.GetLength(0); rank++)
         {
@@ -156,6 +159,7 @@ public class BoardManager : MonoBehaviour
     {
         Commander w_king = pieces[0, 3].MakeIntoCommander();
         w_king.is_king = true;
+        w_king.corp_id = 1;
         // Middle pawns.
         w_king.AddPiece(pieces[1, 3]);
         w_king.AddPiece(pieces[1, 4]);
@@ -165,7 +169,10 @@ public class BoardManager : MonoBehaviour
         // Queen
         w_king.AddPiece(pieces[0, 4]);
 
+        corps.Add(w_king);
+
         Commander w_bishop_one = pieces[0, 2].MakeIntoCommander().SetKing(w_king);
+        w_bishop_one.corp_id = 2;
         // Left Three pawns.
         w_bishop_one.AddPiece(pieces[1, 0]);
         w_bishop_one.AddPiece(pieces[1, 1]);
@@ -173,7 +180,10 @@ public class BoardManager : MonoBehaviour
         // Left-side knight.
         w_bishop_one.AddPiece(pieces[0, 1]);
 
+        corps.Add(w_bishop_one);
+
         Commander w_bishop_two = pieces[0, 5].MakeIntoCommander().SetKing(w_king);
+        w_bishop_two.corp_id = 3; 
         // Right Three pawns.
         w_bishop_two.AddPiece(pieces[1, 5]);
         w_bishop_two.AddPiece(pieces[1, 6]);
@@ -181,8 +191,11 @@ public class BoardManager : MonoBehaviour
         // Right-side knight.
         w_bishop_two.AddPiece(pieces[0, 6]);
 
+        corps.Add(w_bishop_two);
+
         Commander b_king = pieces[7, 3].MakeIntoCommander();
         b_king.is_king = true;
+        b_king.corp_id = -1;
         // Middle pawns.
         b_king.AddPiece(pieces[6, 3]);
         b_king.AddPiece(pieces[6, 4]);
@@ -192,7 +205,10 @@ public class BoardManager : MonoBehaviour
         // Queen
         b_king.AddPiece(pieces[7, 4]);
 
+        corps.Add(b_king);
+
         Commander b_bishop_one = pieces[7, 2].MakeIntoCommander().SetKing(b_king);
+        b_bishop_one.corp_id = -2;
         // Left Three pawns.
         b_bishop_one.AddPiece(pieces[6, 0]);
         b_bishop_one.AddPiece(pieces[6, 1]);
@@ -200,13 +216,18 @@ public class BoardManager : MonoBehaviour
         // Left-side knight.
         b_bishop_one.AddPiece(pieces[7, 1]);
 
+        corps.Add(b_bishop_one);
+
         Commander b_bishop_two = pieces[7, 5].MakeIntoCommander().SetKing(b_king);
+        b_bishop_two.corp_id = -3;
         // Right Three pawns.
         b_bishop_two.AddPiece(pieces[6, 5]);
         b_bishop_two.AddPiece(pieces[6, 6]);
         b_bishop_two.AddPiece(pieces[6, 7]);
         // Right-side knight.
         b_bishop_two.AddPiece(pieces[7, 6]);
+
+        corps.Add(b_bishop_two);
     }
 
     // Built-in Unity function that is called every frame.
@@ -251,7 +272,7 @@ public class BoardManager : MonoBehaviour
                         selected_piece = pieces[index[0], index[1]];
 
                         // Highlight all pieces in selected piece corp.
-                        GetAllPiecesInCorp(selected_piece);
+                        ShowAllPiecesInCorp(selected_piece);
 
                         // Get a list of all moveable blocks.
                         List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves());
@@ -290,10 +311,70 @@ public class BoardManager : MonoBehaviour
     }
 
     // Function called by the AI to get the current board state and to calculate the next move.
-    public Piece[,] GetBoardState()
+    public Piece[,] GetAllPieces()
     {
         // Potentially validate board state first.
         return pieces;
+    }
+
+    // Get an integer array representing the board state (-6 to 6, 0 is empty).
+    public int[,] GetBoardState()
+    {
+        int[,] board_state = new int[8, 8];
+
+        for (int rank=0; rank < 8; rank++)
+        {
+            for (int file=0; file < 8; file++)
+            {
+                board_state[rank, file] = pieces[rank, file] ? pieces[rank, file].piece_type : 0; 
+            }
+        }
+
+        return board_state; 
+    }
+
+    public void ShowAllPiecesInCorp(Piece selected_piece)
+    {
+        // Highlight all pieces in corp.
+        foreach (Piece piece in selected_piece.GetCommander().GetPiecesInCorp())
+        {
+            int[] index = piece.position;
+            blocks[index[0], index[1]].ChangeColor(Color.grey);
+        }
+    }
+
+    // Integer representation of the corps. 
+    // -1 = black king, -2 = black bishop left, -3 = black bishop right
+    // 1 = white king, 2 = white bishop left, 3 = white bishop right
+    // 0 = empty.
+    public int[,] GetCorpState()
+    {
+        int[,] corp_state = new int[8, 8];
+
+        for (int rank = 0; rank < 8; rank++)
+        {
+            for (int file = 0; file < 8; file++)
+            {
+                if (pieces[rank, file])
+                {
+                    corp_state[rank, file] = pieces[rank, file].commander.corp_id; 
+                }
+            }
+        }
+
+        string result = "";
+        for (int rank = 0; rank < 8; rank++)
+        {
+            for (int file = 0; file < 8; file++)
+            {
+                result += " [ " + corp_state[rank, file] + " ] ";
+            }
+            result += "\n";
+        }
+
+        Debug.Log(result);
+
+        return corp_state; 
     }
 
     // Function called by human players to make a move.
@@ -315,7 +396,7 @@ public class BoardManager : MonoBehaviour
 
     public void MovePiece(int[] from, int[] to)
     {
-        Piece p = pieces[from[0], from[1]];
+        Piece p = pieces[from[0], from[1]]; 
 
         // Find the best path. 
         List<int[]> path = FindPath(from, to, new List<int[]> { from }, p.GetNumberOfMoves());
@@ -326,7 +407,7 @@ public class BoardManager : MonoBehaviour
         // Update the pieces game object array. 
         pieces[to[0], to[1]] = pieces[from[0], from[1]];
         pieces[from[0], from[1]] = null;
-
+   
         selected_piece = null;
         input_requested = false;
 
@@ -354,7 +435,7 @@ public class BoardManager : MonoBehaviour
 
         // Lookup the attacker/defender die roll needed from the Chess class.
         int roll_needed = Chess.RollNeeded(attacker, defender);
-        Debug.Log("Roll Needed: " + roll_needed + ", Rolled: " + roll);
+        //Debug.Log("Roll Needed: " + roll_needed + ", Rolled: " + roll);
 
         // Compare roll.
         if (roll < roll_needed)
@@ -363,10 +444,11 @@ public class BoardManager : MonoBehaviour
 
             // Null path and Null new_position, attack_successful = false
             int moves_used = pieces[from[0], from[1]].Attack(null, null, false);
-            gm.CompleteGameState(moves_used);
 
             selected_piece = null;
             input_requested = false;
+
+            gm.CompleteGameState(moves_used);
 
             // Notify function caller that the attack was unsuccessful.
             return false;
@@ -409,22 +491,12 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    public void GetAllPiecesInCorp(Piece selected_piece)
-    {
-        // Highlight all pieces in corp.
-        foreach (Piece piece in selected_piece.GetCommander().GetPiecesInCorp())
-        {
-            int[] index = piece.position;
-            blocks[index[0], index[1]].ChangeColor(Color.grey);
-        }
-    }
-
     /*
-     * Get Attackable List:
-     * Post-condition:
-     * Returns a list of coordinates of all adjacent blocks with enemy
-     * pieces. Rooks have a range of 2. 
-     */
+      * Get Attackable List:
+      * Post-condition:
+      * Returns a list of coordinates of all adjacent blocks with enemy
+      * pieces. Rooks have a range of 2. 
+      */
     private List<int[]> GetAttackableList(int row, int col)
     {
         List<int[]> newList = new List<int[]>();
@@ -664,10 +736,10 @@ public class BoardManager : MonoBehaviour
         }
 
         // Highlight destination.
-        blocks[path[path.Count - 1][0], path[path.Count - 1][1]].ChangeColor(Color.cyan);
+        blocks[path[path.Count-1][0], path[path.Count-1][1]].ChangeColor(Color.cyan);
 
         return positions;
-    }
+    }   
 
     public void RefreshBlocks()
     {
@@ -684,7 +756,7 @@ public class BoardManager : MonoBehaviour
     {
         foreach (Piece piece in pieces)
         {
-            if (piece) piece.ResetPiece();
+            if (piece) piece.ResetPiece();        
         }
     }
 

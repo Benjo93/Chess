@@ -11,7 +11,7 @@ public class Human : Player
         // Human specific constructor. 
     }
 
-    public override void Move()
+    public override void BeginMove()
     {
         // Call on the board manager to request input. 
         bm.RequestInput(name + ", " + GetType());

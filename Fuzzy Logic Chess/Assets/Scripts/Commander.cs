@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class Commander : MonoBehaviour
 {
+    public int corp_id; 
     private List<Piece> pieces = new List<Piece>();
     public bool has_authority;
     public int default_moves;
@@ -35,6 +36,8 @@ public class Commander : MonoBehaviour
         {
             king.AddPiece(piece);
         }
+
+        pieces.Clear();
     }
 
     public void UseCommandAuthority()

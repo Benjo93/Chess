@@ -26,6 +26,7 @@ public class Piece : MonoBehaviour
     // Current position of the piece.
     public int[] position; 
 
+    // Path positions.
     private List<Vector3> path;
     private int path_index;
     private bool moving;
@@ -89,7 +90,7 @@ public class Piece : MonoBehaviour
             {
                 commander.UseCommandAuthority();
 
-                // Uses 2 out of 6 moves (They cannot move any other piece).
+                // Uses 2 out of 6 moves (They cannot move any other piece so technically their commanded pieces have used their move).
                 return 2; 
             }
         }
@@ -117,14 +118,22 @@ public class Piece : MonoBehaviour
 
         if (is_commander)
         {
+            // Dim the commanders piece.
             GetComponent<SpriteRenderer>().material.color = new Color(1f, 1f, 1f, 0.4f);
+            // Authority was used. 
+            commander.UseCommandAuthority();
+            // Disallow commander movement.
             has_moved = true;
+            // Uses 2 out of 6 moves (If a commander attacks, they cannot then command their units to attack).
             return 2;
         }
         else
         {
+            // Authority was used. 
             commander.UseCommandAuthority();
+            // Commander cannot move more than one space after commanding their unit to attack.
             commander.RestrictMoves();
+            // The commander can still move one space. 
             return 1;
         }
     }
@@ -154,8 +163,10 @@ public class Piece : MonoBehaviour
 
     internal void ResetPiece()
     {
+        // Reset the color of the piece and allow movement.
         GetComponent<SpriteRenderer>().material.color = new Color(1f, 1f, 1f, 1f);
         has_moved = false;
+        // Reset the number of moves, in case the commander is restricted to one move.
         if (is_commander) n_moves = commander.default_moves; 
     }
     public string GetPName()

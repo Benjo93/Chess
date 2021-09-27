@@ -17,5 +17,5 @@ public abstract class Player
         this.bm = bm; 
     }
 
-    public abstract void Move();
+    public abstract void BeginMove();
 }
