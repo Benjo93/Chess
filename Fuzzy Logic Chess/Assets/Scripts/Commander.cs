@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +6,9 @@ public class Commander : MonoBehaviour
     private List<Piece> pieces = new List<Piece>();
     public bool has_authority;
     public int default_moves;
+
+    private Commander king;
+    public bool is_king; 
 
     public List<Piece> GetPiecesInCorp()
     {
@@ -22,6 +24,19 @@ public class Commander : MonoBehaviour
         pieces.Remove(piece);
     }
 
+    public Commander SetKing(Commander king)
+    {
+        this.king = king;
+        return this;
+    }
+    public void TransferPiecesToKing()
+    {
+        foreach (Piece piece in pieces)
+        {
+            king.AddPiece(piece);
+        }
+    }
+
     public void UseCommandAuthority()
     {
         foreach (Piece piece in pieces)
@@ -30,7 +45,6 @@ public class Commander : MonoBehaviour
             piece.has_moved = true; 
         }
     }
-
     public void RestrictMoves()
     {
         GetComponent<Piece>().n_moves = 1; 

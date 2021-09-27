@@ -14,9 +14,6 @@ public class GameManager : MonoBehaviour
     private enum Team { black, white }
     private Team team;
 
-    private enum Game_State { move_one, move_two, move_three, end_turn }
-    private Game_State game_state = Game_State.move_one;
-
     private int moves_left = 6; 
 
     private void Start()
@@ -49,7 +46,7 @@ public class GameManager : MonoBehaviour
         //team = Random.Range(0, 2) == 0 ? Team.black : Team.white;
 
         // Assign black to go first for demo.
-        team = Team.white;
+        team = Team.black;
 
         // Initiate the first move.
         CompleteGameState(0);
