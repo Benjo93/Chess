@@ -307,6 +307,8 @@ public class BoardManager : MonoBehaviour
                     // Attacking 
                     else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
                     {
+                        RefreshBlocks();
+
                         // Handle attack.
                         Attack(selected_index, index);
                     }
