@@ -33,7 +33,7 @@ public class Block : MonoBehaviour
     }
     public void HoverColor()
     {
-        GetComponent<SpriteRenderer>().material.color = Color.white;
+        GetComponent<SpriteRenderer>().material.color = Color.grey;
     }
     public void CurrentColor()
     {

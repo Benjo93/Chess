@@ -15,7 +15,7 @@ public class Piece : MonoBehaviour
     public int n_moves;
 
     // Speed of piece movement
-    private float move_speed = 10f;
+    private float move_speed = 12f;
 
     // Integer Representation of piece (-6 to 6)
     public int piece_type;
@@ -24,7 +24,9 @@ public class Piece : MonoBehaviour
     private string team;
 
     // Current position of the piece.
-    public int[] position; 
+    public int[] position;
+
+    public Color color; 
 
     // Path positions.
     private List<Vector3> path;
@@ -35,13 +37,15 @@ public class Piece : MonoBehaviour
     public bool is_commander; 
     public bool has_moved; 
 
-    internal Piece InitializePiece(string p_name, int piece_type, string team, int n_moves, int[] position)
+    internal Piece InitializePiece(string p_name, int piece_type, string team, int n_moves, int[] position, Color color)
     {
         this.p_name = p_name;
         this.piece_type = piece_type;
         this.team = team;
         this.n_moves = n_moves;
-        this.position = position; 
+        this.position = position;
+        this.color = color;
+        GetComponent<SpriteRenderer>().material.color = color; 
         return this;
     }
 
@@ -59,9 +63,20 @@ public class Piece : MonoBehaviour
             // Reference the 'transform' component of this piece to modify its position.
             transform.position = Vector3.Lerp(transform.position, path[path_index], Time.deltaTime * move_speed);
             // If the magnitude of the difference between the current vector position and the path vector position is below some threashold (0.025), increment path_index.
-            if ((transform.position - path[path_index]).magnitude <= 0.025f) path_index++;    
+            if ((transform.position - path[path_index]).magnitude <= 0.025f)
+            {
+                if (path_index < path.Count - 1)
+                {
+                    Chess.SOUNDS["move"].Play();
+                }
+                path_index++;
+            }
             // If the end of the path is reached, stop moving the piece.
-            if (path_index >= path.Count) moving = false;
+            if (path_index >= path.Count)
+            {
+                ColorDim();
+                moving = false;
+            }
         }
     }
 
@@ -73,6 +88,8 @@ public class Piece : MonoBehaviour
      */
     public int MovePiece(List<Vector3> path, int[] new_position)
     {
+        Chess.SOUNDS["move"].Play();
+
         this.path = path;
         path_index = 0;
         position = new_position;
@@ -81,7 +98,6 @@ public class Piece : MonoBehaviour
         if (is_commander)
         {
             // Dim piece, set to has_moved
-            GetComponent<SpriteRenderer>().material.color = new Color(1f, 1f, 1f, 0.4f);
             has_moved = true;
 
             // If the commander is moving more than one space, 
@@ -98,6 +114,7 @@ public class Piece : MonoBehaviour
         {
             // Get the commander and use their authority.
             commander.UseCommandAuthority();
+            ColorFull();
             // Limit commander moves to one space (They can move, but not attack).
             commander.RestrictMoves();
         }
@@ -119,7 +136,7 @@ public class Piece : MonoBehaviour
         if (is_commander)
         {
             // Dim the commanders piece.
-            GetComponent<SpriteRenderer>().material.color = new Color(1f, 1f, 1f, 0.4f);
+            ColorDim();
             // Authority was used. 
             commander.UseCommandAuthority();
             // Disallow commander movement.
@@ -161,10 +178,20 @@ public class Piece : MonoBehaviour
         return team;
     }
 
+    public void ColorDim()
+    {
+        GetComponent<SpriteRenderer>().material.color = new Color(color.r, color.g, color.b, 0.5f);
+    }
+
+    public void ColorFull()
+    {
+        GetComponent<SpriteRenderer>().material.color = new Color(color.r, color.g, color.b, 1.0f);
+    }
+
     internal void ResetPiece()
     {
         // Reset the color of the piece and allow movement.
-        GetComponent<SpriteRenderer>().material.color = new Color(1f, 1f, 1f, 1f);
+        GetComponent<SpriteRenderer>().material.color = color;
         has_moved = false;
         // Reset the number of moves, in case the commander is restricted to one move.
         if (is_commander) n_moves = commander.default_moves; 

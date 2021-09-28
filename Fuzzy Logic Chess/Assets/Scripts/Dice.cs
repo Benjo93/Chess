@@ -13,7 +13,7 @@ public class Dice : MonoBehaviour
         // Swap the dice image for the image at the 'roll' index
         GetComponent<SpriteRenderer>().sprite = dice_sides[roll];
 
-        GetComponent<AudioSource>().Play();
+        //GetComponent<AudioSource>().Play();
 
         // Return number as would appear on die.
         return roll + 1;

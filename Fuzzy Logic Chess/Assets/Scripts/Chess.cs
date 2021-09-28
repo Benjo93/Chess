@@ -9,6 +9,12 @@ using UnityEngine;
 
 public class Chess : MonoBehaviour
 {
+    public Color player_one;
+    public Color player_two;
+
+    public Color color_light;
+    public Color color_dark;
+
     // Array of game objects assigned in unity.
     public GameObject[] pieces;
 
@@ -30,11 +36,20 @@ public class Chess : MonoBehaviour
         { 6, 6, 6, 5, 6, 4 }
     };
 
-    void Start()
+    void Awake()
     {
         // Asign all pieces to dictionary at runtime. 
         foreach (GameObject piece in pieces) PIECES.Add(piece.transform.name, piece);
         foreach (AudioSource sound in sounds) SOUNDS.Add(sound.transform.name, sound);
+
+        Colors.PLAYER_ONE = player_one;
+        Colors.PLAYER_TWO = player_two;
+
+        Colors.BOARD_LIGHT = color_light;
+        Colors.BOARD_DARK = color_dark;
+
+        Colors.MOVES_ONE = new Color(Colors.PLAYER_ONE.r, Colors.PLAYER_ONE.g, Colors.PLAYER_ONE.b, 0.5f);
+        Colors.MOVES_TWO = new Color(Colors.PLAYER_TWO.r, Colors.PLAYER_TWO.g, Colors.PLAYER_TWO.b, 0.5f);
     }
 
     /* 
@@ -52,10 +67,16 @@ public class Chess : MonoBehaviour
     public static class Colors
     {
 
-        public static Color BOARD_LIGHT = new Color32(157, 127, 97, 255);
-        public static Color BOARD_DARK = new Color32(101, 82, 62, 255);
+        public static Color PLAYER_ONE;
+        public static Color PLAYER_TWO;
+
+        public static Color BOARD_LIGHT;
+        public static Color BOARD_DARK;
 
         public static Color BOARD_HOVER = Color.white;
+
+        public static Color MOVES_ONE;
+        public static Color MOVES_TWO; 
 
         public static Color W_SELECTED = Color.cyan;
         public static Color W_ATTACK = Color.red;

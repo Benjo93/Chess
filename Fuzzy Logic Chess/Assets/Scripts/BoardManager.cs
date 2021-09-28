@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 /* 
  * Board Manager:
@@ -10,6 +11,13 @@ using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
+    // Color for pieces, assigned in the inspector.
+    public Color color_one;
+    public Color color_two;
+
+    public Text hover_info;
+    public Text game_log;
+
     public GameManager gm;
 
     // Reference the game dice.
@@ -62,7 +70,7 @@ public class BoardManager : MonoBehaviour
             for (int file = 0; file < blocks.GetLength(1); file++)
             {
                 // Set the blocks array to the component 'Block' from the instantiated game object.
-                blocks[rank, file] = Instantiate(block, new Vector3(file, blocks.GetLength(1) - rank, 0f), Quaternion.identity, transform).AddComponent<Block>();
+                blocks[rank, file] = Instantiate(block, new Vector3(file, blocks.GetLength(1) - rank, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
                 blocks[rank, file].SetPosition(rank, file);
                 blocks[rank, file].transform.name = "Block #" + index++;
 
@@ -92,63 +100,63 @@ public class BoardManager : MonoBehaviour
                 switch (board_init[p, q])
                 {
                     case 1: // Pawn
-                        pieces[p, q] = Instantiate(Chess.PIECES["w_pawn"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_pawn", 1, "white", 1, new int[] { p, q });
+                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_pawn"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("w_pawn", 1, "white", 1, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
                         break;
 
                     case 2: // Rook
-                        pieces[p, q] = Instantiate(Chess.PIECES["w_rook"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_rook", 2, "white", 2, new int[] { p, q });
+                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_rook"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("w_rook", 2, "white", 2, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
                         break;
 
                     case 3: // Bishop
-                        pieces[p, q] = Instantiate(Chess.PIECES["w_bishop"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_bishop", 3, "white", 2, new int[] { p, q });
+                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_bishop"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("w_bishop", 3, "white", 2, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
                         break;
 
                     case 4: // Knight
-                        pieces[p, q] = Instantiate(Chess.PIECES["w_knight"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_knight", 4, "white", 4, new int[] { p, q });
+                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_knight"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("w_knight", 4, "white", 4, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
                         break;
 
                     case 5: // Queen
-                        pieces[p, q] = Instantiate(Chess.PIECES["w_queen"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_queen", 5, "white", 3, new int[] { p, q });
+                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_queen"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("w_queen", 5, "white", 3, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
                         break;
 
                     case 6: // King
-                        pieces[p, q] = Instantiate(Chess.PIECES["w_king"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_king", 6, "white", 3, new int[] { p, q });
+                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_king"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("w_king", 6, "white", 3, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
                         break;
 
                     case -1: // Pawn
-                        pieces[p, q] = Instantiate(Chess.PIECES["b_pawn"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_pawn", -1, "black", 1, new int[] { p, q });
+                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_pawn"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("b_pawn", -1, "black", 1, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
                         break;
 
                     case -2: // Rook
-                        pieces[p, q] = Instantiate(Chess.PIECES["b_rook"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_rook", -2, "black", 2, new int[] { p, q });
+                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_rook"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("b_rook", -2, "black", 2, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
                         break;
 
                     case -3: // Bishop
-                        pieces[p, q] = Instantiate(Chess.PIECES["b_bishop"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_bishop", -3, "black", 2, new int[] { p, q });
+                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_bishop"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("b_bishop", -3, "black", 2, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
                         break;
 
                     case -4: // Knight
-                        pieces[p, q] = Instantiate(Chess.PIECES["b_knight"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_knight", -4, "black", 4, new int[] { p, q });
+                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_knight"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("b_knight", -4, "black", 4, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
                         break;
 
                     case -5: // Queen
-                        pieces[p, q] = Instantiate(Chess.PIECES["b_queen"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_queen", -5, "black", 3, new int[] { p, q });
+                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_queen"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("b_queen", -5, "black", 3, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
                         break;
 
                     case -6: // King
-                        pieces[p, q] = Instantiate(Chess.PIECES["b_king"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_king", -6, "black", 3, new int[] { p, q });
+                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_king"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
+                        .InitializePiece("b_king", -6, "black", 3, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
                         break;
                 }
             }
@@ -233,6 +241,7 @@ public class BoardManager : MonoBehaviour
     // Built-in Unity function that is called every frame.
     private void Update()
     {
+
         // Check if the player is making a move.
         if (!input_requested) return;
 
@@ -257,6 +266,8 @@ public class BoardManager : MonoBehaviour
                     blocks[hovered_index[0], hovered_index[1]].CurrentColor();
                     hovered_index = index;
                     blocks[index[0], index[1]].HoverColor();
+
+                    DisplayHoverInfo(hovered_index); 
                 }
 
                 // Clicking.
@@ -283,7 +294,7 @@ public class BoardManager : MonoBehaviour
                         SetBlockListAttackable(availableAttacks, pieces[index[0], index[1]].GetTeam());
 
                         // Color selected piece.
-                        blocks[index[0], index[1]].ChangeColor(Color.magenta);
+                        blocks[index[0], index[1]].ChangeColor(Color.white);
                     }
                     // Moving selected piece.
                     else if (selected_piece && blocks[index[0], index[1]].IsMovable())
@@ -296,8 +307,6 @@ public class BoardManager : MonoBehaviour
                     // Attacking 
                     else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
                     {
-                        RefreshBlocks();
-
                         // Handle attack.
                         Attack(selected_index, index);
                     }
@@ -411,6 +420,10 @@ public class BoardManager : MonoBehaviour
         selected_piece = null;
         input_requested = false;
 
+        // Log move info.
+        //game_log.text += hover_info.text + "\n";
+        //hover_info.text = "";
+
         // Notify the Game Manager of the moves used. 
         gm.CompleteGameState(moves_used);
     }
@@ -441,12 +454,17 @@ public class BoardManager : MonoBehaviour
         if (roll < roll_needed)
         {
             Debug.Log("Attack Failed!");
+            Chess.SOUNDS["block"].Play();
 
             // Null path and Null new_position, attack_successful = false
             int moves_used = pieces[from[0], from[1]].Attack(null, null, false);
 
             selected_piece = null;
             input_requested = false;
+
+            // Log attack info.
+            //game_log.text += hover_info.text + "  Failed " + "\n";
+            //hover_info.text = "";
 
             gm.CompleteGameState(moves_used);
 
@@ -456,6 +474,7 @@ public class BoardManager : MonoBehaviour
         else
         {
             Debug.Log("Attack Successful!");
+            Chess.SOUNDS["capture"].Play();
 
             // Create a new path with only one position, was_successful = true.
             int moves_used = pieces[from[0], from[1]].Attack(new List<Vector3>() { blocks[to[0], to[1]].transform.position }, to, true);
@@ -482,6 +501,10 @@ public class BoardManager : MonoBehaviour
 
             selected_piece = null;
             input_requested = false;
+
+            // Log attack info.
+            //game_log.text += hover_info.text + "  Success " + "\n";
+            //hover_info.text = "";
 
             // Notify game manager. 
             gm.CompleteGameState(moves_used);
@@ -659,7 +682,7 @@ public class BoardManager : MonoBehaviour
         foreach (int[] pos in list)
         {
             blocks[pos[0], pos[1]].SetMovable(true);
-            blocks[pos[0], pos[1]].ChangeColor(team == "white" ? Chess.Colors.W_SELECTED : Chess.Colors.B_SELECTED);
+            blocks[pos[0], pos[1]].ChangeColor(team == "white" ? Chess.Colors.MOVES_ONE : Chess.Colors.MOVES_TWO);
         }
     }
 
@@ -736,7 +759,7 @@ public class BoardManager : MonoBehaviour
         }
 
         // Highlight destination.
-        blocks[path[path.Count-1][0], path[path.Count-1][1]].ChangeColor(Color.cyan);
+        //blocks[path[path.Count-1][0], path[path.Count-1][1]].ChangeColor(gm.GetTeam().Equals("white") ? Chess.Colors.PLAYER_ONE : Chess.Colors.PLAYER_TWO);
 
         return positions;
     }   
@@ -757,6 +780,31 @@ public class BoardManager : MonoBehaviour
         foreach (Piece piece in pieces)
         {
             if (piece) piece.ResetPiece();        
+        }
+    }
+
+    public void DisplayHoverInfo(int[] h)
+    {
+        char[] column_chars = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
+        Block hovered_block = blocks[h[0], h[1]]; 
+
+        if (selected_piece)
+        {
+            hover_info.text = selected_piece.GetPName() + " [ " + column_chars[selected_piece.position[0]] + selected_piece.position[1] + " ] ";
+
+            if (hovered_block.IsMovable())
+            {
+                hover_info.text += "   >>   [" + column_chars[h[1]] + h[0] + " ] "; 
+            }
+
+            if (hovered_block.IsAttackable())
+            {
+                int roll_needed = Chess.RollNeeded(selected_piece.piece_type, pieces[h[0], h[1]].piece_type);
+
+                hover_info.text += "   >>   " + pieces[h[0], h[1]].GetPName() + " [ " + column_chars[h[1]] + h[0] + " ] ";
+                hover_info.text += "\n Roll Needed:  " + roll_needed;
+                //hover_info.text += Math.Round((7f - roll_needed) / 6f * 100f, 2) + "%";
+            }
         }
     }
 

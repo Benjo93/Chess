@@ -44,7 +44,7 @@ public class Commander : MonoBehaviour
     {
         foreach (Piece piece in pieces)
         {
-            piece.GetComponent<SpriteRenderer>().material.color = new Color(1f, 1f, 1f, 0.4f);
+            piece.ColorDim();
             piece.has_moved = true; 
         }
     }
