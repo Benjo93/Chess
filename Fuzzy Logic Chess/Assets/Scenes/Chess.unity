@@ -438,18 +438,6 @@ MonoBehaviour:
   color_light: {r: 0.2735849, g: 0.25680846, b: 0.25680846, a: 1}
   color_dark: {r: 0, g: 0, b: 0, a: 1}
   pieces:
-  - {fileID: 912384134002658659, guid: b636f2ecbb0bb2143893b243d41fc7d4, type: 3}
-  - {fileID: 3094006436924220685, guid: f64b62fc7da1c8e478152d2c2eb999b4, type: 3}
-  - {fileID: 5600029537276253767, guid: 892b7383aa4dc6b4d89c3b6ac3829347, type: 3}
-  - {fileID: 3836130123495965614, guid: 7dbc94084c853b14097410eecbd1abcb, type: 3}
-  - {fileID: 4524739827762841105, guid: 71c410ae3de5df04ba961772d799a5e5, type: 3}
-  - {fileID: 5253854522087758188, guid: f60a14f0846669c47a6277bbeab05490, type: 3}
-  - {fileID: 1879813348853333764, guid: f40987b0d7bce374eb89d7560e18a55a, type: 3}
-  - {fileID: 6674279720736538074, guid: 8dd187d5d29d1e74885812056047e551, type: 3}
-  - {fileID: 4740604683210188662, guid: de15ac10921e037418bc2bba9af85d9a, type: 3}
-  - {fileID: 4908939155096983361, guid: 604b1b46211a569439bb612a6ae1aa45, type: 3}
-  - {fileID: 3009923334547300497, guid: c76a09a1a56685640a743d218b6decec, type: 3}
-  - {fileID: 3222774300546449537, guid: 40995acc1bcaed24b82d0e6444c56b76, type: 3}
   - {fileID: 3892377990114135382, guid: 777926f641f36a141bf75653b395a055, type: 3}
   - {fileID: 3713239311588517726, guid: dcaab6083682134468f22ee824827e32, type: 3}
   - {fileID: 8881637217258656846, guid: 25d00dc7d2f05d9449e821dd5f76141f, type: 3}
@@ -2265,7 +2253,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: 822331778f6ca894cbdd9d6e3f17665d, type: 3}
+  m_audioClip: {fileID: 8300000, guid: fb829053a16f0174ea05500867ce33f1, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1.25
