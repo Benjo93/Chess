@@ -24,6 +24,13 @@ public class BoardManager : MonoBehaviour
     // Array of pieces currently in play.
     private Piece[,] pieces = new Piece[8, 8];
 
+    // Array of blocks representing each square of the capture box.
+    private Block[,] caputeBox = new Block[16, 2];
+
+    // Number of white/black pieces captures.
+    private int whiteCaptures = 0;
+    private int blackCaptures = 0;
+
     // The 'Piece' component of the currently selected piece.
     private Piece selected_piece;
 
@@ -397,8 +404,8 @@ public class BoardManager : MonoBehaviour
                 pieces[to[0], to[1]].commander.TransferPiecesToKing();
             }
 
-            // Deactivate captured piece.      
-            pieces[to[0], to[1]].gameObject.SetActive(false);
+            // Move captures pieces to a temporary position - Change the Vector3 position to the table
+            pieces[to[0], to[1]].transform.position = new Vector3(0, 0, 0); 
 
             // Shift pieces array.
             pieces[to[0], to[1]] = pieces[from[0], from[1]];
