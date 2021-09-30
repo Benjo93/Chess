@@ -749,60 +749,32 @@ public class BoardManager : MonoBehaviour
         int range = 1;
         if (pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook"))
             range = pieces[row, col].GetNumberOfMoves();
-        Debug.Log("row = " + row + ", col = " + col);
-        
         int west = Mathf.Max(0, col - range);
         int east = Mathf.Min(7, col + range);
         int north = Mathf.Max(0, row - range);
         int south = Mathf.Min(7, row + range);
-        Debug.Log("west = " + west);
-        Debug.Log("east = " + east);
-        Debug.Log("north = " + north);
-        Debug.Log("south = " + south);
-
         if (pieces[row, col].GetPName().Equals("w_pawn"))
         {
-            for (int j = west; j <= east; j++)
-            {
-                if (pieces[south, j])
-                {
-                    if (pieces[south, j].GetTeam().Equals("white") != isWhitePiece)
-                    {
-                        newList.Add(new int[] { south, j });
-                    }
-                }
-            }
+            north = south;
         }
         else if (pieces[row, col].GetPName().Equals("b_pawn"))
         {
+            south = north;
+        }
+        for (int i = north; i <= south; i++)
+        {
             for (int j = west; j <= east; j++)
             {
-                if (pieces[north, j])
+                if (pieces[i, j])
                 {
-                    if (pieces[north, j].GetTeam().Equals("white") != isWhitePiece)
+                    if (pieces[i, j].GetTeam().Equals("white") != isWhitePiece)
                     {
-                        newList.Add(new int[] { north, j });
+                        newList.Add(new int[] { i, j });
                     }
                 }
             }
         }
-        else
-        {
-            for (int i = north; i <= south; i++)
-            {
-                for (int j = west; j <= east; j++)
-                {
-                    if (pieces[i, j])
-                    {
-                        if (pieces[i, j].GetTeam().Equals("white") != isWhitePiece)
-                        {
-                            newList.Add(new int[] { i, j });
-                        }
-                    }
-                }
-            }
-        }
-  
+
         return newList;
     }
 
