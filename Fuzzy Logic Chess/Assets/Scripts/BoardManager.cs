@@ -75,6 +75,88 @@ public class BoardManager : MonoBehaviour
         InitializeCorps(LoadCommand());
     }
 
+    // Built-in Unity function that is called every frame.
+    private void Update()
+    {
+        // Check if the player is making a move.
+        if (!input_requested) return;
+
+        // Cast a line in to where the mouse is on the screen.
+        RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+
+        // Check if something is being detected.
+        if (hit.collider)
+        {
+            // Get the 'Block' class of whatever was detected
+            Block block = hit.transform.gameObject.GetComponent<Block>();
+
+            // Check if the detected object has a block class.
+            if (block)
+            {
+                // Get the position of the block. 
+                int[] index = block.GetPosition();
+
+                // Hovering.
+                if (index != hovered_index)
+                {
+                    blocks[hovered_index[0], hovered_index[1]].CurrentColor();
+                    hovered_index = index;
+                    blocks[index[0], index[1]].HoverColor();
+                }
+
+                // Clicking.
+                if (Input.GetMouseButtonDown(0))
+                {
+                    // Check if there is a piece at the selected blocks index.
+                    if (pieces[index[0], index[1]] && !pieces[index[0], index[1]].has_moved && pieces[index[0], index[1]].GetTeam() == gm.GetTeam())
+                    {
+                        RefreshBlocks();
+
+                        // Select the piece.
+                        selected_index = index;
+                        selected_piece = pieces[index[0], index[1]];
+
+                        // Highlight all pieces in selected piece corp.
+                        ShowAllPiecesInCorp(selected_piece);
+
+                        // Get a list of all moveable blocks.
+                        List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves());
+                        List<int[]> availableAttacks = GetAttackableList(index[0], index[1]);
+
+                        // Paint the blocks that are moveable. 
+                        SetBlockListMovable(availableMoves, pieces[index[0], index[1]].GetTeam());
+                        SetBlockListAttackable(availableAttacks, pieces[index[0], index[1]].GetTeam());
+
+                        // Color selected piece.
+                        blocks[index[0], index[1]].ChangeColor(Color.magenta);
+                    }
+                    // Moving selected piece.
+                    else if (selected_piece && blocks[index[0], index[1]].IsMovable())
+                    {
+                        RefreshBlocks();
+
+                        // Move the piece.
+                        MovePiece(selected_index, index);
+                        Autosave();
+                    }
+                    // Attacking 
+                    else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
+                    {
+                        RefreshBlocks();
+
+                        // Handle attack.
+                        Attack(selected_index, index);
+                        Autosave();
+                    }
+                    else
+                    {
+                        RefreshBlocks();
+                    }
+                }
+            }
+        }
+    }
+
     // Temporary GUI for Reset Button
     private void OnGUI()
     {
@@ -462,87 +544,6 @@ public class BoardManager : MonoBehaviour
         foreach (Piece p in b_bishop_two_memb) b_bishop_two.AddPiece(p);
     }
 
-    // Built-in Unity function that is called every frame.
-    private void Update()
-    {
-        // Check if the player is making a move.
-        if (!input_requested) return;
-
-        // Cast a line in to where the mouse is on the screen.
-        RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
-
-        // Check if something is being detected.
-        if (hit.collider)
-        {
-            // Get the 'Block' class of whatever was detected
-            Block block = hit.transform.gameObject.GetComponent<Block>();
-
-            // Check if the detected object has a block class.
-            if (block)
-            {
-                // Get the position of the block. 
-                int[] index = block.GetPosition();
-
-                // Hovering.
-                if (index != hovered_index)
-                {
-                    blocks[hovered_index[0], hovered_index[1]].CurrentColor();
-                    hovered_index = index;
-                    blocks[index[0], index[1]].HoverColor();
-                }
-
-                // Clicking.
-                if (Input.GetMouseButtonDown(0))
-                {
-                    // Check if there is a piece at the selected blocks index.
-                    if (pieces[index[0], index[1]] && !pieces[index[0], index[1]].has_moved && pieces[index[0], index[1]].GetTeam() == gm.GetTeam())
-                    {
-                        RefreshBlocks();
-
-                        // Select the piece.
-                        selected_index = index;
-                        selected_piece = pieces[index[0], index[1]];
-
-                        // Highlight all pieces in selected piece corp.
-                        ShowAllPiecesInCorp(selected_piece);
-
-                        // Get a list of all moveable blocks.
-                        List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves());
-                        List<int[]> availableAttacks = GetAttackableList(index[0], index[1]);
-
-                        // Paint the blocks that are moveable. 
-                        SetBlockListMovable(availableMoves, pieces[index[0], index[1]].GetTeam());
-                        SetBlockListAttackable(availableAttacks, pieces[index[0], index[1]].GetTeam());
-
-                        // Color selected piece.
-                        blocks[index[0], index[1]].ChangeColor(Color.magenta);
-                    }
-                    // Moving selected piece.
-                    else if (selected_piece && blocks[index[0], index[1]].IsMovable())
-                    {
-                        RefreshBlocks();
-
-                        // Move the piece.
-                        MovePiece(selected_index, index);
-                    }
-                    // Attacking 
-                    else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
-                    {
-                        RefreshBlocks();
-
-                        // Handle attack.
-                        Attack(selected_index, index);
-                    }
-                    else
-                    {
-                        RefreshBlocks();
-                    }
-                    Autosave();
-                }
-            }
-        }
-    }
-
     // Function called by the AI to get the current board state and to calculate the next move.
     public Piece[,] GetAllPieces()
     {
@@ -747,22 +748,61 @@ public class BoardManager : MonoBehaviour
         bool isWhitePiece = pieces[row, col].GetTeam().Equals("white");
         int range = 1;
         if (pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook"))
-            range = pieces[row, col].GetNumberOfMoves(); ;
-        int west = Mathf.Max(0, row - range);
-        int east = Mathf.Min(7, row + range);
-        int north = Mathf.Max(0, col - range);
-        int south = Mathf.Min(7, col + range);
-        for (int i = west; i <= east; i++)
+            range = pieces[row, col].GetNumberOfMoves();
+        Debug.Log("row = " + row + ", col = " + col);
+        
+        int west = Mathf.Max(0, col - range);
+        int east = Mathf.Min(7, col + range);
+        int north = Mathf.Max(0, row - range);
+        int south = Mathf.Min(7, row + range);
+        Debug.Log("west = " + west);
+        Debug.Log("east = " + east);
+        Debug.Log("north = " + north);
+        Debug.Log("south = " + south);
+
+        if (pieces[row, col].GetPName().Equals("w_pawn"))
         {
-            for (int j = north; j <= south; j++)
+            for (int j = west; j <= east; j++)
             {
-                if (pieces[i, j])
+                if (pieces[south, j])
                 {
-                    if (pieces[i, j].GetTeam().Equals("white") != isWhitePiece)
-                        newList.Add(new int[] { i, j });
+                    if (pieces[south, j].GetTeam().Equals("white") != isWhitePiece)
+                    {
+                        newList.Add(new int[] { south, j });
+                    }
                 }
             }
         }
+        else if (pieces[row, col].GetPName().Equals("b_pawn"))
+        {
+            for (int j = west; j <= east; j++)
+            {
+                if (pieces[north, j])
+                {
+                    if (pieces[north, j].GetTeam().Equals("white") != isWhitePiece)
+                    {
+                        newList.Add(new int[] { north, j });
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (int i = north; i <= south; i++)
+            {
+                for (int j = west; j <= east; j++)
+                {
+                    if (pieces[i, j])
+                    {
+                        if (pieces[i, j].GetTeam().Equals("white") != isWhitePiece)
+                        {
+                            newList.Add(new int[] { i, j });
+                        }
+                    }
+                }
+            }
+        }
+  
         return newList;
     }
 
