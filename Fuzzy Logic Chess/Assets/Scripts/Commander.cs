@@ -3,12 +3,13 @@ using UnityEngine;
 
 public class Commander : MonoBehaviour
 {
+    public int corp_id;
     private List<Piece> pieces = new List<Piece>();
     public bool has_authority;
     public int default_moves;
 
     private Commander king;
-    public bool is_king; 
+    public bool is_king;
 
     public List<Piece> GetPiecesInCorp()
     {
@@ -16,7 +17,7 @@ public class Commander : MonoBehaviour
     }
     public void AddPiece(Piece piece)
     {
-        piece.commander = this; 
+        piece.commander = this;
         pieces.Add(piece);
     }
     public void RemovePiece(Piece piece)
@@ -35,6 +36,8 @@ public class Commander : MonoBehaviour
         {
             king.AddPiece(piece);
         }
+
+        pieces.Clear();
     }
 
     public void UseCommandAuthority()
@@ -42,11 +45,11 @@ public class Commander : MonoBehaviour
         foreach (Piece piece in pieces)
         {
             piece.GetComponent<SpriteRenderer>().material.color = new Color(1f, 1f, 1f, 0.4f);
-            piece.has_moved = true; 
+            piece.has_moved = true;
         }
     }
     public void RestrictMoves()
     {
-        GetComponent<Piece>().n_moves = 1; 
+        GetComponent<Piece>().n_moves = 1;
     }
 }

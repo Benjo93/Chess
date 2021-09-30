@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+
 
 /* 
  * Board Manager:
@@ -13,7 +16,7 @@ public class BoardManager : MonoBehaviour
     public GameManager gm;
 
     // Reference the game dice.
-    public Dice dice; 
+    public Dice dice;
 
     // Clickable Game Object assigned in unity. 
     public GameObject block;
@@ -34,6 +37,8 @@ public class BoardManager : MonoBehaviour
     // The 'Piece' component of the currently selected piece.
     private Piece selected_piece;
 
+    private Rect resetButton = new Rect(Screen.width - 150f, 100, 100, 50); // TEMPORARY PLACE HOLDER
+
     // The index of the piece that is currently selected, unselected = {-1 , -1}
     private int[] selected_index = new int[] { -1, -1 };
 
@@ -44,17 +49,8 @@ public class BoardManager : MonoBehaviour
     private bool input_requested;
 
     // Used when initializing the board before a game.
-    private int[,] board_init = new int[,]
-    {
-        {  2,  4,  3,  6,  5,  3,  4,  2 },
-        {  1,  1,  1,  1,  1,  1,  1,  1 },
-        {  0,  0,  0,  0,  0,  0,  0,  0 },
-        {  0,  0,  0,  0,  0,  0,  0,  0 },
-        {  0,  0,  0,  0,  0,  0,  0,  0 },
-        {  0,  0,  0,  0,  0,  0,  0,  0 },
-        { -1, -1, -1, -1, -1, -1, -1, -1 },
-        { -2, -4, -3, -6, -5, -3, -4, -2 },
-    };
+    //private int[,] board_init;
+    private string saveFileName = "/Saves/save_state.txt";
 
     private void Start()
     {
@@ -75,25 +71,239 @@ public class BoardManager : MonoBehaviour
                 if (index % 8 != 0) flip = !flip;
             }
         }
+        InitializeBoard(LoadPieces());
+        InitializeCorps(LoadCommand());
+    }
 
-        InitializeBoard();
-        InitializeCorps();
+    // Temporary GUI for Reset Button
+    private void OnGUI()
+    {
+        if (GUI.Button(resetButton, "Reset"))
+        {
+            ResetBoard();
+        }
+    }
+
+    /*
+     * Audo Save:
+     * Function that currently Saves pieces positions and corp membership into a txt file
+     */
+    private void Autosave()
+    {
+        string sDirectory = Application.dataPath;
+        if (File.Exists(sDirectory + saveFileName))
+        {
+            File.Delete(sDirectory + saveFileName);
+        }
+        using (StreamWriter sw = new StreamWriter(sDirectory + saveFileName))
+        {
+            for (int row = 0; row < pieces.GetLength(0); row++)
+            {
+                for (int col = 0; col < pieces.GetLength(1); col++)
+                {
+                    if (!(row == 0 && col == 0)) sw.Write(",");
+                    if (pieces[row, col])
+                    {
+                        switch (pieces[row, col].GetPName())
+                        {
+                            case "w_pawn": // Pawn
+                                sw.Write("1");
+                                break;
+
+                            case "w_rook": // Rook
+                                sw.Write("2");
+                                break;
+
+                            case "w_bishop": // Bishop
+                                sw.Write("3");
+                                break;
+
+                            case "w_knight": // Knight
+                                sw.Write("4");
+                                break;
+
+                            case "w_queen": // Queen
+                                sw.Write("5");
+                                break;
+
+                            case "w_king": // King
+                                sw.Write("6");
+                                break;
+
+                            case "b_pawn": // Pawn
+                                sw.Write("-1");
+                                break;
+
+                            case "b_rook": // Rook
+                                sw.Write("-2");
+                                break;
+
+                            case "b_bishop": // Bishop
+                                sw.Write("-3");
+                                break;
+
+                            case "b_knight": // Knight
+                                sw.Write("-4");
+                                break;
+
+                            case "b_queen": // Queen
+                                sw.Write("-5");
+                                break;
+
+                            case "b_king": // King
+                                sw.Write("-6");
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        sw.Write("0");
+                    }
+                }
+            }
+            sw.WriteLine();
+            // Integer representation of the corps. 
+            // -1 = black king, -2 = black bishop left, -3 = black bishop right
+            // 1 = white king, 2 = white bishop left, 3 = white bishop right
+            // 0 = empty.
+
+            int[,] corp_state = GetCorpState();
+            for (int row = 0; row < pieces.GetLength(0); row++)
+            {
+                for (int col = 0; col < pieces.GetLength(1); col++)
+                {
+                    if (!(row == 0 && col == 0)) sw.Write(",");
+                    sw.Write(corp_state[row, col]);
+                }
+            }
+            sw.Close();
+        }
+    }
+
+    /*
+     * Reset Board:
+     * Function that starts the game state back into its initial state.
+     */
+    private void ResetBoard()
+    {
+        string sDirectory = Application.dataPath;
+        if (File.Exists(sDirectory + saveFileName))
+        {
+            File.Delete(sDirectory + saveFileName);
+        }
+        Chess.PIECES = new Dictionary<string, GameObject>();
+        Chess.SOUNDS = new Dictionary<string, AudioSource>();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    /* 
+     * Load Pieces:
+     * Function that returns the array positions of the pieces from a save file.
+     * Returns the initial positions if no save file is found.
+     */
+    private int[,] LoadPieces()
+    {
+        int[,] board_init = new int[pieces.GetLength(0), pieces.GetLength(1)];
+        string sDirectory = Application.dataPath;
+        if (File.Exists(sDirectory + saveFileName))
+        {
+            string piecesLine;
+            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            {
+                piecesLine = sr.ReadLine();
+                sr.Close();
+            }
+            string[] piecesStringArray = piecesLine.Split(',');
+            for (int row = 0, index = 0; row < pieces.GetLength(0); row++)
+            {
+                for (int col = 0; col < pieces.GetLength(1); col++, index++)
+                {
+                    board_init[row, col] = Convert.ToInt32(piecesStringArray[index]);
+                }
+            }
+        }
+        else
+        {
+            board_init = new int[,]
+            {
+                {  2,  4,  3,  6,  5,  3,  4,  2 },
+                {  1,  1,  1,  1,  1,  1,  1,  1 },
+                {  0,  0,  0,  0,  0,  0,  0,  0 },
+                {  0,  0,  0,  0,  0,  0,  0,  0 },
+                {  0,  0,  0,  0,  0,  0,  0,  0 },
+                {  0,  0,  0,  0,  0,  0,  0,  0 },
+                { -1, -1, -1, -1, -1, -1, -1, -1 },
+                { -2, -4, -3, -6, -5, -3, -4, -2 }
+            };
+        }
+        return board_init;
+    }
+
+    /* 
+     * Load Command:
+     * Function that returns the array of command memberships of the pieces from a save file.
+     * Returns the initial memberships if no save file is found.
+     */
+    private int[,] LoadCommand()
+    {
+        int[,] command_init = new int[8,8];
+        string sDirectory = Application.dataPath;
+        if (File.Exists(sDirectory + saveFileName))
+        {
+            command_init = new int[pieces.GetLength(0), pieces.GetLength(1)];
+            string commandLine;
+            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            {
+                sr.ReadLine();
+                commandLine = sr.ReadLine();
+                sr.Close();
+            }
+            string[] commandStringArray = commandLine.Split(',');
+            for (int row = 0, index = 0; row < pieces.GetLength(0); row++)
+            {
+                for (int col = 0; col < pieces.GetLength(1); col++, index++)
+                {
+                    command_init[row, col] = Convert.ToInt32(commandStringArray[index]);
+                }
+            }
+        }
+        else
+        {
+            // Integer representation of the corps. 
+            // -1 = black king, -2 = black bishop left, -3 = black bishop right
+            // 1 = white king, 2 = white bishop left, 3 = white bishop right
+            // 4 = belongs to 1, 5 = belongs to 2, 6 = balongs to 3
+            // -4 = belongs to -1, -5 = belongs to -2, -6 = balongs to -3
+            // 0 = empty.
+            command_init = new int[,]
+            {
+                {  4,  5,  2,  1,  4,  3,  6,  4 },
+                {  5,  5,  5,  4,  4,  6,  6,  6 },
+                {  0,  0,  0,  0,  0,  0,  0,  0 },
+                {  0,  0,  0,  0,  0,  0,  0,  0 },
+                {  0,  0,  0,  0,  0,  0,  0,  0 },
+                {  0,  0,  0,  0,  0,  0,  0,  0 },
+                { -5, -5, -5, -4, -4, -6, -6, -6 },
+                { -4, -5, -2, -1, -4, -3, -6, -4 },
+            };
+        }
+
+        return command_init;
     }
 
     /* 
      * Initialize Board:
-     * Initialize the pieces on the board according to the board_init array.
+     * Initialize the pieces on the board based on a 2D array argument.
      * Each piece is contained in a static dictionary from the resources 
      * class called 'Chess', or something like that.
      */
-
-    private void InitializeBoard()
+    private void InitializeBoard(int[,] piecesArray)
     {
-        for (int p = 0; p < board_init.GetLength(0); p++)
+        for (int p = 0; p < piecesArray.GetLength(0); p++)
         {
-            for (int q = 0; q < board_init.GetLength(1); q++)
+            for (int q = 0; q < piecesArray.GetLength(1); q++)
             {
-                switch (board_init[p, q])
+                switch (piecesArray[p, q])
                 {
                     case 1: // Pawn
                         pieces[p, q] = Instantiate(Chess.PIECES["w_pawn"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
@@ -159,61 +369,97 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    public void InitializeCorps()
+    /* 
+     * Initialize Corps:
+     * Initialize the corp membership based on a 2D array argument.
+     */
+    public void InitializeCorps(int[,] commandArray)
     {
-        Commander w_king = pieces[0, 3].MakeIntoCommander();
+        int[] w_king_pos = new int[2];
+        int[] w_bishop_one_pos = new int[2];
+        int[] w_bishop_two_pos = new int[2];
+        int[] b_king_pos = new int[2];
+        int[] b_bishop_one_pos = new int[2];
+        int[] b_bishop_two_pos = new int[2];
+        List<Piece> w_king_memb = new List<Piece>();
+        List<Piece> w_bishop_one_memb = new List<Piece>();
+        List<Piece> w_bishop_two_memb = new List<Piece>();
+        List<Piece> b_king_memb = new List<Piece>();
+        List<Piece> b_bishop_one_memb = new List<Piece>();
+        List<Piece> b_bishop_two_memb = new List<Piece>();
+
+        for (int row = 0; row < commandArray.GetLength(0); row++)
+        {
+            for (int col = 0; col < commandArray.GetLength(1); col++)
+            {
+                if (pieces[row, col])
+                {
+                    pieces[row, col].SetCorpID(commandArray[row, col]);
+                }
+                switch (commandArray[row, col])
+                {
+                    case 1:
+                        w_king_pos[0] = row;
+                        w_king_pos[1] = col;
+                        break;
+                    case 2:
+                        w_bishop_one_pos[0] = row;
+                        w_bishop_one_pos[1] = col;
+                        break;
+                    case 3:
+                        w_bishop_two_pos[0] = row;
+                        w_bishop_two_pos[1] = col;
+                        break;
+                    case 4:
+                        w_king_memb.Add(pieces[row, col]);
+                        break;
+                    case 5:
+                        w_bishop_one_memb.Add(pieces[row, col]);
+                        break;
+                    case 6:
+                        w_bishop_two_memb.Add(pieces[row, col]);
+                        break;
+                    case -1:
+                        b_king_pos[0] = row;
+                        b_king_pos[1] = col;
+                        break;
+                    case -2:
+                        b_bishop_one_pos[0] = row;
+                        b_bishop_one_pos[1] = col;
+                        break;
+                    case -3:
+                        b_bishop_two_pos[0] = row;
+                        b_bishop_two_pos[1] = col;
+                        break;
+                    case -4:
+                        b_king_memb.Add(pieces[row, col]);
+                        break;
+                    case -5:
+                        b_bishop_one_memb.Add(pieces[row, col]);
+                        break;
+                    case -6:
+                        b_bishop_two_memb.Add(pieces[row, col]);
+                        break;
+                }
+            }
+        }
+        Commander w_king = pieces[w_king_pos[0], w_king_pos[1]].MakeIntoCommander();
+        Commander b_king = pieces[b_king_pos[0], b_king_pos[1]].MakeIntoCommander();
+
         w_king.is_king = true;
-        // Middle pawns.
-        w_king.AddPiece(pieces[1, 3]);
-        w_king.AddPiece(pieces[1, 4]);
-        // Two-outer rooks.
-        w_king.AddPiece(pieces[0, 0]);
-        w_king.AddPiece(pieces[0, 7]);
-        // Queen
-        w_king.AddPiece(pieces[0, 4]);
-
-        Commander w_bishop_one = pieces[0, 2].MakeIntoCommander().SetKing(w_king);
-        // Left Three pawns.
-        w_bishop_one.AddPiece(pieces[1, 0]);
-        w_bishop_one.AddPiece(pieces[1, 1]);
-        w_bishop_one.AddPiece(pieces[1, 2]);
-        // Left-side knight.
-        w_bishop_one.AddPiece(pieces[0, 1]);
-
-        Commander w_bishop_two = pieces[0, 5].MakeIntoCommander().SetKing(w_king);
-        // Right Three pawns.
-        w_bishop_two.AddPiece(pieces[1, 5]);
-        w_bishop_two.AddPiece(pieces[1, 6]);
-        w_bishop_two.AddPiece(pieces[1, 7]);
-        // Right-side knight.
-        w_bishop_two.AddPiece(pieces[0, 6]);
-
-        Commander b_king = pieces[7, 3].MakeIntoCommander();
         b_king.is_king = true;
-        // Middle pawns.
-        b_king.AddPiece(pieces[6, 3]);
-        b_king.AddPiece(pieces[6, 4]);
-        // Two-outer rooks.
-        b_king.AddPiece(pieces[7, 0]);
-        b_king.AddPiece(pieces[7, 7]);
-        // Queen
-        b_king.AddPiece(pieces[7, 4]);
 
-        Commander b_bishop_one = pieces[7, 2].MakeIntoCommander().SetKing(b_king);
-        // Left Three pawns.
-        b_bishop_one.AddPiece(pieces[6, 0]);
-        b_bishop_one.AddPiece(pieces[6, 1]);
-        b_bishop_one.AddPiece(pieces[6, 2]);
-        // Left-side knight.
-        b_bishop_one.AddPiece(pieces[7, 1]);
+        Commander w_bishop_one = pieces[w_bishop_one_pos[0], w_bishop_one_pos[1]].MakeIntoCommander().SetKing(w_king);
+        Commander w_bishop_two = pieces[w_bishop_two_pos[0], w_bishop_two_pos[1]].MakeIntoCommander().SetKing(w_king);
+        Commander b_bishop_one = pieces[b_bishop_one_pos[0], b_bishop_one_pos[1]].MakeIntoCommander().SetKing(b_king);
+        Commander b_bishop_two = pieces[b_bishop_two_pos[0], b_bishop_two_pos[1]].MakeIntoCommander().SetKing(b_king);
 
-        Commander b_bishop_two = pieces[7, 5].MakeIntoCommander().SetKing(b_king);
-        // Right Three pawns.
-        b_bishop_two.AddPiece(pieces[6, 5]);
-        b_bishop_two.AddPiece(pieces[6, 6]);
-        b_bishop_two.AddPiece(pieces[6, 7]);
-        // Right-side knight.
-        b_bishop_two.AddPiece(pieces[7, 6]);
+        foreach (Piece p in w_king_memb) w_king.AddPiece(p);
+        foreach (Piece p in w_bishop_one_memb) w_bishop_one.AddPiece(p);
+        foreach (Piece p in w_bishop_two_memb) w_bishop_two.AddPiece(p);
+        foreach (Piece p in b_king_memb) b_king.AddPiece(p);
+        foreach (Piece p in b_bishop_one_memb) b_bishop_one.AddPiece(p);
+        foreach (Piece p in b_bishop_two_memb) b_bishop_two.AddPiece(p);
     }
 
     // Built-in Unity function that is called every frame.
@@ -258,21 +504,15 @@ public class BoardManager : MonoBehaviour
                         selected_piece = pieces[index[0], index[1]];
 
                         // Highlight all pieces in selected piece corp.
-                        GetAllPiecesInCorp(selected_piece);
+                        ShowAllPiecesInCorp(selected_piece);
 
                         // Get a list of all moveable blocks.
-                        string pieceName = pieces[index[0], index[1]].GetPName();
-
-                        // Get movement + attack range.  Mandatory to use GetRangeList before invoking GetMoveFromRange and GetAttackFromRange
-                        List<int[]> availableRange = GetRangeList(index[0], index[1], selected_piece.GetNumberOfMoves(), pieceName);
-
-                        // Extract movable and attackable blocks separately
-                        List<int[]> availableMove = GetMoveFromRange(index[0], index[1], availableRange);
-                        List<int[]> availableAttack = GetAttackFromRange(index[0], index[1], availableRange); ;
+                        List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves());
+                        List<int[]> availableAttacks = GetAttackableList(index[0], index[1]);
 
                         // Paint the blocks that are moveable. 
-                        SetBlockListMovable(availableMove, pieces[index[0], index[1]].GetTeam());
-                        SetBlockListAttackable(availableAttack, pieces[index[0], index[1]].GetTeam());
+                        SetBlockListMovable(availableMoves, pieces[index[0], index[1]].GetTeam());
+                        SetBlockListAttackable(availableAttacks, pieces[index[0], index[1]].GetTeam());
 
                         // Color selected piece.
                         blocks[index[0], index[1]].ChangeColor(Color.magenta);
@@ -297,9 +537,17 @@ public class BoardManager : MonoBehaviour
                     {
                         RefreshBlocks();
                     }
+                    Autosave();
                 }
             }
         }
+    }
+
+    // Function called by the AI to get the current board state and to calculate the next move.
+    public Piece[,] GetAllPieces()
+    {
+        // Potentially validate board state first.
+        return pieces;
     }
 
     // Function called by the AI to get the current board state and to calculate the next move.
@@ -307,6 +555,52 @@ public class BoardManager : MonoBehaviour
     {
         // Potentially validate board state first.
         return pieces;
+    }
+
+    public void ShowAllPiecesInCorp(Piece selected_piece)
+    {
+        // Highlight all pieces in corp.
+        foreach (Piece piece in selected_piece.GetCommander().GetPiecesInCorp())
+        {
+            int[] index = piece.position;
+            blocks[index[0], index[1]].ChangeColor(Color.grey);
+        }
+    }
+
+    // Integer representation of the corps. 
+    // -1 = black king, -2 = black bishop left, -3 = black bishop right
+    // 1 = white king, 2 = white bishop left, 3 = white bishop right
+    // 0 = empty.
+    public int[,] GetCorpState()
+    {
+        int[,] corp_state = new int[8, 8];
+
+        for (int rank = 0; rank < 8; rank++)
+        {
+            for (int file = 0; file < 8; file++)
+            {
+                if (pieces[rank, file])
+                {
+                    corp_state[rank, file] = pieces[rank, file].commander.corp_id;
+                    corp_state[rank, file] = pieces[rank, file].GetCorpID();
+                }
+            }
+        }
+
+        string result = "";
+        for (int rank = 0; rank < 8; rank++)
+        {
+            for (int file = 0; file < 8; file++)
+            {
+                result += " [ " + corp_state[rank, file] + " ] ";
+            }
+            result += "\n";
+        }
+
+        Debug.Log(result);
+        
+
+        return corp_state;
     }
 
     // Function called by human players to make a move.
@@ -328,7 +622,7 @@ public class BoardManager : MonoBehaviour
 
     public void MovePiece(int[] from, int[] to)
     {
-        Piece p = pieces[from[0], from[1]]; 
+        Piece p = pieces[from[0], from[1]];
 
         // Find the best path. 
         List<int[]> path = FindPath(from, to, new List<int[]> { from }, p.GetNumberOfMoves());
@@ -339,7 +633,7 @@ public class BoardManager : MonoBehaviour
         // Update the pieces game object array. 
         pieces[to[0], to[1]] = pieces[from[0], from[1]];
         pieces[from[0], from[1]] = null;
-   
+
         selected_piece = null;
         input_requested = false;
 
@@ -367,7 +661,7 @@ public class BoardManager : MonoBehaviour
 
         // Lookup the attacker/defender die roll needed from the Chess class.
         int roll_needed = Chess.RollNeeded(attacker, defender);
-        Debug.Log("Roll Needed: " + roll_needed + ", Rolled: " + roll);
+        //Debug.Log("Roll Needed: " + roll_needed + ", Rolled: " + roll);
 
         // Compare roll.
         if (roll < roll_needed)
@@ -376,10 +670,11 @@ public class BoardManager : MonoBehaviour
 
             // Null path and Null new_position, attack_successful = false
             int moves_used = pieces[from[0], from[1]].Attack(null, null, false);
-            gm.CompleteGameState(moves_used);
 
             selected_piece = null;
             input_requested = false;
+
+            gm.CompleteGameState(moves_used);
 
             // Notify function caller that the attack was unsuccessful.
             return false;
@@ -404,12 +699,19 @@ public class BoardManager : MonoBehaviour
                 pieces[to[0], to[1]].commander.TransferPiecesToKing();
             }
 
+            /*
+            // Deactivate captured piece.      
+            pieces[to[0], to[1]].gameObject.SetActive(false);
+            */
+
             // Move captures pieces to a temporary position - Change the Vector3 position to the table
-            pieces[to[0], to[1]].transform.position = new Vector3(0, 0, 0); 
+            pieces[to[0], to[1]].transform.position = new Vector3(0, 0, 0);
 
             // Shift pieces array.
             pieces[to[0], to[1]] = pieces[from[0], from[1]];
             pieces[from[0], from[1]] = null;
+
+            // Send given piece to capture table
 
             selected_piece = null;
             input_requested = false;
@@ -429,171 +731,119 @@ public class BoardManager : MonoBehaviour
         {
             int[] index = piece.position;
             blocks[index[0], index[1]].ChangeColor(Color.grey);
-        }    
+        }
     }
 
-    /*
-    * NOTE:
-    * GetMoveFromRange() and GetAttackRange() are heavily coupled with
-    * and is dependent to GetRangeList.  Ugly design but makes it
-    * readable and avoids having to duplicate pathfinding work for just
-    * movement or just attacking.  Please refactor if you can make it better.
 
     /*
-    * Get Move From Range:
-    * Pre-Condition:
-    * the row and column of the active piece and the List generated by GetRangeList
-    * Post-condition:
-    * Returns movable blocks based from overall range
-    */
-    private List<int[]> GetMoveFromRange(int row, int col, List<int[]> rangeList)
+      * Get Attackable List:
+      * Post-condition:
+      * Returns a list of coordinates of all adjacent blocks with enemy
+      * pieces. Rooks have a range of 2. 
+      */
+    private List<int[]> GetAttackableList(int row, int col)
     {
         List<int[]> newList = new List<int[]>();
-        foreach (int[] index in rangeList)
+        bool isWhitePiece = pieces[row, col].GetTeam().Equals("white");
+        int range = 1;
+        if (pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook"))
+            range = pieces[row, col].GetNumberOfMoves(); ;
+        int west = Mathf.Max(0, row - range);
+        int east = Mathf.Min(7, row + range);
+        int north = Mathf.Max(0, col - range);
+        int south = Mathf.Min(7, col + range);
+        for (int i = west; i <= east; i++)
         {
-            if (!pieces[index[0], index[1]])
-                newList.Add(new int[] { index[0], index[1] });
+            for (int j = north; j <= south; j++)
+            {
+                if (pieces[i, j])
+                {
+                    if (pieces[i, j].GetTeam().Equals("white") != isWhitePiece)
+                        newList.Add(new int[] { i, j });
+                }
+            }
         }
         return newList;
     }
 
     /*
-     * Get Attack From Range:
-     * Pre-Condition:
-     * the row and column of the active piece and the List generated by GetRangeList
-     * Post-condition:
-     * Returns attackable enemy blocks based on range
-     */
-    private List<int[]> GetAttackFromRange(int row, int col, List<int[]> rangeList)
-    {
-        List<int[]> range = new List<int[]>();
-
-        // For pieces other than rooks
-        if (!pieces[row, col].GetPName().Equals("w_rook") && !pieces[row, col].GetPName().Equals("b_rook"))
-        {
-            foreach (int[] index in rangeList)
-            {
-                if (pieces[index[0], index[1]])
-                {
-                    if (pieces[index[0], index[1]].GetTeam() != pieces[row, col].GetTeam())
-                        range.Add(new int[] { index[0], index[1] });
-                }
-            }
-        }
-        // For all rook pieces
-        else
-        {
-            int m = pieces[row, col].GetNumberOfMoves();
-            int rowStart = Mathf.Max(0, row - m);
-            int rowEnd = Mathf.Min(7, row + m);
-            int colStart = Mathf.Max(0, col - m);
-            int colEnd = Mathf.Min(7, col + m);
-            for (int i = rowStart; i <= rowEnd; i++)
-            {
-                for (int j = colStart; j <= colEnd; j++)
-                {
-                    if (pieces[i, j])
-                    {
-                        if (pieces[i, j].GetTeam() != pieces[row, col].GetTeam())
-                            range.Add(new int[] { i, j });
-                    }
-                }
-            }
-        }
-        return range;
-    }
-
-    /*
-     * Get Range List:
+     * Get Moves List:
      * Uses Queues for breadth first search.  The queues are separated between
      * the current generation (m) and the next generation (m-1).  When the 
      * current generation is depleted, the next generation becomes the current
      * generation and a new generation is created.
      * Post-condition:
      * Returns a list of coordinates of all movable blocks given an initial
-     * position and available moves including attackable blocks. 
+     * position and available moves. 
      */
-    private List<int[]> GetRangeList(int row, int col, int m, string pname)
+    private List<int[]> GetMovesList(int row, int col, int m)
     {
         List<int[]> list = new List<int[]>();
         Queue<int[]> buildQueue = new Queue<int[]>();
         Queue<int[]> currentQueue = new Queue<int[]>();
-
+        string selectedPiece = pieces[row, col].GetPName();
         do
         {
-            // Black pawns are expcluded from moving down.
-            if (!pname.Equals("b_pawn"))
+            /* NOTE: If you can express the validation for the adjacent blocks better
+             * or more optimized, please feel free.  All adjacent blocks needs to be 
+             * validated and passed to ProcessBlock() before any of them can be
+             * dequeued.  Can't ProcessBlock() while Dequeueing.
+             */
+            if (row < 7 && !selectedPiece.Equals("b_pawn"))
             {
-                if (IsMovableBlock(row + 1, col)) // Down
+                if (IsValidBlock(row + 1, col)) // Down
                 {
                     ProcessBlock(row + 1, col, list);
                     buildQueue.Enqueue(new int[2] { row + 1, col });
                 }
-                else if (IsCapturableBlock(row + 1, col))
-                    ProcessBlock(row + 1, col, list);
-                if (IsMovableBlock(row + 1, col + 1)) // Down Right
+                if (col < 7 && IsValidBlock(row + 1, col + 1)) // Down Right
                 {
                     ProcessBlock(row + 1, col + 1, list);
                     buildQueue.Enqueue(new int[2] { row + 1, col + 1 });
                 }
-                else if (IsCapturableBlock(row + 1, col + 1))
-                    ProcessBlock(row + 1, col + 1, list);
-                if (IsMovableBlock(row + 1, col - 1)) // Down Left
+                if (col > 0 && IsValidBlock(row + 1, col - 1)) // Down Left
                 {
                     ProcessBlock(row + 1, col - 1, list);
                     buildQueue.Enqueue(new int[2] { row + 1, col - 1 });
                 }
-                else if (IsCapturableBlock(row + 1, col - 1))
-                    ProcessBlock(row + 1, col - 1, list);
             }
-            // White pawns excluded from moving up
-            if (!pname.Equals("w_pawn"))
+            if (row > 0 && !selectedPiece.Equals("w_pawn"))
             {
-                if (IsMovableBlock(row - 1, col)) // Up
+                if (IsValidBlock(row - 1, col)) // Up
                 {
                     ProcessBlock(row - 1, col, list);
                     buildQueue.Enqueue(new int[2] { row - 1, col });
                 }
-                else if (IsCapturableBlock(row - 1, col))
-                    ProcessBlock(row - 1, col, list);
-                if (IsMovableBlock(row - 1, col + 1)) // Up Right
+                if (col < 7 && IsValidBlock(row - 1, col + 1)) // Up Right
                 {
                     ProcessBlock(row - 1, col + 1, list);
                     buildQueue.Enqueue(new int[2] { row - 1, col + 1 });
                 }
-                else if (IsCapturableBlock(row - 1, col + 1))
-                    ProcessBlock(row - 1, col + 1, list);
-                if (IsMovableBlock(row - 1, col - 1)) // Up Left
+                if (col > 0 && IsValidBlock(row - 1, col - 1)) // Up Left
                 {
                     ProcessBlock(row - 1, col - 1, list);
                     buildQueue.Enqueue(new int[2] { row - 1, col - 1 });
                 }
-                else if (IsCapturableBlock(row - 1, col - 1))
-                    ProcessBlock(row - 1, col - 1, list);
             }
-            // Pawns are excluded from sideways movement.
-            if (!(pname.Equals("w_pawn") || pname.Equals("b_pawn")))
+            if (!selectedPiece.Equals("b_pawn") && !selectedPiece.Equals("w_pawn"))
             {
-                if (IsMovableBlock(row, col - 1)) // Left
+                if (col > 0 && IsValidBlock(row, col - 1)) // Left
                 {
                     ProcessBlock(row, col - 1, list);
                     buildQueue.Enqueue(new int[2] { row, col - 1 });
                 }
-                else if (IsCapturableBlock(row, col - 1))
-                {
-                    ProcessBlock(row, col - 1, list);
-                }
-                if (IsMovableBlock(row, col + 1)) // Right
+                if (col < 7 && IsValidBlock(row, col + 1)) // Right
                 {
                     ProcessBlock(row, col + 1, list);
                     buildQueue.Enqueue(new int[2] { row, col + 1 });
                 }
-                else if (IsCapturableBlock(row, col + 1))
-                    ProcessBlock(row, col + 1, list);
             }
+
+
             /* switches to the next generation if the current generation
              * has been depleted.
              */
+
             if (currentQueue.Count <= 0)
             {
                 currentQueue = buildQueue;
@@ -611,7 +861,10 @@ public class BoardManager : MonoBehaviour
              * becomes 0.
              */
             else
+            {
                 m = 0;
+            }
+
         } while (m > 0);
         return list;
     }
@@ -632,46 +885,17 @@ public class BoardManager : MonoBehaviour
         blocks[row, col].SetVisited(true);
     }
 
-    /* 
-     * Is Visitable Block:
-     * Validates if the block is within bounds and has not been visited yet
-     */
-    private bool IsVisitableBlock(int row, int col)
-    {
-        return row >= 0 && col >= 0 && row < 8 && col < 8 &&
-            !blocks[row, col].IsVisited();
-    }
-
     /*
-     * Is Attackable Block:
+     * Is Valid Block:
      * Post-condition:
-     * Validates if the block is occupied by enemy piece.
+     * Validates if the block, based on the coordinates given, is empty and has
+     * not been visited yet.
      */
-    private bool IsAttackableBlock(int row, int col)
+    private bool IsValidBlock(int row, int col)
     {
-        bool validation = false;
-        if (pieces[row, col])
-            validation = (pieces[row, col].GetTeam() != gm.GetTeam());
-        return validation;
-    }
+        bool within_board = row >= 0 && col >= 0 && row < 8 && col < 8;
+        return within_board && !pieces[row, col] && !blocks[row, col].IsVisited();
 
-    /*
-     * Is Capturable Block:
-     * Post-condition:
-     * Validates if the block is visitable and is occupied by enemy piece.
-     */
-    private bool IsCapturableBlock(int row, int col)
-    {
-        return IsVisitableBlock(row, col) && IsAttackableBlock(row, col);
-    }
-
-    /* 
-     * Is Movable Block:
-     * Validates if the block is visitable and is unoccupied.
-     */
-    private bool IsMovableBlock(int row, int col)
-    {
-        return IsVisitableBlock(row, col) && !pieces[row, col];
     }
 
     private void SetBlockListMovable(List<int[]> list, string team)
@@ -719,7 +943,7 @@ public class BoardManager : MonoBehaviour
             if (max_moves < 0) return FindPath(path[0], destination, new List<int[]> { path[0] }, path.Count - 1);
 
             // Check if node at direction d is valid.
-            if (!IsMovableBlock(node[0], node[1])) continue;
+            if (!IsValidBlock(node[0], node[1])) continue;
 
             // Calculate the difference between the current node and the destination. 
             int[] diff = new int[] { destination[0] - node[0], destination[1] - node[1] };
@@ -756,10 +980,10 @@ public class BoardManager : MonoBehaviour
         }
 
         // Highlight destination.
-        blocks[path[path.Count-1][0], path[path.Count-1][1]].ChangeColor(Color.cyan);
+        blocks[path[path.Count - 1][0], path[path.Count - 1][1]].ChangeColor(Color.cyan);
 
         return positions;
-    }   
+    }
 
     public void RefreshBlocks()
     {
@@ -776,10 +1000,11 @@ public class BoardManager : MonoBehaviour
     {
         foreach (Piece piece in pieces)
         {
-            if (piece) piece.ResetPiece();        
+            if (piece) piece.ResetPiece();
         }
     }
 
+    /*
     // Print out board state for debugging.
     private void ShowPositions()
     {
@@ -796,4 +1021,5 @@ public class BoardManager : MonoBehaviour
         }
         Debug.Log(output);
     }
+    */
 }

@@ -9,6 +9,7 @@ using UnityEngine;
 
 public class Piece : MonoBehaviour
 {
+    private int corp_id;
     private string p_name;
 
     // Max number of moves.
@@ -163,5 +164,13 @@ public class Piece : MonoBehaviour
     public string GetPName()
     {
         return p_name; 
+    }
+    public int GetCorpID()
+    {
+        return corp_id;
+    }
+    public void SetCorpID(int id)
+    {
+        corp_id = id;
     }
 }
