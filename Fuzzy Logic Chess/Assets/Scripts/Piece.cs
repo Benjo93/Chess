@@ -18,7 +18,8 @@ public class Piece : MonoBehaviour
     private float move_speed = 12f;
 
     // Integer Representation of piece (-6 to 6)
-    public int piece_type;
+    public int piece_id;
+    public int corp_id;
 
     // Name of the team (white/black)
     private string team;
@@ -26,7 +27,7 @@ public class Piece : MonoBehaviour
     // Current position of the piece.
     public int[] position;
 
-    public Color color; 
+    public Color color;
 
     // Path positions.
     private List<Vector3> path;
@@ -34,18 +35,18 @@ public class Piece : MonoBehaviour
     private bool moving;
 
     public Commander commander;
-    public bool is_commander; 
-    public bool has_moved; 
+    public bool is_commander;
+    public bool has_moved;
 
     internal Piece InitializePiece(string p_name, int piece_type, string team, int n_moves, int[] position, Color color)
     {
         this.p_name = p_name;
-        this.piece_type = piece_type;
+        this.piece_id = piece_type;
         this.team = team;
         this.n_moves = n_moves;
         this.position = position;
         this.color = color;
-        GetComponent<SpriteRenderer>().material.color = color; 
+        GetComponent<SpriteRenderer>().material.color = color;
         return this;
     }
 
@@ -107,7 +108,7 @@ public class Piece : MonoBehaviour
                 commander.UseCommandAuthority();
 
                 // Uses 2 out of 6 moves (They cannot move any other piece so technically their commanded pieces have used their move).
-                return 2; 
+                return 2;
             }
         }
         else // If this is not a commander. 
@@ -120,7 +121,7 @@ public class Piece : MonoBehaviour
         }
 
         // Uses only 1 out of 6 moves.
-        return 1; 
+        return 1;
     }
 
     public int Attack(List<Vector3> path, int[] new_position, bool was_successful)
@@ -159,8 +160,8 @@ public class Piece : MonoBehaviour
     {
         is_commander = true;
         commander = gameObject.AddComponent<Commander>();
-        commander.default_moves = n_moves; 
-        return commander; 
+        commander.default_moves = n_moves;
+        return commander;
     }
 
     public Commander GetCommander()
@@ -194,10 +195,20 @@ public class Piece : MonoBehaviour
         GetComponent<SpriteRenderer>().material.color = color;
         has_moved = false;
         // Reset the number of moves, in case the commander is restricted to one move.
-        if (is_commander) n_moves = commander.default_moves; 
+        if (is_commander) n_moves = commander.default_moves;
     }
     public string GetPName()
     {
-        return p_name; 
+        return p_name;
+    }
+
+    public void SetCorpID(int corp_id)
+    {
+        this.corp_id = corp_id;
+    }
+
+    public int GetCorpId()
+    {
+        return corp_id;
     }
 }
