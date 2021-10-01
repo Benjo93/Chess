@@ -9,9 +9,11 @@ using UnityEngine;
 
 public class Chess : MonoBehaviour
 {
+    // Player colors.
     public Color player_one;
     public Color player_two;
 
+    // Block colors. 
     public Color color_light;
     public Color color_dark;
 

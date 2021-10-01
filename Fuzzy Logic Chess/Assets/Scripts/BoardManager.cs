@@ -35,7 +35,7 @@ public class BoardManager : MonoBehaviour
     private Piece[,] pieces = new Piece[8, 8];
 
     // List of all commanders
-    private List<Commander> corps = new List<Commander>();
+    //private List<Commander> corps = new List<Commander>();
 
     private Rect resetButton = new Rect(Screen.width - 150f, 100, 100, 50); // TEMPORARY PLACE HOLDER
 
@@ -51,7 +51,7 @@ public class BoardManager : MonoBehaviour
     // Boolean to track whether the player is making a move.
     private bool input_requested;
 
-    private string saveFileName = "/Saves/save_state.txt";
+    private readonly string saveFileName = "/Saves/save_state.txt";
 
     // Used when initializing the board before a game.
     private int[,] board_init = new int[,]
@@ -93,7 +93,6 @@ public class BoardManager : MonoBehaviour
     // Built-in Unity function that is called every frame.
     private void Update()
     {
-
         // Check if the player is making a move.
         if (!input_requested) return;
 
@@ -152,8 +151,6 @@ public class BoardManager : MonoBehaviour
                     else if (selected_piece && blocks[index[0], index[1]].IsMovable())
                     {
                         RefreshBlocks();
-
-                        // Move the piece.
                         MovePiece(selected_index, index);
                         Autosave();
                     }
@@ -161,8 +158,6 @@ public class BoardManager : MonoBehaviour
                     else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
                     {
                         RefreshBlocks();
-
-                        // Handle attack.
                         Attack(selected_index, index);
                         Autosave();
                     }
@@ -397,13 +392,13 @@ public class BoardManager : MonoBehaviour
      * Each piece is contained in a static dictionary from the resources 
      * class called 'Chess', or something like that.
      */
-    private void InitializeBoard(int[,] piecesArray)
+    private void InitializeBoard(int[,] pieces_state)
     {
-        for (int p = 0; p < piecesArray.GetLength(0); p++)
+        for (int p = 0; p < pieces_state.GetLength(0); p++)
         {
-            for (int q = 0; q < piecesArray.GetLength(1); q++)
+            for (int q = 0; q < pieces_state.GetLength(1); q++)
             {
-                switch (piecesArray[p, q])
+                switch (pieces_state[p, q])
                 {
                     case 1: // Pawn
                         pieces[p, q] = Instantiate(Chess.PIECES["pixel_pawn"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
@@ -474,7 +469,7 @@ public class BoardManager : MonoBehaviour
      * Initialize Corps:
      * Initialize the corp membership based on a 2D array argument.
      */
-    public void InitializeCorps(int[,] commandArray)
+    public void InitializeCorps(int[,] command_state)
     {
         int[] w_king_pos = new int[2];
         int[] w_bishop_one_pos = new int[2];
@@ -489,15 +484,15 @@ public class BoardManager : MonoBehaviour
         List<Piece> b_bishop_one_memb = new List<Piece>();
         List<Piece> b_bishop_two_memb = new List<Piece>();
 
-        for (int row = 0; row < commandArray.GetLength(0); row++)
+        for (int row = 0; row < command_state.GetLength(0); row++)
         {
-            for (int col = 0; col < commandArray.GetLength(1); col++)
+            for (int col = 0; col < command_state.GetLength(1); col++)
             {
                 if (pieces[row, col])
                 {
-                    pieces[row, col].SetCorpID(commandArray[row, col]);
+                    pieces[row, col].SetCorpID(command_state[row, col]);
                 }
-                switch (commandArray[row, col])
+                switch (command_state[row, col])
                 {
                     case 1:
                         w_king_pos[0] = row;
@@ -578,7 +573,7 @@ public class BoardManager : MonoBehaviour
         // Queen
         w_king.AddPiece(pieces[0, 4]);
 
-        corps.Add(w_king);
+        //corps.Add(w_king);
 
         Commander w_bishop_one = pieces[0, 2].MakeIntoCommander().SetKing(w_king);
         w_bishop_one.corp_id = 2;
@@ -589,7 +584,7 @@ public class BoardManager : MonoBehaviour
         // Left-side knight.
         w_bishop_one.AddPiece(pieces[0, 1]);
 
-        corps.Add(w_bishop_one);
+        //corps.Add(w_bishop_one);
 
         Commander w_bishop_two = pieces[0, 5].MakeIntoCommander().SetKing(w_king);
         w_bishop_two.corp_id = 3;
@@ -600,7 +595,7 @@ public class BoardManager : MonoBehaviour
         // Right-side knight.
         w_bishop_two.AddPiece(pieces[0, 6]);
 
-        corps.Add(w_bishop_two);
+        //corps.Add(w_bishop_two);
 
         Commander b_king = pieces[7, 3].MakeIntoCommander();
         b_king.is_king = true;
@@ -614,7 +609,7 @@ public class BoardManager : MonoBehaviour
         // Queen
         b_king.AddPiece(pieces[7, 4]);
 
-        corps.Add(b_king);
+        //corps.Add(b_king);
 
         Commander b_bishop_one = pieces[7, 2].MakeIntoCommander().SetKing(b_king);
         b_bishop_one.corp_id = -2;
@@ -625,7 +620,7 @@ public class BoardManager : MonoBehaviour
         // Left-side knight.
         b_bishop_one.AddPiece(pieces[7, 1]);
 
-        corps.Add(b_bishop_one);
+        //corps.Add(b_bishop_one);
 
         Commander b_bishop_two = pieces[7, 5].MakeIntoCommander().SetKing(b_king);
         b_bishop_two.corp_id = -3;
@@ -636,7 +631,7 @@ public class BoardManager : MonoBehaviour
         // Right-side knight.
         b_bishop_two.AddPiece(pieces[7, 6]);
 
-        corps.Add(b_bishop_two);
+        //corps.Add(b_bishop_two);
     }
 
 
@@ -687,7 +682,8 @@ public class BoardManager : MonoBehaviour
             {
                 if (pieces[rank, file])
                 {
-                    corp_state[rank, file] = pieces[rank, file].commander.corp_id;
+                    //corp_state[rank, file] = pieces[rank, file].commander.corp_id;
+                    corp_state[rank, file] = pieces[rank, file].corp_id;
                 }
             }
         }
@@ -703,6 +699,7 @@ public class BoardManager : MonoBehaviour
         }
 
         Debug.Log(result);
+
 
         return corp_state;
     }
