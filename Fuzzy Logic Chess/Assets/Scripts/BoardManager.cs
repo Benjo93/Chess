@@ -1,3 +1,4 @@
+// test ignore this comment
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,6 +31,13 @@ public class BoardManager : MonoBehaviour
 
     // Array of blocks representing each chess board square. 
     private Block[,] blocks = new Block[8, 8];
+
+    // Array of blocks representing each square of the capture box.
+    private Block[,] caputeBox = new Block[16, 2];
+
+    // Number of white/black pieces captures.
+    private int whiteCaptures = 0;
+    private int blackCaptures = 0;
 
     // Array of pieces currently in play.
     private Piece[,] pieces = new Piece[8, 8];
@@ -809,7 +817,10 @@ public class BoardManager : MonoBehaviour
             }
 
             // Deactivate captured piece.      
-            pieces[to[0], to[1]].gameObject.SetActive(false);
+            //pieces[to[0], to[1]].gameObject.SetActive(false);
+
+            // Move captured piece to placeholder spot
+            pieces[to[0], to[1]].transform.position = new Vector3(0, 0, 0);
 
             // Shift pieces array.
             pieces[to[0], to[1]] = pieces[from[0], from[1]];
@@ -829,6 +840,8 @@ public class BoardManager : MonoBehaviour
             return true;
         }
     }
+
+    // Command for moving piece
 
     /*
     * Get Attackable List:
