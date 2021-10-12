@@ -9,7 +9,6 @@ public class MenuSelect : MonoBehaviour
     {
         SceneManager.LoadScene("Chess");
     }
-
     public void NewGame()
     {
         SceneManager.LoadScene("Game Setup");
