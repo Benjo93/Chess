@@ -41,6 +41,9 @@ public class BoardManager : MonoBehaviour
     // Array of pieces currently in play.
     private Piece[,] pieces = new Piece[8, 8];
 
+    // One-dimesnsional array of pieces.
+    private Piece[] listOfPieces = new Piece[32];
+
     // List of all commanders
     //private List<Commander> corps = new List<Commander>();
 
@@ -642,11 +645,20 @@ public class BoardManager : MonoBehaviour
     }
 
 
-    // Function called by the AI to get the current board state and to calculate the next move.
-    public Piece[,] GetAllPieces()
+    // Function called by the AI to create a list of the current pieces in play
+    public Piece[] GetAllPieces()
     {
-        // Potentially validate board state first.
-        return pieces;
+        for (int rank = 0; rank < 8; rank++)
+        {
+            for (int file = 0; file < 8; file++)
+            {
+                if (pieces[rank,file])
+                {
+                    listOfPieces += pieces[rank, file];
+                }
+            }
+        }
+        return listOfPieces;
     }
 
     // Get an integer array representing the board state (-6 to 6, 0 is empty).
