@@ -10,6 +10,8 @@ public abstract class Player
     protected GameManager gm;
     protected BoardManager bm;
 
+    public int max_moves = 6; 
+
     public Player(string name, GameManager gm, BoardManager bm)
     {
         this.name = name;

@@ -32,7 +32,7 @@ public class BoardManager : MonoBehaviour
     private Block[,] blocks = new Block[8, 8];
 
     // Array of blocks representing each square of the capture box.
-    private Block[,] caputeBox = new Block[16, 2];
+    private Block[,] captureBox = new Block[16, 2];
 
     // Number of white/black pieces captures.
     private int whiteCaptures = 0;
@@ -58,6 +58,9 @@ public class BoardManager : MonoBehaviour
     // Boolean to track whether the player is making a move.
     private bool input_requested;
 
+    // Boolean to keep track of game setup. Called from the Game Manager.
+    public bool setup_complete; 
+
     private readonly string saveFileName = "/Saves/save_state.txt";
 
     // Used when initializing the board before a game.
@@ -75,23 +78,7 @@ public class BoardManager : MonoBehaviour
 
     private void Start()
     {
-        // Layout blocks Grid, 8x8
-        bool flip = false;
-        int index = 0;
-        for (int rank = 0; rank < blocks.GetLength(0); rank++)
-        {
-            for (int file = 0; file < blocks.GetLength(1); file++)
-            {
-                // Set the blocks array to the component 'Block' from the instantiated game object.
-                blocks[rank, file] = Instantiate(block, new Vector3(file, blocks.GetLength(1) - rank, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
-                blocks[rank, file].SetPosition(rank, file);
-                blocks[rank, file].transform.name = "Block #" + index++;
-
-                blocks[rank, file].SetColor(blocks[rank, file].GetComponent<SpriteRenderer>().material.color = flip
-                    ? Chess.Colors.BOARD_LIGHT : Chess.Colors.BOARD_DARK);
-                if (index % 8 != 0) flip = !flip;
-            }
-        }
+        PrintBoardSquares();
 
         InitializeBoard(LoadPieces());
         InitializeCorps(LoadCommand());
@@ -100,6 +87,8 @@ public class BoardManager : MonoBehaviour
     // Built-in Unity function that is called every frame.
     private void Update()
     {
+        if (!setup_complete) return;
+
         // Check if the player is making a move.
         if (!input_requested) return;
 
@@ -303,7 +292,7 @@ public class BoardManager : MonoBehaviour
      * Function that returns the array positions of the pieces from a save file.
      * Returns the initial positions if no save file is found.
      */
-    private int[,] LoadPieces()
+    public int[,] LoadPieces()
     {
         int[,] board_init = new int[pieces.GetLength(0), pieces.GetLength(1)];
         string sDirectory = Application.dataPath;
@@ -346,7 +335,7 @@ public class BoardManager : MonoBehaviour
      * Function that returns the array of command memberships of the pieces from a save file.
      * Returns the initial memberships if no save file is found.
      */
-    private int[,] LoadCommand()
+    public int[,] LoadCommand()
     {
         int[,] command_init = new int[8, 8];
         string sDirectory = Application.dataPath;
@@ -393,13 +382,34 @@ public class BoardManager : MonoBehaviour
         return command_init;
     }
 
+    public void PrintBoardSquares()
+    {
+        // Layout blocks Grid, 8x8
+        bool flip = false;
+        int index = 0;
+        for (int rank = 0; rank < blocks.GetLength(0); rank++)
+        {
+            for (int file = 0; file < blocks.GetLength(1); file++)
+            {
+                // Set the blocks array to the component 'Block' from the instantiated game object.
+                blocks[rank, file] = Instantiate(block, new Vector3(file, blocks.GetLength(1) - rank, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
+                blocks[rank, file].SetPosition(rank, file);
+                blocks[rank, file].transform.name = "Block #" + index++;
+
+                blocks[rank, file].SetColor(blocks[rank, file].GetComponent<SpriteRenderer>().material.color = flip
+                    ? Chess.Colors.BOARD_LIGHT : Chess.Colors.BOARD_DARK);
+                if (index % 8 != 0) flip = !flip;
+            }
+        }
+    }
+
     /* 
      * Initialize Board:
      * Initialize the pieces on the board according to the board_init array.
      * Each piece is contained in a static dictionary from the resources 
      * class called 'Chess', or something like that.
      */
-    private void InitializeBoard(int[,] pieces_state)
+    public void InitializeBoard(int[,] pieces_state)
     {
         for (int p = 0; p < pieces_state.GetLength(0); p++)
         {
@@ -813,6 +823,8 @@ public class BoardManager : MonoBehaviour
             {
                 // If so, transfer pieces to king.
                 pieces[to[0], to[1]].commander.TransferPiecesToKing();
+                // Reduce max number of turns for the captured player.
+                gm.LooseCommander();
             }
 
             // Deactivate captured piece.      
