@@ -821,13 +821,13 @@ public class BoardManager : MonoBehaviour
                 if(pieces[to[0], to[1]].GetPName() == "b_king")
                 {
                     //White win screen
-                    SceneManager.LoadScene("White Wins");
+                    SceneManager.LoadScene("Player One Wins");
                 }
                 //else white
                 else
                 {
                     //Black win screen
-                    SceneManager.LoadScene("Black Wins");
+                    SceneManager.LoadScene("Player Two Wins");
                 }
                 // Insert Wilhelm Scream..
             }
