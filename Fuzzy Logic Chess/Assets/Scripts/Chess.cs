@@ -24,7 +24,6 @@ public class Chess : MonoBehaviour
     public static Dictionary<string, GameObject> PIECES = new Dictionary<string, GameObject>();
 
     public AudioSource[] sounds; 
-
     public static Dictionary<string, AudioSource> SOUNDS = new Dictionary<string, AudioSource>();
 
     // Array of integers that correspond to the die roll needed for the column row pair. 
@@ -40,6 +39,10 @@ public class Chess : MonoBehaviour
 
     void Awake()
     {
+        // Refresh Dictionaries when starting scene.
+        PIECES = new Dictionary<string, GameObject>();
+        SOUNDS = new Dictionary<string, AudioSource>();
+
         // Asign all pieces to dictionary at runtime. 
         foreach (GameObject piece in pieces) PIECES.Add(piece.transform.name, piece);
         foreach (AudioSource sound in sounds) SOUNDS.Add(sound.transform.name, sound);
