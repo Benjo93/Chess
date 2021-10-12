@@ -14,4 +14,8 @@ public class MenuSelect : MonoBehaviour
     {
         SceneManager.LoadScene("Game Setup");
     }
+    public void ReturnToMenu()
+    {
+        SceneManager.LoadScene("Start Menu 2");
+    }
 }

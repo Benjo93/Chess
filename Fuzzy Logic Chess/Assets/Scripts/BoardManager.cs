@@ -816,7 +816,20 @@ public class BoardManager : MonoBehaviour
             if (pieces[to[0], to[1]].is_commander && pieces[to[0], to[1]].commander.is_king)
             {
                 Debug.Log("Game Over");
-                // Insert Wilhelm Scream.
+                Debug.Log(pieces[to[0], to[1]].GetPName());
+                //If Black
+                if(pieces[to[0], to[1]].GetPName() == "b_king")
+                {
+                    //White win screen
+                    SceneManager.LoadScene("White Wins");
+                }
+                //else white
+                else
+                {
+                    //Black win screen
+                    SceneManager.LoadScene("Black Wins");
+                }
+                // Insert Wilhelm Scream..
             }
             // Check if piece is a commander.
             else if (pieces[to[0], to[1]].is_commander)
