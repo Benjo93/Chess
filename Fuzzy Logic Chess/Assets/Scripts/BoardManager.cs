@@ -819,7 +819,22 @@ public class BoardManager : MonoBehaviour
             //pieces[to[0], to[1]].gameObject.SetActive(false);
 
             // Move captured piece to placeholder spot
-            pieces[to[0], to[1]].transform.position = new Vector3(0, 0, 0);
+            //pieces[to[0], to[1]].transform.position = new Vector3(0, 0, 0);
+            string team = pieces[to[0], to[1]].GetTeam();
+            bool comp = team.Equals("white", StringComparison.OrdinalIgnoreCase);
+            
+            if(comp == true) // If the given piece is white
+            {
+                //Move the given piece to the position [whiteCaptures][0]
+                pieces[to[0], to[1]].transform.position = new Vector3(-1, -1, -1); // plaeholder
+                whiteCaptures = whiteCaptures + 1;
+            }
+            else // If the given piece is black
+            {
+                //Move the given piece to the position [blackCaptures][1]
+                pieces[to[0], to[1]].transform.position = new Vector3(1, 1, 1); // placeholder
+                blackCaptures = blackCaptures + 1;
+            }
 
             // Shift pieces array.
             pieces[to[0], to[1]] = pieces[from[0], from[1]];
@@ -839,6 +854,12 @@ public class BoardManager : MonoBehaviour
             return true;
         }
     }
+
+    // Command for moving piece to capture table
+    //public void movePieceToCapture(pieces captured)
+    //{
+
+    //}
 
     // Command for moving piece
 
