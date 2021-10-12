@@ -810,13 +810,13 @@ public class BoardManager : MonoBehaviour
                 //If Black
                 if(pieces[to[0], to[1]].GetPName() == "b_king")
                 {
-                    //Black win screen
+                    //White win screen
                     SceneManager.LoadScene("White Wins");
                 }
                 //else white
                 else
                 {
-                    //White win screen
+                    //Black win screen
                     SceneManager.LoadScene("Black Wins");
                 }
                 // Insert Wilhelm Scream..
