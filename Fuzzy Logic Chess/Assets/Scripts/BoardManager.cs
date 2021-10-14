@@ -44,8 +44,6 @@ public class BoardManager : MonoBehaviour
     // List of all commanders
     //private List<Commander> corps = new List<Commander>();
 
-    private Rect resetButton = new Rect(Screen.width - 150f, 100, 100, 50); // TEMPORARY PLACE HOLDER
-
     // The 'Piece' component of the currently selected piece.
     private Piece selected_piece;
 
@@ -166,15 +164,6 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    // Temporary GUI for Reset Button
-    private void OnGUI()
-    {
-        if (GUI.Button(resetButton, "Reset"))
-        {
-            ResetBoard();
-        }
-    }
-
     /*
      * Audo Save:
      * Function that currently Saves pieces positions and corp membership into a txt file
@@ -275,7 +264,7 @@ public class BoardManager : MonoBehaviour
      * Reset Board:
      * Function that starts the game state back into its initial state.
      */
-    private void ResetBoard()
+    public void ResetBoard()
     {
         string sDirectory = Application.dataPath;
         if (File.Exists(sDirectory + saveFileName))

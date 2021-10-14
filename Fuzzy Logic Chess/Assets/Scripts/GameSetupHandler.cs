@@ -9,7 +9,7 @@ public class GameSetupHandler : MonoBehaviour
      * GetGameSetup() - stores game choices into public array setupChoices[]
      */
 
-
+    public BoardManager bm;
 
     public Toggle asWhite, asBlack, asRandom;
     public Dropdown gameTypeSelection;
@@ -25,6 +25,7 @@ public class GameSetupHandler : MonoBehaviour
         if (gameInProgress == true)
         {
             buttonText.text = "PLAY";
+            bm.ResetBoard();
         }
         else
         {
