@@ -32,7 +32,10 @@ public class BoardManager : MonoBehaviour
     private Block[,] blocks = new Block[8, 8];
 
     // Array of blocks representing each square of the capture box.
-    private Block[,] whiteCaptureBox = new Block[16, 2];
+    private GameObject[,] whiteCaptureBox = new GameObject[16, 2];
+
+    // Squares for capture table
+    public GameObject captureSquare;
 
     public Transform WhiteCapture_origin;
 
@@ -93,7 +96,8 @@ public class BoardManager : MonoBehaviour
         {
             for(int j = 0; j < 2; j++)
             {
-                whiteCaptureBox[i, j] = Instantiate(block, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
+                whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.5f, Quaternion.identity);
+                whiteCaptureBox[i, j].transform.localScale = new Vector3(0.045f, 0.045f, 0.045f);
             }
         }
 
@@ -875,11 +879,15 @@ public class BoardManager : MonoBehaviour
             if(comp == true) // If the given piece is white
             {
                 pieces[to[0], to[1]].transform.position = whiteCaptureBox[whiteCaptures, 0].transform.position;
+                //pieces[to[0], to[1]].transform.position = new Vector3(0f, 0f, 1f); // placeholder
+                pieces[to[0], to[1]].transform.localScale = new Vector3(0.0325f, 0.0325f, 0.0325f);
                 whiteCaptures = whiteCaptures + 1;
             }
             else // If the given piece is black
             {
                 pieces[to[0], to[1]].transform.position = whiteCaptureBox[blackCaptures, 1].transform.position;
+                //pieces[to[0], to[1]].transform.position = new Vector3(0f, 0f, 0f); // placeholder
+                pieces[to[0], to[1]].transform.localScale = new Vector3(0.0325f, 0.0325f, 0.0325f);
                 blackCaptures = blackCaptures + 1;
             }
 
