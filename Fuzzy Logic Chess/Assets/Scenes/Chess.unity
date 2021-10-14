@@ -1418,7 +1418,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 755789364}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.06, y: 9.02, z: -15.796246}
+  m_LocalPosition: {x: -3.02, y: 9.02, z: -15.796246}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -2478,6 +2478,7 @@ MonoBehaviour:
   gm: {fileID: 1052468597}
   dice: {fileID: 672479307}
   block: {fileID: 9152371600408095551, guid: 089a87d47d450924cb0a41cf3025c43b, type: 3}
+  captureSquare: {fileID: 9152371600408095551, guid: 089a87d47d450924cb0a41cf3025c43b, type: 3}
   WhiteCapture_origin: {fileID: 755789365}
   setup_complete: 0
 --- !u!1 &1731902105
