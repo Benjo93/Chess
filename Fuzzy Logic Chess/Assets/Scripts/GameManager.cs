@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
 
     private enum Team { black, white }
     private Team team;
+    private bool DidDelegate = false;
 
     private int moves_left = 6; 
 
@@ -72,7 +73,20 @@ public class GameManager : MonoBehaviour
         // Reset moves to players current max_moves.
         moves_left = players[(int)team].max_moves;
 
+        //Reset Delegation Action
+        DidDelegate = false;
+
         CompleteGameState(0);
+    }
+
+    public void SetDidDelegate(bool answer)
+    {
+        this.DidDelegate = answer;
+    }
+
+    public bool GetDidDelegate()
+    {
+        return DidDelegate;
     }
 
     public string GetTeam()

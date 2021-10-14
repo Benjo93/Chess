@@ -13,6 +13,23 @@ using UnityEngine.UI;
 
 public class BoardManager : MonoBehaviour
 {
+    // UI Game Objects List
+    public GameObject DelegationButton;
+    public GameObject EndTurnButton;
+    public GameObject ConfirmDelegationButton;
+    public GameObject CancelButton;
+
+    public GameObject RevokeButton;
+    public GameObject ConfirmRevokeButton;
+    public GameObject CancelRevokeButton;
+    public int GlobalDelegationID = 1;
+
+    // Determines if delegation mode is enabled
+    public bool delegation = false;
+
+    // Determines if revoke mode is enabled
+    public bool revoke = false;
+
     // Color for pieces, assigned in the inspector.
     public Color color_one;
     public Color color_two;
@@ -140,53 +157,382 @@ public class BoardManager : MonoBehaviour
                     DisplayHoverInfo(hovered_index);
                 }
 
-                // Clicking.
-                if (Input.GetMouseButtonDown(0))
+                if(delegation == false)
                 {
-                    // Check if there is a piece at the selected blocks index.
-                    if (pieces[index[0], index[1]] && !pieces[index[0], index[1]].has_moved && pieces[index[0], index[1]].GetTeam() == gm.GetTeam())
+                    // Clicking.
+                    if (Input.GetMouseButtonDown(0))
                     {
-                        RefreshBlocks();
+                        // Check if there is a piece at the selected blocks index.
+                        if (pieces[index[0], index[1]] && !pieces[index[0], index[1]].has_moved && pieces[index[0], index[1]].GetTeam() == gm.GetTeam())
+                        {
+                            RefreshBlocks();
 
-                        // Select the piece.
-                        selected_index = index;
-                        selected_piece = pieces[index[0], index[1]];
+                            // Select the piece.
+                            selected_index = index;
+                            selected_piece = pieces[index[0], index[1]];
 
-                        // Highlight all pieces in selected piece corp.
-                        //ShowAllPiecesInCorp(selected_piece);
+                            // Highlight all pieces in selected piece corp.
+                            //ShowAllPiecesInCorp(selected_piece);
 
-                        // Get a list of all moveable blocks.
-                        List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves());
-                        List<int[]> availableAttacks = GetAttackableList(index[0], index[1]);
+                            // Get a list of all moveable blocks.
+                            List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves());
+                            List<int[]> availableAttacks = GetAttackableList(index[0], index[1]);
 
-                        // Paint the blocks that are moveable. 
-                        SetBlockListMovable(availableMoves, pieces[index[0], index[1]].GetTeam());
-                        SetBlockListAttackable(availableAttacks, pieces[index[0], index[1]].GetTeam());
+                            // Paint the blocks that are moveable. 
+                            SetBlockListMovable(availableMoves, pieces[index[0], index[1]].GetTeam());
+                            SetBlockListAttackable(availableAttacks, pieces[index[0], index[1]].GetTeam());
 
-                        // Color selected piece.
-                        blocks[index[0], index[1]].ChangeColor(Color.white);
+                            // Color selected piece.
+                            blocks[index[0], index[1]].ChangeColor(Color.white);
+                        }
+                        // Moving selected piece.
+                        else if (selected_piece && blocks[index[0], index[1]].IsMovable())
+                        {
+                            RefreshBlocks();
+                            MovePiece(selected_index, index);
+                            Autosave();
+                        }
+                        // Attacking 
+                        else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
+                        {
+                            RefreshBlocks();
+                            Attack(selected_index, index);
+                            Autosave();
+                        }
+                        else
+                        {
+                            RefreshBlocks();
+                        }
                     }
-                    // Moving selected piece.
-                    else if (selected_piece && blocks[index[0], index[1]].IsMovable())
+                }
+                // If Revoke Mode is enabled
+                else if(revoke == true)
+                {                    
+                    Block selectedBlock = blocks[index[0], index[1]];
+                    Piece selected_piece = pieces[index[0], index[1]];
+                    int corpID = selected_piece.GetCorpId();
+                    int delegationID = selected_piece.GetDelegationID();
+                    //Clicking.
+                    if (Input.GetMouseButtonDown(0))
                     {
+                        //Ensures that only one delegation is selected at a time
                         RefreshBlocks();
-                        MovePiece(selected_index, index);
-                        Autosave();
+                        foreach(Piece piece in pieces)
+                        {
+                            if(piece != null)
+                            {
+                                //tempid is made 0 so that it doesn't break anything
+                                piece.SetTempID(0);
+                                if (piece.GetDelegationID() == delegationID && piece.GetDelegationID() != 0)
+                                {
+                                    //HIghlights every piece in the selected delegation
+                                    int[] nindex = piece.position;
+                                    blocks[nindex[0], nindex[1]].ChangeColor(Color.yellow);
+                                    //tempid is made 1 so that each piece can later be revoked
+                                    piece.SetTempID(1);
+                                }
+                            }
+                            
+                        }
                     }
-                    // Attacking 
-                    else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
+                }
+                // If delegation mode is enabled
+                else
+                {
+                    Block selectedBlock = blocks[index[0], index[1]];
+                    Piece selected_piece = pieces[index[0], index[1]];
+                    int corpID = selected_piece.GetCorpId();
+                    string currentTurn = gm.GetTeam();
+                    //whenever a piece in king corp is clicked, it changes colors
+                    if (Input.GetMouseButtonDown(0) && ((currentTurn == "white" && corpID == 4) || (currentTurn == "black" && corpID == -4)) && pieces !=null)
                     {
-                        RefreshBlocks();
-                        Attack(selected_index, index);
-                        Autosave();
-                    }
-                    else
-                    {
-                        RefreshBlocks();
+                        selected_piece.IncrementTempID();
+                        if (selected_piece.GetTempID() == 0)
+                        {
+                            selectedBlock.ChangeColor(Color.grey);                            
+                        }
+                        // represents left bishop corps
+                        else if (selected_piece.GetTempID() == 1)
+                        {
+                            selectedBlock.ChangeColor(Color.blue);
+                        }
+                        // represents right bishop corps
+                        else
+                        {
+                            selectedBlock.ChangeColor(Color.green);
+                        }
                     }
                 }
             }
         }
+    }
+
+    // Enables delegation mode
+    public void EnableDelegationMode()
+    {
+        //Checking to make sure delegation can occur
+        if (!gm.GetDidDelegate())
+        {
+            //makes delegation true for update function
+            delegation = true;
+            //buttons are created and destroyed for screen
+            DelegationButton.gameObject.SetActive(false);
+            EndTurnButton.gameObject.SetActive(false);
+            RevokeButton.gameObject.SetActive(false);
+            ConfirmDelegationButton.gameObject.SetActive(true);
+            CancelButton.gameObject.SetActive(true);
+
+            //king's corp is highlighted
+            if (gm.GetTeam() == "white")
+            {
+                foreach (Piece piece in pieces)
+                {
+                    if (piece != null && piece.GetCorpId() == 4)
+                    {
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.grey);
+                    }
+                }
+            }
+            else
+            {
+                foreach (Piece piece in pieces)
+                {
+                    if (piece != null && piece.GetCorpId() == -4)
+                    {
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.grey);
+                    }
+                }
+
+            }
+        }
+        
+    }
+
+    //returns the number of member that the given corp id has
+    public int TotalMembers(int id)
+    {
+        int total = 0;
+        foreach (Piece piece in pieces)
+        {
+            if (piece != null)
+            {
+                if (piece.GetCorpId() == id)
+                {
+                    total++;
+                }
+            }
+        }
+        return total;
+    }
+
+    //returns the number of pieces with the given temp_id
+
+    public int TempTotals(int id)
+    {
+        int total = 0;
+        foreach (Piece piece in pieces)
+        {
+            if (piece != null)
+            {
+                if (piece.GetTempID() == id)
+                {
+                    total++;
+                }
+            }
+        }
+        return total;
+    }
+
+    //Checks to see if delegation may be ended
+    private bool IsValid()
+    {
+        int total1 = 0;
+        int total2 = 0;
+        if(gm.GetTeam() == "white")
+        {
+            total1 = TotalMembers(5) + TempTotals(1);
+            total2 = TotalMembers(6) + TempTotals(2);
+        }
+        else
+        {
+            total1 = TotalMembers(-5) + TempTotals(1);
+            total2 = TotalMembers(-6) + TempTotals(2);
+        }
+        if(total1 > 5 || total2 > 5)
+        {
+            return false;
+        }
+        return true;
+    }
+
+
+    // Confirms Delegation
+    public void DisableDelegationButton()
+    {
+        //ensures delegation is legal
+        if (!IsValid())
+        {
+            return;
+        }
+        //Delegation mode is left
+        delegation = false;
+        //buttons are destroyed and recreated for the game
+        DelegationButton.gameObject.SetActive(true);
+        EndTurnButton.gameObject.SetActive(true);
+        RevokeButton.gameObject.SetActive(true);
+        ConfirmDelegationButton.gameObject.SetActive(false);
+        CancelButton.gameObject.SetActive(false);
+        //each piece is delegated individually
+        foreach(Piece piece in pieces)
+        {
+            if(piece != null)
+            {
+                int tempID = piece.GetTempID();
+                int corpID = piece.GetCorpId();
+                Commander king = piece.GetCommander();
+                if (tempID != 0)
+                {
+                    if (tempID == 1)
+                    {
+                        king.RemovePiece(piece);
+                        if (corpID > 0)
+                        {
+                            piece.SetCorpID(5);
+                            king.GetLeft().AddPiece(piece);
+                        }
+                        //left bishop delegation
+                        else
+                        {
+                            piece.SetCorpID(-5);
+                            king.GetLeft().AddPiece(piece);
+                        }
+                    }
+                    else if (tempID == 2)
+                    {
+                        king.RemovePiece(piece);
+                        //right bishop delegation
+                        if (corpID > 0)
+                        {
+                            piece.SetCorpID(6);
+                            king.GetRight().AddPiece(piece);
+                        }
+                        else
+                        {
+                            piece.SetCorpID(-6);
+                            king.GetRight().AddPiece(piece);
+                        }                                               
+                    }
+                    piece.SetDelegationID(GlobalDelegationID);
+                    
+                }
+                
+                piece.SetTempID(0);
+                
+            }
+        }
+        GlobalDelegationID++;
+        gm.SetDidDelegate(true);
+        RefreshBlocks();
+    }
+
+    //Cancels Delegation
+    public void CancelDelegationMode()
+    {        
+        delegation = false;
+        DelegationButton.gameObject.SetActive(true);
+        EndTurnButton.gameObject.SetActive(true);
+        RevokeButton.gameObject.SetActive(true);
+        ConfirmDelegationButton.gameObject.SetActive(false);
+        CancelButton.gameObject.SetActive(false);
+        foreach(Piece piece in pieces)
+        {
+            if (piece != null)
+            {
+                piece.SetTempID(0);
+            }
+        }
+        RefreshBlocks();
+    }
+
+    // Enables Revoke Mode
+    public void EnableRevoke()
+    {
+        if (!gm.GetDidDelegate())
+        {
+            revoke = true;
+            delegation = true;
+            DelegationButton.gameObject.SetActive(false);
+            EndTurnButton.gameObject.SetActive(false);
+            RevokeButton.gameObject.SetActive(false);
+            ConfirmRevokeButton.gameObject.SetActive(true);
+            CancelRevokeButton.gameObject.SetActive(true);
+            string currentTurn = gm.GetTeam();
+            foreach (Piece piece in pieces)
+            {
+                if (piece != null)
+                {
+                    int id = piece.GetDelegationID();
+                    if (id > 0 && ((currentTurn=="white" && piece.GetCorpId() > 0) || (currentTurn=="black" && piece.GetCorpId() < 0)))
+                    {
+                        //highlight piece
+                        int[] index = piece.position;
+                        blocks[index[0], index[1]].ChangeColor(Color.blue);
+                    }
+                }
+            }
+        }        
+    }
+
+    // Confirm Revoke Mode
+    public void ConfirmRevoke()
+    {
+        revoke = false;
+        delegation = false;
+        DelegationButton.gameObject.SetActive(true);
+        EndTurnButton.gameObject.SetActive(true);
+        RevokeButton.gameObject.SetActive(true);
+        ConfirmRevokeButton.gameObject.SetActive(false);
+        CancelRevokeButton.gameObject.SetActive(false);
+        foreach(Piece piece in pieces)
+        {
+            if(piece!=null&& piece.GetTempID() == 1)
+            {
+                Commander currentCommander = piece.GetCommander();
+                currentCommander.RemovePiece(piece);
+                currentCommander.GetKing().AddPiece(piece);
+                piece.SetTempID(0);
+                if (gm.GetTeam() == "white")
+                {
+                    piece.SetCorpID(4);
+                }
+                else
+                {
+                    piece.SetCorpID(-4);
+                }
+            }
+        }
+        gm.SetDidDelegate(true);
+        RefreshBlocks();
+    }
+
+    // Cancel Revoke
+    public void CancelRevoke()
+    {
+        revoke = false;
+        delegation = false;
+        DelegationButton.gameObject.SetActive(true);
+        EndTurnButton.gameObject.SetActive(true);
+        RevokeButton.gameObject.SetActive(true);
+        ConfirmRevokeButton.gameObject.SetActive(false);
+        CancelRevokeButton.gameObject.SetActive(false);
+        foreach(Piece piece in pieces)
+        {
+            if (piece != null)
+            {
+                piece.SetTempID(0);
+            }
+        }
+        RefreshBlocks();
     }
 
     // Temporary GUI for Reset Button
@@ -199,7 +545,7 @@ public class BoardManager : MonoBehaviour
     }
 
     /*
-     * Audo Save:
+     * Auto Save:
      * Function that currently Saves pieces positions and corp membership into a txt file
      */
     private void Autosave()
@@ -589,6 +935,15 @@ public class BoardManager : MonoBehaviour
         Commander w_bishop_two = pieces[w_bishop_two_pos[0], w_bishop_two_pos[1]].MakeIntoCommander().SetKing(w_king);
         Commander b_bishop_one = pieces[b_bishop_one_pos[0], b_bishop_one_pos[1]].MakeIntoCommander().SetKing(b_king);
         Commander b_bishop_two = pieces[b_bishop_two_pos[0], b_bishop_two_pos[1]].MakeIntoCommander().SetKing(b_king);
+
+
+        b_king.SetLeft(b_bishop_one);
+        b_king.SetRight(b_bishop_two);
+        w_king.SetLeft(w_bishop_one);
+        w_king.SetRight(w_bishop_two);
+
+        b_king.SetCorpID(-4);
+        w_king.SetCorpID(4);
 
         foreach (Piece p in w_king_memb) w_king.AddPiece(p);
         foreach (Piece p in w_bishop_one_memb) w_bishop_one.AddPiece(p);
@@ -1220,4 +1575,5 @@ public class BoardManager : MonoBehaviour
         }
         Debug.Log(output);
     }
+
 }

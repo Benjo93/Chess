@@ -20,6 +20,8 @@ public class Piece : MonoBehaviour
     // Integer Representation of piece (-6 to 6)
     public int piece_id;
     public int corp_id;
+    public int delegation_id;
+    public int temp_id;
 
     // Name of the team (white/black)
     private string team;
@@ -46,6 +48,8 @@ public class Piece : MonoBehaviour
         this.n_moves = n_moves;
         this.position = position;
         this.color = color;
+        delegation_id = 0;
+        temp_id = 0;
         GetComponent<SpriteRenderer>().material.color = color;
         return this;
     }
@@ -210,5 +214,47 @@ public class Piece : MonoBehaviour
     public int GetCorpId()
     {
         return corp_id;
+    }
+
+    public void SetDelegationID(int newID)
+    {
+        this.delegation_id = newID;
+    }
+
+    public int GetDelegationID()
+    {
+        return delegation_id;
+    }
+
+    public void SetTempID(int newID)
+    {
+        this.temp_id = newID;
+    }
+
+    public int GetTempID()
+    {
+        return temp_id;
+    }
+
+    //function to make the tempid increase for delegation.
+    public void IncrementTempID()
+    {
+        if (temp_id == 2)
+        {
+            temp_id = 0;
+        }
+        else
+        {
+            temp_id++;
+        }
+        //tempid is increased an additional time if the bishop it would end up under is alreay dead
+        if(temp_id == 1 && commander.GetLeft().IsEmpty())
+        {
+            temp_id = 2;
+        }
+        if(temp_id == 2 && commander.GetRight().IsEmpty())
+        {
+            temp_id = 0;
+        }
     }
 }
