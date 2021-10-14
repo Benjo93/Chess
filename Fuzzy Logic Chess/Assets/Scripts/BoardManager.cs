@@ -32,7 +32,9 @@ public class BoardManager : MonoBehaviour
     private Block[,] blocks = new Block[8, 8];
 
     // Array of blocks representing each square of the capture box.
-    private Block[,] caputeBox = new Block[16, 2];
+    private Block[,] whiteCaptureBox = new Block[16, 2];
+
+    public Transform WhiteCapture_origin;
 
     // Number of white/black pieces captures.
     private int whiteCaptures = 0;
@@ -95,6 +97,27 @@ public class BoardManager : MonoBehaviour
 
         InitializeBoard(LoadPieces());
         InitializeCorps(LoadCommand());
+        buildTable();
+    }
+
+    public void buildTable()
+    {
+        for(int i = 0; i < 16; i ++) // Loops for building the white table
+        {
+            for(int j = 0; j < 2; j++)
+            {
+                whiteCaptureBox[i, j] = Instantiate(block, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
+            }
+        }
+
+        //for (int i = 0; i < 8; i++) // Loops for building the black table
+        //{
+        //    for (int j = 0; j < 2; j++)
+        //    {
+        //        blackCaptureBox[i, j] = Instantiate(block, BlackCapture_origin.position + new Vector3(j, blackCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
+        //    }
+        //}
+        //captureBox.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
     }
 
     // Built-in Unity function that is called every frame.
@@ -819,20 +842,19 @@ public class BoardManager : MonoBehaviour
             //pieces[to[0], to[1]].gameObject.SetActive(false);
 
             // Move captured piece to placeholder spot
-            //pieces[to[0], to[1]].transform.position = new Vector3(0, 0, 0);
+            //pieces[to[0], to[1]].transform.position = captureBox[0 , 0].transform.position;
+            
             string team = pieces[to[0], to[1]].GetTeam();
             bool comp = team.Equals("white", StringComparison.OrdinalIgnoreCase);
             
             if(comp == true) // If the given piece is white
             {
-                //Move the given piece to the position [whiteCaptures][0]
-                pieces[to[0], to[1]].transform.position = new Vector3(-1, -1, -1); // plaeholder
+                pieces[to[0], to[1]].transform.position = whiteCaptureBox[whiteCaptures, 0].transform.position;
                 whiteCaptures = whiteCaptures + 1;
             }
             else // If the given piece is black
             {
-                //Move the given piece to the position [blackCaptures][1]
-                pieces[to[0], to[1]].transform.position = new Vector3(1, 1, 1); // placeholder
+                pieces[to[0], to[1]].transform.position = whiteCaptureBox[blackCaptures, 1].transform.position;
                 blackCaptures = blackCaptures + 1;
             }
 
