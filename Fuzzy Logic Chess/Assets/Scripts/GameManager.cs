@@ -16,14 +16,25 @@ public class GameManager : MonoBehaviour
 
     private int moves_left = 6; 
 
-    private void Start()
+    public void StartGame()
     {
+        // Load the pieces and assign the commanders. 
+        //bm.InitializeBoard(bm.LoadPieces());
+        //bm.InitializeCorps(bm.LoadCommand());
+        bm.setup_complete = true;
+
         // Create players with session data. 
         CreatePlayer((int)Team.white);
         CreatePlayer((int)Team.black);
 
-        // Start the game.
-        StartGame();
+        // Randomly select a player to go first.
+        //team = Random.Range(0, 2) == 0 ? Team.black : Team.white;
+
+        // Assign black to go first for demo.
+        team = Team.black;
+
+        // Initiate the first move.
+        CompleteGameState(0);
     }
 
     private void CreatePlayer(int p)
@@ -38,18 +49,6 @@ public class GameManager : MonoBehaviour
                 players[p] = new AI(Session.names[p], this, bm);
                 break;
         }
-    }
-
-    public void StartGame()
-    {
-        // Randomly select a player to go first.
-        //team = Random.Range(0, 2) == 0 ? Team.black : Team.white;
-
-        // Assign black to go first for demo.
-        team = Team.black;
-
-        // Initiate the first move.
-        CompleteGameState(0);
     }
 
     // Called from the board manager after move has been made.
@@ -70,8 +69,8 @@ public class GameManager : MonoBehaviour
         // Go to next player.
         team = team == Team.black ? Team.white : Team.black;
 
-        // Reset moves to 6 (maximum)
-        moves_left = 6;
+        // Reset moves to players current max_moves.
+        moves_left = players[(int)team].max_moves;
 
         CompleteGameState(0);
     }
@@ -79,5 +78,10 @@ public class GameManager : MonoBehaviour
     public string GetTeam()
     {
         return team == Team.white ? "white" : "black";
+    }
+
+    public void LooseCommander()
+    {
+        players[(int) (team == Team.black ? Team.white : Team.black)].max_moves -= 2;
     }
 }
