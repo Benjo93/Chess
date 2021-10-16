@@ -6,7 +6,6 @@ public class Commander : MonoBehaviour
     public int corp_id;
     private List<Piece> pieces = new List<Piece>();
     public bool has_authority;
-    public bool used_authority;
     public int default_moves;
 
     private Commander king;
@@ -93,7 +92,7 @@ public class Commander : MonoBehaviour
     }
     public void RestrictMoves()
     {
-        GetComponent<Piece>().n_moves = 1; 
+        GetComponent<Piece>().SetNumberOfMoves(1); 
     }
 
     public void SetCorpID(int NewID)
@@ -104,13 +103,5 @@ public class Commander : MonoBehaviour
     public int GetCorpID()
     {
         return corp_id;
-    }
-    public bool GetUsedAuthority()
-    {
-        return used_authority;
-    }
-    public void SetUsedAuthority(bool used_authority)
-    {
-        this.used_authority = used_authority;
     }
 }

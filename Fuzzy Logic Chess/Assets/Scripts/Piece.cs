@@ -11,9 +11,6 @@ public class Piece : MonoBehaviour
 {
     private string p_name;
 
-    // Max number of moves.
-    public int n_moves;
-
     // Speed of piece movement
     private float move_speed = 12f;
 
@@ -30,6 +27,9 @@ public class Piece : MonoBehaviour
     public int[] position;
 
     public Color color;
+
+    // Max number of moves.
+    private int n_moves;
 
     // Path positions.
     private List<Vector3> path;
@@ -110,7 +110,6 @@ public class Piece : MonoBehaviour
             if (path.Count > 2)
             {
                 commander.UseCommandAuthority();
-
                 // Uses 2 out of 6 moves (They cannot move any other piece so technically their commanded pieces have used their move).
                 return 2;
             }
@@ -177,6 +176,10 @@ public class Piece : MonoBehaviour
     {
         return n_moves;
     }
+    public void SetNumberOfMoves(int n)
+    {
+        n_moves = n;
+    }
 
     public string GetTeam()
     {
@@ -203,8 +206,6 @@ public class Piece : MonoBehaviour
         {
             // Reset the number of moves, in case the commander is restricted to one move.
             n_moves = commander.default_moves;
-            // Gives the command authority back to king.
-            commander.SetUsedAuthority(false);
         }
     }
     public string GetPName()

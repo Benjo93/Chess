@@ -211,14 +211,14 @@ public class BoardManager : MonoBehaviour
                     }
                 }
                 // If delegation mode is enabled
-                else
+                else if (pieces[index[0], index[1]])
                 {
                     Block selectedBlock = blocks[index[0], index[1]];
                     Piece selected_piece = pieces[index[0], index[1]];
                     int corpID = selected_piece.GetCorpID();
                     string currentTurn = gm.GetTeam();
                     //whenever a piece in king corp is clicked, it changes colors
-                    if (Input.GetMouseButtonDown(0) && ((currentTurn == "white" && corpID == 4) || (currentTurn == "black" && corpID == -4)) && pieces != null)
+                    if (Input.GetMouseButtonDown(0) && ((currentTurn == "white" && corpID == 1) || (currentTurn == "black" && corpID == -1)) && !selected_piece.is_commander)
                     {
                         selected_piece.IncrementTempID();
                         if (selected_piece.GetTempID() == 0)
@@ -262,7 +262,8 @@ public class BoardManager : MonoBehaviour
         {
             for(int j = 0; j < 2; j++)
             {
-                whiteCaptureBox[i, j] = Instantiate(block, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
+                Instantiate(block, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform);
+                //whiteCaptureBox[i, j] = Instantiate(block, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
             }
         }
 
@@ -296,7 +297,7 @@ public class BoardManager : MonoBehaviour
             {
                 foreach (Piece piece in pieces)
                 {
-                    if (piece != null && piece.GetCorpID() == 4)
+                    if (piece != null && piece.GetCorpID() == 1 && !piece.is_commander)
                     {
                         blocks[piece.position[0], piece.position[1]].ChangeColor(Color.grey);
                     }
@@ -306,7 +307,7 @@ public class BoardManager : MonoBehaviour
             {
                 foreach (Piece piece in pieces)
                 {
-                    if (piece != null && piece.GetCorpID() == -4)
+                    if (piece != null && piece.GetCorpID() == -1 && !piece.is_commander)
                     {
                         blocks[piece.position[0], piece.position[1]].ChangeColor(Color.grey);
                     }
@@ -404,13 +405,13 @@ public class BoardManager : MonoBehaviour
                         king.RemovePiece(piece);
                         if (corpID > 0)
                         {
-                            piece.SetCorpID(5);
+                            piece.SetCorpID(2);
                             king.GetLeft().AddPiece(piece);
                         }
                         //left bishop delegation
                         else
                         {
-                            piece.SetCorpID(-5);
+                            piece.SetCorpID(-2);
                             king.GetLeft().AddPiece(piece);
                         }
                     }
@@ -420,12 +421,12 @@ public class BoardManager : MonoBehaviour
                         //right bishop delegation
                         if (corpID > 0)
                         {
-                            piece.SetCorpID(6);
+                            piece.SetCorpID(3);
                             king.GetRight().AddPiece(piece);
                         }
                         else
                         {
-                            piece.SetCorpID(-6);
+                            piece.SetCorpID(-3);
                             king.GetRight().AddPiece(piece);
                         }                                               
                     }
@@ -771,7 +772,7 @@ public class BoardManager : MonoBehaviour
             {
                 if (pieces[row, col])
                 {
-                    //pieces[row, col].SetDelegationID(delegation_state[row,col]);
+                    pieces[row, col].SetDelegationID(delegation_state[row,col]);
                 }
             }
         }
@@ -793,22 +794,37 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    public void InitializeCommandAuthorityUsed(bool[] command_authority_used)
+    public void InitializeCommandNMoves(int[] numMoves)
     {
         for (int row = 0; row < pieces.GetLength(0); row++)
         {
             for (int col = 0; col < pieces.GetLength(1); col++)
             {
-                if (pieces[row, col])
+                if (pieces[row, col] && pieces[row,col].is_commander)
                 {
-                    if (pieces[row, col].GetPName().Equals("w_king"))
+                    int newNMoves = 0;
+                    switch(pieces[row, col].GetCorpID())
                     {
-                        pieces[row, col].commander.SetUsedAuthority(command_authority_used[0]);
+                        case 1:
+                            newNMoves = numMoves[0];
+                            break;
+                        case 2:
+                            newNMoves = numMoves[1];
+                            break;
+                        case 3:
+                            newNMoves = numMoves[2];
+                            break;
+                        case -1:
+                            newNMoves = numMoves[3];
+                            break;
+                        case -2:
+                            newNMoves = numMoves[4];
+                            break;
+                        case -3:
+                            newNMoves = numMoves[5];
+                            break;
                     }
-                    else if (pieces[row, col].GetPName().Equals("b_king"))
-                    {
-                        pieces[row, col].commander.SetUsedAuthority(command_authority_used[1]);
-                    }
+                    pieces[row, col].SetNumberOfMoves(newNMoves);
                 }
             }
         }

@@ -40,7 +40,7 @@ public class GameManager : MonoBehaviour
         bm.InitializeCorps(LoadCorps());
         bm.InitializeDelegation(LoadDelegation());
         bm.InitializeHasMoved(LoadHasMoved());
-        bm.InitializeCommandAuthorityUsed(LoadCommandAuthorityUsed());
+        bm.InitializeCommandNMoves(LoadCommandNMoves());
         bm.InitializeCaptureWhite(LoadCapturedWhite());
         bm.InitializeCaptureBlack(LoadCapturedBlack());
 
@@ -82,7 +82,6 @@ public class GameManager : MonoBehaviour
         if (moves_left > 0)
         {
             players[(int)team].BeginMove();
-            Debug.Log("CompleteGameState Autosave");
             Autosave();
         }
         else
@@ -109,7 +108,6 @@ public class GameManager : MonoBehaviour
 
     public void SetDidDelegate(bool answer)
     {
-        Debug.Log("SetDidDelegate Autosave");
         Autosave();
         this.DidDelegate = answer;
     }
@@ -141,7 +139,7 @@ public class GameManager : MonoBehaviour
     // Pieces Corp Membership
     // Pieces Delegation State
     // Pieces Has Moved State
-    // Current Command Authority Used
+    // Current Command Number of Moves
     // Captured White
     // Captured Black
     public void Autosave()
@@ -169,8 +167,13 @@ public class GameManager : MonoBehaviour
             sw.Write(moves_left);
             sw.WriteLine();
 
-            int[] w_king_pos = new int[2];
-            int[] b_king_pos = new int[2];
+            int[] w_command_corp1 = new int[0];
+            int[] w_command_corp2 = new int[0];
+            int[] w_command_corp3 = new int[0];
+            int[] b_command_corp1 = new int[0];
+            int[] b_command_corp2 = new int[0];
+            int[] b_command_corp3 = new int[0];
+
             // Saves the each pieces' placement
             for (int row = 0; row < 8; row++)
             {
@@ -179,13 +182,29 @@ public class GameManager : MonoBehaviour
                     if (!(row == 0 && col == 0)) sw.Write(",");
                     if (bm.GetPieces()[row, col])
                     {
-                        if (bm.GetPieces()[row, col].GetPieceID() == 6)
+                        if(bm.GetPieces()[row, col].is_commander)
                         {
-                            w_king_pos = new int[2] { row, col };
-                        }
-                        else if (bm.GetPieces()[row, col].GetPieceID() == -6)
-                        {
-                            b_king_pos = new int[2] { row, col };
+                            switch (bm.GetPieces()[row, col].GetCorpID())
+                            {
+                                case 1:
+                                    w_command_corp1 = new int[2] { row, col };
+                                    break;
+                                case 2:
+                                    w_command_corp2 = new int[2] { row, col };
+                                    break;
+                                case 3:
+                                    w_command_corp3 = new int[2] { row, col };
+                                    break;
+                                case -1:
+                                    b_command_corp1 = new int[2] { row, col };
+                                    break;
+                                case -2:
+                                    b_command_corp2 = new int[2] { row, col };
+                                    break;
+                                case -3:
+                                    b_command_corp3 = new int[2] { row, col };
+                                    break;
+                            }
                         }
                         sw.Write(bm.GetPieces()[row, col].GetPieceID().ToString());
                     }
@@ -264,9 +283,53 @@ public class GameManager : MonoBehaviour
             }
             sw.WriteLine();
 
-            // Saves the used_authority state of the white king and black king
-            sw.Write(Convert.ToInt32(bm.GetPieces()[w_king_pos[0], w_king_pos[1]].commander.GetUsedAuthority()) +
-                     "," + Convert.ToInt32(bm.GetPieces()[b_king_pos[0], b_king_pos[1]].commander.GetUsedAuthority()));
+            // Saves the n_moves of all the commanders
+            if (w_command_corp1.Length > 0)
+            {
+                sw.Write(bm.GetPieces()[w_command_corp1[0], w_command_corp1[1]].GetNumberOfMoves());
+                sw.Write(",");
+            }
+            if (w_command_corp2.Length > 0)
+            {
+                sw.Write(bm.GetPieces()[w_command_corp2[0], w_command_corp2[1]].GetNumberOfMoves());
+                sw.Write(",");
+            }
+            else
+            {
+                sw.Write("0,");
+            }
+            if (w_command_corp3.Length > 0)
+            {
+                sw.Write(bm.GetPieces()[w_command_corp3[0], w_command_corp3[1]].GetNumberOfMoves());
+            }
+            else
+            {
+                sw.Write("0");
+            }
+            sw.WriteLine();
+
+            if (b_command_corp1.Length > 0)
+            {
+                sw.Write(bm.GetPieces()[b_command_corp1[0], b_command_corp1[1]].GetNumberOfMoves());
+                sw.Write(",");
+            }
+            if (b_command_corp2.Length > 0)
+            {
+                sw.Write(bm.GetPieces()[b_command_corp2[0], b_command_corp2[1]].GetNumberOfMoves());
+                sw.Write(",");
+            }
+            else
+            {
+                sw.Write("0,");
+            }
+            if (b_command_corp3.Length > 0)
+            {
+                sw.Write(bm.GetPieces()[b_command_corp3[0], b_command_corp3[1]].GetNumberOfMoves());
+            }
+            else
+            {
+                sw.Write("0");
+            }
             sw.WriteLine();
 
             // Saves the piece_id of captured white pieces
@@ -315,14 +378,8 @@ public class GameManager : MonoBehaviour
         string sDirectory = Application.dataPath;
         if (File.Exists(sDirectory + saveFileName))
         {
-            Debug.Log("ERASE");
             File.Delete(sDirectory + saveFileName);
         }
-        else
-        {
-            Debug.Log("NOT ERASE");
-        }
-        
     }
 
     private void InitializePlayer(string[] players)
@@ -597,14 +654,14 @@ public class GameManager : MonoBehaviour
         return has_moved_init;
     }
 
-    private bool[] LoadCommandAuthorityUsed()
+    private int[] LoadCommandNMoves()
     {
-        bool[] command_authority_used_init;
+        int[] command_n_moves_init;
         string sDirectory = Application.dataPath;
         if (File.Exists(sDirectory + saveFileName))
         {
-            command_authority_used_init = new bool[2];
-            string commandAuthorityUsedLine;
+            command_n_moves_init = new int[6];
+            string commandNMovesLine;
             using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
             {
                 sr.ReadLine();
@@ -615,20 +672,20 @@ public class GameManager : MonoBehaviour
                 sr.ReadLine();
                 sr.ReadLine();
                 sr.ReadLine();
-                commandAuthorityUsedLine = sr.ReadLine();
+                commandNMovesLine = sr.ReadLine();
                 sr.Close();
             }
-            string[] commandAuthorityUsedArray = commandAuthorityUsedLine.Split(',');
-            for (int i = 0; i < commandAuthorityUsedArray.Length; i++)
+            string[] commandNMovesArray = commandNMovesLine.Split(',');
+            for (int i = 0; i < commandNMovesArray.Length; i++)
             {
-                command_authority_used_init[i] = commandAuthorityUsedArray[i].Equals("1") ? true : false;
+                command_n_moves_init[i] = Convert.ToInt32(commandNMovesArray[i]);
             }
         }
         else
         {
-            command_authority_used_init = new bool[2] { false, false };
+            command_n_moves_init = new int[6] { 3, 2, 2, 3, 2, 2 };
         }
-        return command_authority_used_init;
+        return command_n_moves_init;
     }
 
     private int[] LoadCapturedWhite()
@@ -640,6 +697,7 @@ public class GameManager : MonoBehaviour
             string capturedWhiteLine;
             using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
             {
+                sr.ReadLine();
                 sr.ReadLine();
                 sr.ReadLine();
                 sr.ReadLine();
@@ -675,6 +733,7 @@ public class GameManager : MonoBehaviour
             string capturedBlackLine;
             using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
             {
+                sr.ReadLine();
                 sr.ReadLine();
                 sr.ReadLine();
                 sr.ReadLine();
