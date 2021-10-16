@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -54,16 +53,16 @@ public class BoardManager : MonoBehaviour
     public Transform WhiteCapture_origin;
 
     // Number of white/black pieces captures.
-    private int whiteCaptures = 0;
-    private int blackCaptures = 0;
+    //private int whiteCaptures = 0;
+    //private int blackCaptures = 0;
 
     // Array of pieces currently in play.
     private Piece[,] pieces = new Piece[8, 8];
+    private List<Piece> capturedWhite = new List<Piece>();
+    private List<Piece> capturedBlack = new List<Piece>();
 
     // List of all commanders
     //private List<Commander> corps = new List<Commander>();
-
-    private Rect resetButton = new Rect(Screen.width - 150f, 100, 100, 50); // TEMPORARY PLACE HOLDER
 
     // The 'Piece' component of the currently selected piece.
     private Piece selected_piece;
@@ -80,8 +79,7 @@ public class BoardManager : MonoBehaviour
     // Boolean to keep track of game setup. Called from the Game Manager.
     public bool setup_complete; 
 
-    private readonly string saveFileName = "/Saves/save_state.txt";
-
+    /*
     // Used when initializing the board before a game.
     private int[,] board_init = new int[,]
     {
@@ -94,34 +92,12 @@ public class BoardManager : MonoBehaviour
         { -1, -1, -1, -1, -1, -1, -1, -1 },
         { -2, -4, -3, -6, -5, -3, -4, -2 },
     };
+    */
 
     private void Start()
     {
         PrintBoardSquares();
-
-        InitializeBoard(LoadPieces());
-        InitializeCorps(LoadCommand());
-        buildTable();
-    }
-
-    public void buildTable()
-    {
-        for(int i = 0; i < 16; i ++) // Loops for building the white table
-        {
-            for(int j = 0; j < 2; j++)
-            {
-                whiteCaptureBox[i, j] = Instantiate(block, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
-            }
-        }
-
-        //for (int i = 0; i < 8; i++) // Loops for building the black table
-        //{
-        //    for (int j = 0; j < 2; j++)
-        //    {
-        //        blackCaptureBox[i, j] = Instantiate(block, BlackCapture_origin.position + new Vector3(j, blackCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
-        //    }
-        //}
-        //captureBox.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        BuildTable();
     }
 
     // Built-in Unity function that is called every frame.
@@ -157,7 +133,7 @@ public class BoardManager : MonoBehaviour
                     DisplayHoverInfo(hovered_index);
                 }
 
-                if(delegation == false)
+                if (delegation == false)
                 {
                     // Clicking.
                     if (Input.GetMouseButtonDown(0))
@@ -190,14 +166,12 @@ public class BoardManager : MonoBehaviour
                         {
                             RefreshBlocks();
                             MovePiece(selected_index, index);
-                            Autosave();
                         }
                         // Attacking 
                         else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
                         {
                             RefreshBlocks();
                             Attack(selected_index, index);
-                            Autosave();
                         }
                         else
                         {
@@ -206,20 +180,20 @@ public class BoardManager : MonoBehaviour
                     }
                 }
                 // If Revoke Mode is enabled
-                else if(revoke == true)
-                {                    
+                else if (revoke == true)
+                {
                     Block selectedBlock = blocks[index[0], index[1]];
                     Piece selected_piece = pieces[index[0], index[1]];
-                    int corpID = selected_piece.GetCorpId();
+                    int corpID = selected_piece.GetCorpID();
                     int delegationID = selected_piece.GetDelegationID();
                     //Clicking.
                     if (Input.GetMouseButtonDown(0))
                     {
                         //Ensures that only one delegation is selected at a time
                         RefreshBlocks();
-                        foreach(Piece piece in pieces)
+                        foreach (Piece piece in pieces)
                         {
-                            if(piece != null)
+                            if (piece != null)
                             {
                                 //tempid is made 0 so that it doesn't break anything
                                 piece.SetTempID(0);
@@ -232,7 +206,7 @@ public class BoardManager : MonoBehaviour
                                     piece.SetTempID(1);
                                 }
                             }
-                            
+
                         }
                     }
                 }
@@ -241,15 +215,15 @@ public class BoardManager : MonoBehaviour
                 {
                     Block selectedBlock = blocks[index[0], index[1]];
                     Piece selected_piece = pieces[index[0], index[1]];
-                    int corpID = selected_piece.GetCorpId();
+                    int corpID = selected_piece.GetCorpID();
                     string currentTurn = gm.GetTeam();
                     //whenever a piece in king corp is clicked, it changes colors
-                    if (Input.GetMouseButtonDown(0) && ((currentTurn == "white" && corpID == 4) || (currentTurn == "black" && corpID == -4)) && pieces !=null)
+                    if (Input.GetMouseButtonDown(0) && ((currentTurn == "white" && corpID == 4) || (currentTurn == "black" && corpID == -4)) && pieces != null)
                     {
                         selected_piece.IncrementTempID();
                         if (selected_piece.GetTempID() == 0)
                         {
-                            selectedBlock.ChangeColor(Color.grey);                            
+                            selectedBlock.ChangeColor(Color.grey);
                         }
                         // represents left bishop corps
                         else if (selected_piece.GetTempID() == 1)
@@ -265,6 +239,41 @@ public class BoardManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    public Piece[,] GetPieces()
+    {
+        return pieces;
+    }
+
+    public List<Piece> GetCapturedWhite()
+    {
+        return capturedWhite;
+    }
+
+    public List<Piece> GetCapturedBlack()
+    {
+        return capturedBlack;
+    }
+
+    public void BuildTable()
+    {
+        for(int i = 0; i < 16; i ++) // Loops for building the white table
+        {
+            for(int j = 0; j < 2; j++)
+            {
+                whiteCaptureBox[i, j] = Instantiate(block, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
+            }
+        }
+
+        //for (int i = 0; i < 8; i++) // Loops for building the black table
+        //{
+        //    for (int j = 0; j < 2; j++)
+        //    {
+        //        blackCaptureBox[i, j] = Instantiate(block, BlackCapture_origin.position + new Vector3(j, blackCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
+        //    }
+        //}
+        //captureBox.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
     }
 
     // Enables delegation mode
@@ -287,7 +296,7 @@ public class BoardManager : MonoBehaviour
             {
                 foreach (Piece piece in pieces)
                 {
-                    if (piece != null && piece.GetCorpId() == 4)
+                    if (piece != null && piece.GetCorpID() == 4)
                     {
                         blocks[piece.position[0], piece.position[1]].ChangeColor(Color.grey);
                     }
@@ -297,7 +306,7 @@ public class BoardManager : MonoBehaviour
             {
                 foreach (Piece piece in pieces)
                 {
-                    if (piece != null && piece.GetCorpId() == -4)
+                    if (piece != null && piece.GetCorpID() == -4)
                     {
                         blocks[piece.position[0], piece.position[1]].ChangeColor(Color.grey);
                     }
@@ -316,7 +325,7 @@ public class BoardManager : MonoBehaviour
         {
             if (piece != null)
             {
-                if (piece.GetCorpId() == id)
+                if (piece.GetCorpID() == id)
                 {
                     total++;
                 }
@@ -326,7 +335,6 @@ public class BoardManager : MonoBehaviour
     }
 
     //returns the number of pieces with the given temp_id
-
     public int TempTotals(int id)
     {
         int total = 0;
@@ -365,7 +373,6 @@ public class BoardManager : MonoBehaviour
         return true;
     }
 
-
     // Confirms Delegation
     public void DisableDelegationButton()
     {
@@ -388,7 +395,7 @@ public class BoardManager : MonoBehaviour
             if(piece != null)
             {
                 int tempID = piece.GetTempID();
-                int corpID = piece.GetCorpId();
+                int corpID = piece.GetCorpID();
                 Commander king = piece.GetCommander();
                 if (tempID != 0)
                 {
@@ -472,7 +479,7 @@ public class BoardManager : MonoBehaviour
                 if (piece != null)
                 {
                     int id = piece.GetDelegationID();
-                    if (id > 0 && ((currentTurn=="white" && piece.GetCorpId() > 0) || (currentTurn=="black" && piece.GetCorpId() < 0)))
+                    if (id > 0 && ((currentTurn=="white" && piece.GetCorpID() > 0) || (currentTurn=="black" && piece.GetCorpID() < 0)))
                     {
                         //highlight piece
                         int[] index = piece.position;
@@ -513,6 +520,8 @@ public class BoardManager : MonoBehaviour
         }
         gm.SetDidDelegate(true);
         RefreshBlocks();
+        Debug.Log("ConfirmRevoke AutoSave");
+        gm.Autosave();
     }
 
     // Cancel Revoke
@@ -533,222 +542,6 @@ public class BoardManager : MonoBehaviour
             }
         }
         RefreshBlocks();
-    }
-
-    // Temporary GUI for Reset Button
-    private void OnGUI()
-    {
-        if (GUI.Button(resetButton, "Reset"))
-        {
-            ResetBoard();
-        }
-    }
-
-    /*
-     * Auto Save:
-     * Function that currently Saves pieces positions and corp membership into a txt file
-     */
-    private void Autosave()
-    {
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
-        {
-            File.Delete(sDirectory + saveFileName);
-        }
-        using (StreamWriter sw = new StreamWriter(sDirectory + saveFileName))
-        {
-            for (int row = 0; row < pieces.GetLength(0); row++)
-            {
-                for (int col = 0; col < pieces.GetLength(1); col++)
-                {
-                    if (!(row == 0 && col == 0)) sw.Write(",");
-                    if (pieces[row, col])
-                    {
-                        switch (pieces[row, col].GetPName())
-                        {
-                            case "w_pawn": // Pawn
-                                sw.Write("1");
-                                break;
-
-                            case "w_rook": // Rook
-                                sw.Write("2");
-                                break;
-
-                            case "w_bishop": // Bishop
-                                sw.Write("3");
-                                break;
-
-                            case "w_knight": // Knight
-                                sw.Write("4");
-                                break;
-
-                            case "w_queen": // Queen
-                                sw.Write("5");
-                                break;
-
-                            case "w_king": // King
-                                sw.Write("6");
-                                break;
-
-                            case "b_pawn": // Pawn
-                                sw.Write("-1");
-                                break;
-
-                            case "b_rook": // Rook
-                                sw.Write("-2");
-                                break;
-
-                            case "b_bishop": // Bishop
-                                sw.Write("-3");
-                                break;
-
-                            case "b_knight": // Knight
-                                sw.Write("-4");
-                                break;
-
-                            case "b_queen": // Queen
-                                sw.Write("-5");
-                                break;
-
-                            case "b_king": // King
-                                sw.Write("-6");
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        sw.Write("0");
-                    }
-                }
-            }
-            sw.WriteLine();
-            // Integer representation of the corps. 
-            // -1 = black king, -2 = black bishop left, -3 = black bishop right
-            // 1 = white king, 2 = white bishop left, 3 = white bishop right
-            // 0 = empty.
-
-            int[,] corp_state = GetCorpState();
-            for (int row = 0; row < pieces.GetLength(0); row++)
-            {
-                for (int col = 0; col < pieces.GetLength(1); col++)
-                {
-                    if (!(row == 0 && col == 0)) sw.Write(",");
-                    sw.Write(corp_state[row, col]);
-                }
-            }
-            sw.Close();
-        }
-    }
-
-    /*
-     * Reset Board:
-     * Function that starts the game state back into its initial state.
-     */
-    private void ResetBoard()
-    {
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
-        {
-            File.Delete(sDirectory + saveFileName);
-        }
-        Chess.PIECES = new Dictionary<string, GameObject>();
-        Chess.SOUNDS = new Dictionary<string, AudioSource>();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    /* 
-     * Load Pieces:
-     * Function that returns the array positions of the pieces from a save file.
-     * Returns the initial positions if no save file is found.
-     */
-    public int[,] LoadPieces()
-    {
-        int[,] board_init = new int[pieces.GetLength(0), pieces.GetLength(1)];
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
-        {
-            string piecesLine;
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
-            {
-                piecesLine = sr.ReadLine();
-                sr.Close();
-            }
-            string[] piecesStringArray = piecesLine.Split(',');
-            for (int row = 0, index = 0; row < pieces.GetLength(0); row++)
-            {
-                for (int col = 0; col < pieces.GetLength(1); col++, index++)
-                {
-                    board_init[row, col] = Convert.ToInt32(piecesStringArray[index]);
-                }
-            }
-        }
-        else
-        {
-            board_init = new int[,]
-            {
-                {  2,  4,  3,  6,  5,  3,  4,  2 },
-                {  1,  1,  1,  1,  1,  1,  1,  1 },
-                {  0,  0,  0,  0,  0,  0,  0,  0 },
-                {  0,  0,  0,  0,  0,  0,  0,  0 },
-                {  0,  0,  0,  0,  0,  0,  0,  0 },
-                {  0,  0,  0,  0,  0,  0,  0,  0 },
-                { -1, -1, -1, -1, -1, -1, -1, -1 },
-                { -2, -4, -3, -6, -5, -3, -4, -2 }
-            };
-        }
-        return board_init;
-    }
-
-    /* 
-     * Load Command:
-     * Function that returns the array of command memberships of the pieces from a save file.
-     * Returns the initial memberships if no save file is found.
-     */
-    public int[,] LoadCommand()
-    {
-        int[,] command_init = new int[8, 8];
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
-        {
-            command_init = new int[pieces.GetLength(0), pieces.GetLength(1)];
-            string commandLine;
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
-            {
-                sr.ReadLine();
-                commandLine = sr.ReadLine();
-                sr.Close();
-            }
-            string[] commandStringArray = commandLine.Split(',');
-            for (int row = 0, index = 0; row < pieces.GetLength(0); row++)
-            {
-                for (int col = 0; col < pieces.GetLength(1); col++, index++)
-                {
-                    command_init[row, col] = Convert.ToInt32(commandStringArray[index]);
-                }
-            }
-        }
-        else
-        {
-            // Integer representation of the corps. 
-            // -1 = black king, -2 = black bishop left, -3 = black bishop right
-            // 1 = white king, 2 = white bishop left, 3 = white bishop right
-            // 4 = belongs to 1, 5 = belongs to 2, 6 = balongs to 3
-            // -4 = belongs to -1, -5 = belongs to -2, -6 = balongs to -3
-            // 0 = empty.
-            command_init = new int[,]
-            {
-                {  4,  5,  2,  1,  4,  3,  6,  4 },
-                {  5,  5,  5,  4,  4,  6,  6,  6 },
-                {  0,  0,  0,  0,  0,  0,  0,  0 },
-                {  0,  0,  0,  0,  0,  0,  0,  0 },
-                {  0,  0,  0,  0,  0,  0,  0,  0 },
-                {  0,  0,  0,  0,  0,  0,  0,  0 },
-                { -5, -5, -5, -4, -4, -6, -6, -6 },
-                { -4, -5, -2, -1, -4, -3, -6, -4 },
-            };
-        }
-
-        return command_init;
     }
 
     public void PrintBoardSquares()
@@ -772,89 +565,95 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    /* 
-     * Initialize Board:
-     * Initialize the pieces on the board according to the board_init array.
-     * Each piece is contained in a static dictionary from the resources 
-     * class called 'Chess', or something like that.
-     */
+    // Initialize Board:
+    // Initialize the pieces on the board according to the board_init array.
+    // Each piece is contained in a static dictionary from the resources 
+    // class called 'Chess', or something like that.
     public void InitializeBoard(int[,] pieces_state)
     {
         for (int p = 0; p < pieces_state.GetLength(0); p++)
         {
             for (int q = 0; q < pieces_state.GetLength(1); q++)
             {
-                switch (pieces_state[p, q])
+                if (pieces_state[p, q] != 0)
                 {
-                    case 1: // Pawn
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_pawn"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_pawn", 1, "white", 1, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
-                        break;
-
-                    case 2: // Rook
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_rook"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_rook", 2, "white", 2, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
-                        break;
-
-                    case 3: // Bishop
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_bishop"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_bishop", 3, "white", 2, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
-                        break;
-
-                    case 4: // Knight
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_knight"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_knight", 4, "white", 4, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
-                        break;
-
-                    case 5: // Queen
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_queen"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_queen", 5, "white", 3, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
-                        break;
-
-                    case 6: // King
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_king"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_king", 6, "white", 3, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
-                        break;
-
-                    case -1: // Pawn
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_pawn"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_pawn", -1, "black", 1, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
-                        break;
-
-                    case -2: // Rook
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_rook"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_rook", -2, "black", 2, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
-                        break;
-
-                    case -3: // Bishop
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_bishop"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_bishop", -3, "black", 2, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
-                        break;
-
-                    case -4: // Knight
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_knight"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_knight", -4, "black", 4, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
-                        break;
-
-                    case -5: // Queen
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_queen"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_queen", -5, "black", 3, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
-                        break;
-
-                    case -6: // King
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_king"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_king", -6, "black", 3, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
-                        break;
+                    pieces[p, q] = GeneratePiece(pieces_state[p, q], p, q);
                 }
             }
         }
     }
 
+    public Piece GeneratePiece(int pieceID, int row, int col)
+    {
+        Piece newPiece;
+        switch (pieceID)
+        {
+            case 1: // Pawn
+                newPiece = Instantiate(Chess.PIECES["pixel_pawn"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
+                .InitializePiece("w_pawn", 1, "white", 1, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                break;
 
-    /* 
-     * Initialize Corps:
-     * Initialize the corp membership based on a 2D array argument.
-     */
+            case 2: // Rook
+                newPiece = Instantiate(Chess.PIECES["pixel_rook"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
+                .InitializePiece("w_rook", 2, "white", 2, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                break;
+
+            case 3: // Bishop
+                newPiece = Instantiate(Chess.PIECES["pixel_bishop"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
+                .InitializePiece("w_bishop", 3, "white", 2, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                break;
+
+            case 4: // Knight
+                newPiece = Instantiate(Chess.PIECES["pixel_knight"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
+                .InitializePiece("w_knight", 4, "white", 4, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                break;
+
+            case 5: // Queen
+                newPiece = Instantiate(Chess.PIECES["pixel_queen"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
+                .InitializePiece("w_queen", 5, "white", 3, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                break;
+
+            case 6: // King
+                newPiece = Instantiate(Chess.PIECES["pixel_king"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
+                .InitializePiece("w_king", 6, "white", 3, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                break;
+
+            case -1: // Pawn
+                newPiece = Instantiate(Chess.PIECES["pixel_pawn"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
+                .InitializePiece("b_pawn", -1, "black", 1, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                break;
+
+            case -2: // Rook
+                newPiece = Instantiate(Chess.PIECES["pixel_rook"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
+                .InitializePiece("b_rook", -2, "black", 2, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                break;
+
+            case -3: // Bishop
+                newPiece = Instantiate(Chess.PIECES["pixel_bishop"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
+                .InitializePiece("b_bishop", -3, "black", 2, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                break;
+
+            case -4: // Knight
+                newPiece = Instantiate(Chess.PIECES["pixel_knight"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
+                .InitializePiece("b_knight", -4, "black", 4, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                break;
+
+            case -5: // Queen
+                newPiece = Instantiate(Chess.PIECES["pixel_queen"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
+                .InitializePiece("b_queen", -5, "black", 3, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                break;
+
+            case -6: // King
+                newPiece = Instantiate(Chess.PIECES["pixel_king"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
+                .InitializePiece("b_king", -6, "black", 3, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                break;
+            default:
+                newPiece = Instantiate(new GameObject()).AddComponent<Piece>();
+                break;
+        }
+        return newPiece;
+    }
+
     public void InitializeCorps(int[,] command_state)
     {
         int[] w_king_pos = new int[2];
@@ -881,46 +680,58 @@ public class BoardManager : MonoBehaviour
                 switch (command_state[row, col])
                 {
                     case 1:
-                        w_king_pos[0] = row;
-                        w_king_pos[1] = col;
+                        if (pieces[row, col].GetPName().Equals("w_king"))
+                        {
+                            w_king_pos[0] = row;
+                            w_king_pos[1] = col;
+                        }
+                        else
+                            w_king_memb.Add(pieces[row, col]);
                         break;
                     case 2:
-                        w_bishop_one_pos[0] = row;
-                        w_bishop_one_pos[1] = col;
+                        if (pieces[row, col].GetPName().Equals("w_bishop"))
+                        {
+                            w_bishop_one_pos[0] = row;
+                            w_bishop_one_pos[1] = col;
+                        }
+                        else
+                            w_bishop_one_memb.Add(pieces[row, col]);
                         break;
                     case 3:
-                        w_bishop_two_pos[0] = row;
-                        w_bishop_two_pos[1] = col;
-                        break;
-                    case 4:
-                        w_king_memb.Add(pieces[row, col]);
-                        break;
-                    case 5:
-                        w_bishop_one_memb.Add(pieces[row, col]);
-                        break;
-                    case 6:
-                        w_bishop_two_memb.Add(pieces[row, col]);
+                        if (pieces[row, col].GetPName().Equals("w_bishop"))
+                        {
+                            w_bishop_two_pos[0] = row;
+                            w_bishop_two_pos[1] = col;
+                        }
+                        else
+                            w_bishop_two_memb.Add(pieces[row, col]);
                         break;
                     case -1:
-                        b_king_pos[0] = row;
-                        b_king_pos[1] = col;
+                        if (pieces[row, col].GetPName().Equals("b_king"))
+                        {
+                            b_king_pos[0] = row;
+                            b_king_pos[1] = col;
+                        }
+                        else
+                            b_king_memb.Add(pieces[row, col]);
                         break;
                     case -2:
-                        b_bishop_one_pos[0] = row;
-                        b_bishop_one_pos[1] = col;
+                        if (pieces[row, col].GetPName().Equals("b_bishop"))
+                        {
+                            b_bishop_one_pos[0] = row;
+                            b_bishop_one_pos[1] = col;
+                        }
+                        else
+                            b_bishop_one_memb.Add(pieces[row, col]);
                         break;
                     case -3:
-                        b_bishop_two_pos[0] = row;
-                        b_bishop_two_pos[1] = col;
-                        break;
-                    case -4:
-                        b_king_memb.Add(pieces[row, col]);
-                        break;
-                    case -5:
-                        b_bishop_one_memb.Add(pieces[row, col]);
-                        break;
-                    case -6:
-                        b_bishop_two_memb.Add(pieces[row, col]);
+                        if (pieces[row, col].GetPName().Equals("b_bishop"))
+                        {
+                            b_bishop_two_pos[0] = row;
+                            b_bishop_two_pos[1] = col;
+                        }
+                        else
+                            b_bishop_two_memb.Add(pieces[row, col]);
                         break;
                 }
             }
@@ -936,14 +747,13 @@ public class BoardManager : MonoBehaviour
         Commander b_bishop_one = pieces[b_bishop_one_pos[0], b_bishop_one_pos[1]].MakeIntoCommander().SetKing(b_king);
         Commander b_bishop_two = pieces[b_bishop_two_pos[0], b_bishop_two_pos[1]].MakeIntoCommander().SetKing(b_king);
 
-
         b_king.SetLeft(b_bishop_one);
         b_king.SetRight(b_bishop_two);
         w_king.SetLeft(w_bishop_one);
         w_king.SetRight(w_bishop_two);
-
-        b_king.SetCorpID(-4);
-        w_king.SetCorpID(4);
+        
+        //b_king.SetCorpID(-4);
+        //w_king.SetCorpID(4);
 
         foreach (Piece p in w_king_memb) w_king.AddPiece(p);
         foreach (Piece p in w_bishop_one_memb) w_bishop_one.AddPiece(p);
@@ -953,6 +763,88 @@ public class BoardManager : MonoBehaviour
         foreach (Piece p in b_bishop_two_memb) b_bishop_two.AddPiece(p);
     }
 
+    public void InitializeDelegation(int[,] delegation_state)
+    {
+        for (int row = 0; row < delegation_state.GetLength(0); row++)
+        {
+            for (int col = 0; col < delegation_state.GetLength(1); col++)
+            {
+                if (pieces[row, col])
+                {
+                    //pieces[row, col].SetDelegationID(delegation_state[row,col]);
+                }
+            }
+        }
+    }
+
+    public void InitializeHasMoved(int[,] has_moved)
+    {
+        for (int row = 0; row < has_moved.GetLength(0); row++)
+        {
+            for (int col = 0; col < has_moved.GetLength(1); col++)
+            {
+                if (pieces[row, col])
+                {
+                    bool piece_has_moved = Convert.ToBoolean(has_moved[row, col]);
+                    pieces[row, col].SetHasMoved(piece_has_moved);
+                    if (piece_has_moved) pieces[row, col].ColorDim();
+                }
+            }
+        }
+    }
+
+    public void InitializeCommandAuthorityUsed(bool[] command_authority_used)
+    {
+        for (int row = 0; row < pieces.GetLength(0); row++)
+        {
+            for (int col = 0; col < pieces.GetLength(1); col++)
+            {
+                if (pieces[row, col])
+                {
+                    if (pieces[row, col].GetPName().Equals("w_king"))
+                    {
+                        pieces[row, col].commander.SetUsedAuthority(command_authority_used[0]);
+                    }
+                    else if (pieces[row, col].GetPName().Equals("b_king"))
+                    {
+                        pieces[row, col].commander.SetUsedAuthority(command_authority_used[1]);
+                    }
+                }
+            }
+        }
+    }
+
+    public void InitializeCaptureWhite(int[] capture)
+    {
+        for (int i = 0; i < capture.Length; i++)
+        {
+            if (capture[i] != 0) GenerateCaptureWhite(GeneratePiece(capture[i],0,0));
+        }
+    }
+
+    public void InitializeCaptureBlack(int[] capture)
+    {
+        for (int i = 0; i < capture.Length; i++)
+        {
+            if (capture[i] != 0) GenerateCaptureBlack(GeneratePiece(capture[i], 0, 0));
+        }
+    }
+
+    public void GenerateCaptureWhite(Piece capture)
+    {
+        capture.transform.position = whiteCaptureBox[capturedWhite.Count, 0].transform.position;
+        capture.ResetPiece();
+        capturedWhite.Add(capture);
+    }
+
+    public void GenerateCaptureBlack(Piece capture)
+    {
+        capture.transform.position = whiteCaptureBox[capturedBlack.Count, 1].transform.position;
+        capture.ResetPiece();
+        capturedBlack.Add(capture);
+    }
+
+    /*
     // Old InitializeCorps function.
     public void InitializeCorps()
     {
@@ -1028,7 +920,7 @@ public class BoardManager : MonoBehaviour
 
         //corps.Add(b_bishop_two);
     }
-
+    */
 
     // Function called by the AI to get the current board state and to calculate the next move.
     public Piece[,] GetAllPieces()
@@ -1064,8 +956,8 @@ public class BoardManager : MonoBehaviour
     }
 
     // Integer representation of the corps. 
-    // -1 = black king, -2 = black bishop left, -3 = black bishop right
-    // 1 = white king, 2 = white bishop left, 3 = white bishop right
+    // -1 = black king corp, -2 = black bishop left corp, -3 = black bishop right corp
+    // 1 = white king corp, 2 = white bishop left corp, 3 = white bishop right corp
     // 0 = empty.
     public int[,] GetCorpState()
     {
@@ -1106,15 +998,12 @@ public class BoardManager : MonoBehaviour
         //Debug.Log(message);
     }
 
-    /*
-     * Move Piece:
-     * Takes a position 'from' and position 'to', 
-     * calculates the path between the two points, 
-     * calls the 'MovePiece' function from the piece class and 
-     * calculates a list of vector positions for the piece to traverse (updates the transform.position component of the piece game object),
-     * then notifies the game manager. 
-     * 
-     */
+    // Move Piece:
+    // Takes a position 'from' and position 'to', 
+    // calculates the path between the two points, 
+    // calls the 'MovePiece' function from the piece class and 
+    // calculates a list of vector positions for the piece to traverse (updates the transform.position component of the piece game object),
+    // then notifies the game manager. 
     public void MovePiece(int[] from, int[] to)
     {
         Piece p = pieces[from[0], from[1]];
@@ -1140,15 +1029,12 @@ public class BoardManager : MonoBehaviour
         gm.CompleteGameState(moves_used);
     }
 
-    /* 
-     * Attack:
-     * Gets a random number from the dice object. 
-     * Compares the roll with the table from the Chess 'roll_needed' table.
-     * Calls the 'Attack' function from the piece class with parameters (path, new_position, was_successful).
-     * Successful attacks -> Move the attacking piece, deactivate/remove the captured piece.
-     * Unsuccessful attacks -> Only update the number of turns used (Passed back to the game manager) and handle commander stuff.
-     * 
-     */
+    // Attack:
+    // Gets a random number from the dice object. 
+    // Compares the roll with the table from the Chess 'roll_needed' table.
+    // Calls the 'Attack' function from the piece class with parameters (path, new_position, was_successful).
+    // Successful attacks -> Move the attacking piece, deactivate/remove the captured piece.
+    // Unsuccessful attacks -> Only update the number of turns used (Passed back to the game manager) and handle commander stuff.
     public bool Attack(int[] from, int[] to)
     {
         int roll = dice.RollDice();
@@ -1195,17 +1081,20 @@ public class BoardManager : MonoBehaviour
             {
                 Debug.Log("Game Over");
                 Debug.Log(pieces[to[0], to[1]].GetPName());
+                gm.EraseSave();
                 //If Black
                 if(pieces[to[0], to[1]].GetPName() == "b_king")
                 {
                     //White win screen
                     SceneManager.LoadScene("Player One Wins");
+                    return true;
                 }
                 //else white
                 else
                 {
                     //Black win screen
                     SceneManager.LoadScene("Player Two Wins");
+                    return true;
                 }
                 // Insert Wilhelm Scream..
             }
@@ -1215,7 +1104,7 @@ public class BoardManager : MonoBehaviour
                 // If so, transfer pieces to king.
                 pieces[to[0], to[1]].commander.TransferPiecesToKing();
                 // Reduce max number of turns for the captured player.
-                gm.LooseCommander();
+                gm.LoseCommander();
             }
 
             // Deactivate captured piece.      
@@ -1229,13 +1118,15 @@ public class BoardManager : MonoBehaviour
             
             if(comp == true) // If the given piece is white
             {
-                pieces[to[0], to[1]].transform.position = whiteCaptureBox[whiteCaptures, 0].transform.position;
-                whiteCaptures = whiteCaptures + 1;
+                GenerateCaptureWhite(pieces[to[0], to[1]]);
+                //pieces[to[0], to[1]].transform.position = whiteCaptureBox[whiteCaptures, 0].transform.position;
+                //whiteCaptures = whiteCaptures + 1;
             }
             else // If the given piece is black
             {
-                pieces[to[0], to[1]].transform.position = whiteCaptureBox[blackCaptures, 1].transform.position;
-                blackCaptures = blackCaptures + 1;
+                GenerateCaptureBlack(pieces[to[0], to[1]]);
+                //pieces[to[0], to[1]].transform.position = whiteCaptureBox[blackCaptures, 1].transform.position;
+                //blackCaptures = blackCaptures + 1;
             }
 
             // Shift pieces array.
@@ -1257,34 +1148,46 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    /*
     // Command for moving piece to capture table
-    //public void movePieceToCapture(pieces captured)
-    //{
+    public void movePieceToCapture(pieces captured)
+    {
 
-    //}
+    }
 
     // Command for moving piece
-
-    /*
-    * Get Attackable List:
-    * Post-condition:
-    * Returns a list of coordinates of all adjacent blocks with enemy
-    * pieces. Rooks have a range of 2. 
     */
+
+    // Get Attackable List:
+    // Post-condition:
+    // Returns a list of coordinates of all adjacent blocks with enemy
+    // pieces. Rooks have a range of 2. 
     private List<int[]> GetAttackableList(int row, int col)
     {
         List<int[]> newList = new List<int[]>();
         bool isWhitePiece = pieces[row, col].GetTeam().Equals("white");
         int range = 1;
         if (pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook"))
-            range = pieces[row, col].GetNumberOfMoves(); ;
-        int west = Mathf.Max(0, row - range);
-        int east = Mathf.Min(7, row + range);
-        int north = Mathf.Max(0, col - range);
-        int south = Mathf.Min(7, col + range);
-        for (int i = west; i <= east; i++)
+            range = pieces[row, col].GetNumberOfMoves();
+        int north = Mathf.Max(0, row - range);
+        int south = Mathf.Min(7, row + range);
+        int west = Mathf.Max(0, col - range);
+        int east = Mathf.Min(7, col + range);
+
+        
+        if (pieces[row, col].GetPName().Equals("w_pawn"))
         {
-            for (int j = north; j <= south; j++)
+            north = row + range;
+        }
+        else if (pieces[row, col].GetPName().Equals("b_pawn"))
+        {
+            south = row - range;
+        }
+        
+            
+        for (int i = north; i <= south; i++)
+        {
+            for (int j = west; j <= east; j++)
             {
                 if (pieces[i, j])
                 {
@@ -1296,16 +1199,14 @@ public class BoardManager : MonoBehaviour
         return newList;
     }
 
-    /*
-     * Get Moves List:
-     * Uses Queues for breadth first search.  The queues are separated between
-     * the current generation (m) and the next generation (m-1).  When the 
-     * current generation is depleted, the next generation becomes the current
-     * generation and a new generation is created.
-     * Post-condition:
-     * Returns a list of coordinates of all movable blocks given an initial
-     * position and available moves. 
-     */
+    // Get Moves List:
+    // Uses Queues for breadth first search.  The queues are separated between
+    // the current generation (m) and the next generation (m-1).  When the 
+    // current generation is depleted, the next generation becomes the current
+    // generation and a new generation is created.
+    // Post-condition:
+    // Returns a list of coordinates of all movable blocks given an initial
+    // position and available moves. 
     private List<int[]> GetMovesList(int row, int col, int m)
     {
         List<int[]> list = new List<int[]>();
@@ -1399,28 +1300,24 @@ public class BoardManager : MonoBehaviour
         return list;
     }
 
-    /*
-     * Process Block:
-     * Adds and marks the block coordinates as visited. Helper function to make
-     * GetMovesList() shorter.
-     * Pre-condition:
-     * The block coordinate given is valid.
-     * Post-condition:
-     * The coordinates are added into the given list and its block's visited
-     * and movable attributes are now true.
-     */
+    // Process Block:
+    // Adds and marks the block coordinates as visited. Helper function to make
+    // GetMovesList() shorter.
+    // Pre-condition:
+    // The block coordinate given is valid.
+    // Post-condition:
+    // The coordinates are added into the given list and its block's visited
+    // and movable attributes are now true.
     private void ProcessBlock(int row, int col, List<int[]> list)
     {
         list.Add(new int[] { row, col });
         blocks[row, col].SetVisited(true);
     }
 
-    /*
-     * Is Valid Block:
-     * Post-condition:
-     * Validates if the block, based on the coordinates given, is empty and has
-     * not been visited yet.
-     */
+    // Is Valid Block:
+    // Post-condition:
+    // Validates if the block, based on the coordinates given, is empty and has
+    // not been visited yet.
     private bool IsValidBlock(int row, int col)
     {
         bool within_board = row >= 0 && col >= 0 && row < 8 && col < 8;
@@ -1449,11 +1346,9 @@ public class BoardManager : MonoBehaviour
     // List of all directions to simplify things.
     private int[,] dir = new int[,] { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 }, { -1, 1 }, { 1, -1 }, { 1, 1 }, { -1, -1 } };
 
-    /*
-     * FindPath:
-     * Path-finding function that recursivley finds the closest block to the destination. 
-     * The closest node is added to a list until the destination is reached.
-     */
+    // FindPath:
+    // Path-finding function that recursivley finds the closest block to the destination. 
+    // The closest node is added to a list until the destination is reached.
     private List<int[]> FindPath(int[] current, int[] destination, List<int[]> path, int max_moves)
     {
         // Destination has been reached.
@@ -1494,10 +1389,8 @@ public class BoardManager : MonoBehaviour
         return FindPath(closest, destination, path, max_moves - 1);
     }
 
-    /*
-     * GetPathPositions:
-     * Returns a list of vector positions used to move the piece along the path. 
-     */
+    // GetPathPositions:
+    // Returns a list of vector positions used to move the piece along the path. 
     private List<Vector3> GetPathPositions(List<int[]> path)
     {
         List<Vector3> positions = new List<Vector3>();
@@ -1559,6 +1452,7 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    /*
     // Print out board state for debugging.
     private void ShowPositions()
     {
@@ -1575,5 +1469,5 @@ public class BoardManager : MonoBehaviour
         }
         Debug.Log(output);
     }
-
+    */
 }

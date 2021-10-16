@@ -3,9 +3,10 @@ using UnityEngine;
 
 public class Commander : MonoBehaviour
 {
-    public int corp_id; 
+    public int corp_id;
     private List<Piece> pieces = new List<Piece>();
     public bool has_authority;
+    public bool used_authority;
     public int default_moves;
 
     private Commander king;
@@ -20,7 +21,7 @@ public class Commander : MonoBehaviour
 
     public void AddPiece(Piece piece)
     {
-        piece.commander = this; 
+        piece.commander = this;
         pieces.Add(piece);
     }
 
@@ -65,7 +66,7 @@ public class Commander : MonoBehaviour
         foreach (Piece piece in pieces)
         {
             king.AddPiece(piece);
-            piece.SetCorpID(king.GetCorpId());
+            piece.SetCorpID(king.GetCorpID());
         }
 
         pieces.Clear();
@@ -100,8 +101,16 @@ public class Commander : MonoBehaviour
         this.corp_id = NewID;
     }
 
-    public int GetCorpId()
+    public int GetCorpID()
     {
         return corp_id;
+    }
+    public bool GetUsedAuthority()
+    {
+        return used_authority;
+    }
+    public void SetUsedAuthority(bool used_authority)
+    {
+        this.used_authority = used_authority;
     }
 }

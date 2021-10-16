@@ -198,8 +198,14 @@ public class Piece : MonoBehaviour
         // Reset the color of the piece and allow movement.
         GetComponent<SpriteRenderer>().material.color = color;
         has_moved = false;
-        // Reset the number of moves, in case the commander is restricted to one move.
-        if (is_commander) n_moves = commander.default_moves;
+
+        if (is_commander)
+        {
+            // Reset the number of moves, in case the commander is restricted to one move.
+            n_moves = commander.default_moves;
+            // Gives the command authority back to king.
+            commander.SetUsedAuthority(false);
+        }
     }
     public string GetPName()
     {
@@ -211,7 +217,7 @@ public class Piece : MonoBehaviour
         this.corp_id = corp_id;
     }
 
-    public int GetCorpId()
+    public int GetCorpID()
     {
         return corp_id;
     }
@@ -256,5 +262,19 @@ public class Piece : MonoBehaviour
         {
             temp_id = 0;
         }
+    }
+    public bool GetHasMoved()
+    {
+        return has_moved;
+    }
+
+    public void SetHasMoved(bool has_moved)
+    {
+        this.has_moved = has_moved;
+    }
+
+    public int GetPieceID()
+    {
+        return piece_id;
     }
 }
