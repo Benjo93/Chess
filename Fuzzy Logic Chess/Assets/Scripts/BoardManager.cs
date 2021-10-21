@@ -48,7 +48,10 @@ public class BoardManager : MonoBehaviour
     private Block[,] blocks = new Block[8, 8];
 
     // Array of blocks representing each square of the capture box.
-    private Block[,] whiteCaptureBox = new Block[16, 2];
+    private GameObject[,] whiteCaptureBox = new GameObject[16, 2];
+
+    // Squares for capture table
+    public GameObject captureSquare;
 
     public Transform WhiteCapture_origin;
 
@@ -97,7 +100,21 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         PrintBoardSquares();
+        InitializeBoard(LoadPieces());
+        InitializeCorps(LoadCommand());
         BuildTable();
+    }
+
+    public void buildTable()
+    {
+        for(int i = 0; i < 16; i ++) // Loops for building the white table
+        {
+            for(int j = 0; j < 2; j++)
+            {
+                whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.5f, Quaternion.identity);
+                whiteCaptureBox[i, j].transform.localScale = new Vector3(0.045f, 0.045f, 0.045f);
+            }
+        }
     }
 
     // Built-in Unity function that is called every frame.
@@ -245,6 +262,11 @@ public class BoardManager : MonoBehaviour
     {
         return pieces;
     }
+    
+    internal void Print(int look_count)
+    {
+        Debug.Log(look_count);
+    }
 
     public List<Piece> GetCapturedWhite()
     {
@@ -254,27 +276,6 @@ public class BoardManager : MonoBehaviour
     public List<Piece> GetCapturedBlack()
     {
         return capturedBlack;
-    }
-
-    public void BuildTable()
-    {
-        for(int i = 0; i < 16; i ++) // Loops for building the white table
-        {
-            for(int j = 0; j < 2; j++)
-            {
-                Instantiate(block, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform);
-                //whiteCaptureBox[i, j] = Instantiate(block, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
-            }
-        }
-
-        //for (int i = 0; i < 8; i++) // Loops for building the black table
-        //{
-        //    for (int j = 0; j < 2; j++)
-        //    {
-        //        blackCaptureBox[i, j] = Instantiate(block, BlackCapture_origin.position + new Vector3(j, blackCaptureBox.GetLength(1) - i, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
-        //    }
-        //}
-        //captureBox.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
     }
 
     // Enables delegation mode
@@ -860,84 +861,6 @@ public class BoardManager : MonoBehaviour
         capturedBlack.Add(capture);
     }
 
-    /*
-    // Old InitializeCorps function.
-    public void InitializeCorps()
-    {
-        Commander w_king = pieces[0, 3].MakeIntoCommander();
-        w_king.is_king = true;
-        w_king.corp_id = 1;
-        // Middle pawns.
-        w_king.AddPiece(pieces[1, 3]);
-        w_king.AddPiece(pieces[1, 4]);
-        // Two-outer rooks.
-        w_king.AddPiece(pieces[0, 0]);
-        w_king.AddPiece(pieces[0, 7]);
-        // Queen
-        w_king.AddPiece(pieces[0, 4]);
-
-        //corps.Add(w_king);
-
-        Commander w_bishop_one = pieces[0, 2].MakeIntoCommander().SetKing(w_king);
-        w_bishop_one.corp_id = 2;
-        // Left Three pawns.
-        w_bishop_one.AddPiece(pieces[1, 0]);
-        w_bishop_one.AddPiece(pieces[1, 1]);
-        w_bishop_one.AddPiece(pieces[1, 2]);
-        // Left-side knight.
-        w_bishop_one.AddPiece(pieces[0, 1]);
-
-        //corps.Add(w_bishop_one);
-
-        Commander w_bishop_two = pieces[0, 5].MakeIntoCommander().SetKing(w_king);
-        w_bishop_two.corp_id = 3;
-        // Right Three pawns.
-        w_bishop_two.AddPiece(pieces[1, 5]);
-        w_bishop_two.AddPiece(pieces[1, 6]);
-        w_bishop_two.AddPiece(pieces[1, 7]);
-        // Right-side knight.
-        w_bishop_two.AddPiece(pieces[0, 6]);
-
-        //corps.Add(w_bishop_two);
-
-        Commander b_king = pieces[7, 3].MakeIntoCommander();
-        b_king.is_king = true;
-        b_king.corp_id = -1;
-        // Middle pawns.
-        b_king.AddPiece(pieces[6, 3]);
-        b_king.AddPiece(pieces[6, 4]);
-        // Two-outer rooks.
-        b_king.AddPiece(pieces[7, 0]);
-        b_king.AddPiece(pieces[7, 7]);
-        // Queen
-        b_king.AddPiece(pieces[7, 4]);
-
-        //corps.Add(b_king);
-
-        Commander b_bishop_one = pieces[7, 2].MakeIntoCommander().SetKing(b_king);
-        b_bishop_one.corp_id = -2;
-        // Left Three pawns.
-        b_bishop_one.AddPiece(pieces[6, 0]);
-        b_bishop_one.AddPiece(pieces[6, 1]);
-        b_bishop_one.AddPiece(pieces[6, 2]);
-        // Left-side knight.
-        b_bishop_one.AddPiece(pieces[7, 1]);
-
-        //corps.Add(b_bishop_one);
-
-        Commander b_bishop_two = pieces[7, 5].MakeIntoCommander().SetKing(b_king);
-        b_bishop_two.corp_id = -3;
-        // Right Three pawns.
-        b_bishop_two.AddPiece(pieces[6, 5]);
-        b_bishop_two.AddPiece(pieces[6, 6]);
-        b_bishop_two.AddPiece(pieces[6, 7]);
-        // Right-side knight.
-        b_bishop_two.AddPiece(pieces[7, 6]);
-
-        //corps.Add(b_bishop_two);
-    }
-    */
-
     // Function called by the AI to get the current board state and to calculate the next move.
     public Piece[,] GetAllPieces()
     {
@@ -1066,7 +989,7 @@ public class BoardManager : MonoBehaviour
         // Compare roll.
         if (roll < roll_needed)
         {
-            Debug.Log("Attack Failed!");
+            Debug.Log("Attack Failed! " + from[0] + ", " + from[1] + " -> " + to[0] + ", " + to[1]);
             Chess.SOUNDS["block"].Play();
 
             // Null path and Null new_position, attack_successful = false
@@ -1086,7 +1009,7 @@ public class BoardManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("Attack Successful!");
+            Debug.Log("Attack Successful! " + from[0] + ", " + from[1] + " -> " + to[0] + ", " + to[1]);
             Chess.SOUNDS["capture"].Play();
 
             // Create a new path with only one position, was_successful = true.
@@ -1164,21 +1087,11 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    /*
-    // Command for moving piece to capture table
-    public void movePieceToCapture(pieces captured)
-    {
-
-    }
-
-    // Command for moving piece
-    */
-
     // Get Attackable List:
     // Post-condition:
     // Returns a list of coordinates of all adjacent blocks with enemy
     // pieces. Rooks have a range of 2. 
-    private List<int[]> GetAttackableList(int row, int col)
+    public List<int[]> GetAttackableList(int row, int col)
     {
         List<int[]> newList = new List<int[]>();
         bool isWhitePiece = pieces[row, col].GetTeam().Equals("white");
@@ -1215,15 +1128,17 @@ public class BoardManager : MonoBehaviour
         return newList;
     }
 
-    // Get Moves List:
-    // Uses Queues for breadth first search.  The queues are separated between
-    // the current generation (m) and the next generation (m-1).  When the 
-    // current generation is depleted, the next generation becomes the current
-    // generation and a new generation is created.
-    // Post-condition:
-    // Returns a list of coordinates of all movable blocks given an initial
-    // position and available moves. 
-    private List<int[]> GetMovesList(int row, int col, int m)
+    /*
+     * Get Moves List:
+     * Uses Queues for breadth first search.  The queues are separated between
+     * the current generation (m) and the next generation (m-1).  When the 
+     * current generation is depleted, the next generation becomes the current
+     * generation and a new generation is created.
+     * Post-condition:
+     * Returns a list of coordinates of all movable blocks given an initial
+     * position and available moves. 
+     */
+    public List<int[]> GetMovesList(int row, int col, int m)
     {
         List<int[]> list = new List<int[]>();
         Queue<int[]> buildQueue = new Queue<int[]>();

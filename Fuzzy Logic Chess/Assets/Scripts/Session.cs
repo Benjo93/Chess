@@ -7,6 +7,6 @@
 
 public static class Session
 {
-    public static string[] players = new string[] { "human", "human" };
+    public static string[] players = new string[] { "human", "ai" };
     public static string[] names = new string[] { "Black", "White" };
 }
