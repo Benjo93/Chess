@@ -11,15 +11,14 @@ public class Piece : MonoBehaviour
 {
     private string p_name;
 
-    // Max number of moves.
-    public int n_moves;
-
     // Speed of piece movement
     private float move_speed = 12f;
 
     // Integer Representation of piece (-6 to 6)
     public int piece_id;
     public int corp_id;
+    public int delegation_id;
+    public int temp_id;
 
     // Name of the team (white/black)
     private string team;
@@ -28,6 +27,9 @@ public class Piece : MonoBehaviour
     public int[] position;
 
     public Color color;
+
+    // Max number of moves.
+    private int n_moves;
 
     // Path positions.
     private List<Vector3> path;
@@ -46,6 +48,8 @@ public class Piece : MonoBehaviour
         this.n_moves = n_moves;
         this.position = position;
         this.color = color;
+        delegation_id = 0;
+        temp_id = 0;
         GetComponent<SpriteRenderer>().material.color = color;
         return this;
     }
@@ -106,7 +110,6 @@ public class Piece : MonoBehaviour
             if (path.Count > 2)
             {
                 commander.UseCommandAuthority();
-
                 // Uses 2 out of 6 moves (They cannot move any other piece so technically their commanded pieces have used their move).
                 return 2;
             }
@@ -173,6 +176,10 @@ public class Piece : MonoBehaviour
     {
         return n_moves;
     }
+    public void SetNumberOfMoves(int n)
+    {
+        n_moves = n;
+    }
 
     public string GetTeam()
     {
@@ -194,8 +201,12 @@ public class Piece : MonoBehaviour
         // Reset the color of the piece and allow movement.
         GetComponent<SpriteRenderer>().material.color = color;
         has_moved = false;
-        // Reset the number of moves, in case the commander is restricted to one move.
-        if (is_commander) n_moves = commander.default_moves;
+
+        if (is_commander)
+        {
+            // Reset the number of moves, in case the commander is restricted to one move.
+            n_moves = commander.default_moves;
+        }
     }
     public string GetPName()
     {
@@ -207,8 +218,64 @@ public class Piece : MonoBehaviour
         this.corp_id = corp_id;
     }
 
-    public int GetCorpId()
+    public int GetCorpID()
     {
         return corp_id;
+    }
+
+    public void SetDelegationID(int newID)
+    {
+        this.delegation_id = newID;
+    }
+
+    public int GetDelegationID()
+    {
+        return delegation_id;
+    }
+
+    public void SetTempID(int newID)
+    {
+        this.temp_id = newID;
+    }
+
+    public int GetTempID()
+    {
+        return temp_id;
+    }
+
+    //function to make the tempid increase for delegation.
+    public void IncrementTempID()
+    {
+        if (temp_id == 2)
+        {
+            temp_id = 0;
+        }
+        else
+        {
+            temp_id++;
+        }
+        //tempid is increased an additional time if the bishop it would end up under is alreay dead
+        if(temp_id == 1 && commander.GetLeft().IsEmpty())
+        {
+            temp_id = 2;
+        }
+        if(temp_id == 2 && commander.GetRight().IsEmpty())
+        {
+            temp_id = 0;
+        }
+    }
+    public bool GetHasMoved()
+    {
+        return has_moved;
+    }
+
+    public void SetHasMoved(bool has_moved)
+    {
+        this.has_moved = has_moved;
+    }
+
+    public int GetPieceID()
+    {
+        return piece_id;
     }
 }
