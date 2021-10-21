@@ -191,6 +191,11 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    internal void Print(int look_count)
+    {
+        Debug.Log(look_count);
+    }
+
     /*
      * Audo Save:
      * Function that currently Saves pieces positions and corp membership into a txt file
@@ -802,7 +807,7 @@ public class BoardManager : MonoBehaviour
         // Compare roll.
         if (roll < roll_needed)
         {
-            Debug.Log("Attack Failed!");
+            Debug.Log("Attack Failed! " + from[0] + ", " + from[1] + " -> " + to[0] + ", " + to[1]);
             Chess.SOUNDS["block"].Play();
 
             // Null path and Null new_position, attack_successful = false
@@ -822,7 +827,7 @@ public class BoardManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("Attack Successful!");
+            Debug.Log("Attack Successful! " + from[0] + ", " + from[1] + " -> " + to[0] + ", " + to[1]);
             Chess.SOUNDS["capture"].Play();
 
             // Create a new path with only one position, was_successful = true.
@@ -913,7 +918,7 @@ public class BoardManager : MonoBehaviour
     * Returns a list of coordinates of all adjacent blocks with enemy
     * pieces. Rooks have a range of 2. 
     */
-    private List<int[]> GetAttackableList(int row, int col)
+    public List<int[]> GetAttackableList(int row, int col)
     {
         List<int[]> newList = new List<int[]>();
         bool isWhitePiece = pieces[row, col].GetTeam().Equals("white");
@@ -948,7 +953,7 @@ public class BoardManager : MonoBehaviour
      * Returns a list of coordinates of all movable blocks given an initial
      * position and available moves. 
      */
-    private List<int[]> GetMovesList(int row, int col, int m)
+    public List<int[]> GetMovesList(int row, int col, int m)
     {
         List<int[]> list = new List<int[]>();
         Queue<int[]> buildQueue = new Queue<int[]>();
