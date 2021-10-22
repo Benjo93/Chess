@@ -890,7 +890,7 @@ public class BoardManager : MonoBehaviour
         input_requested = false;
 
         // Log move info.
-        //game_log.text += hover_info.text + "\n";
+        game_log.text += hover_info.text + "\n";
         //hover_info.text = "";
 
         // Notify the Game Manager of the moves used. 
@@ -931,7 +931,7 @@ public class BoardManager : MonoBehaviour
             input_requested = false;
 
             // Log attack info.
-            //game_log.text += hover_info.text + "  Failed " + "\n";
+            game_log.text += hover_info.text + "  Failed " + "\n";
             //hover_info.text = "";
 
             gm.CompleteGameState(moves_used);
@@ -1003,7 +1003,7 @@ public class BoardManager : MonoBehaviour
             input_requested = false;
 
             // Log attack info.
-            //game_log.text += hover_info.text + "  Success " + "\n";
+            game_log.text += hover_info.text + "  Success " + "\n";
             //hover_info.text = "";
 
             // Notify game manager. 
@@ -1289,18 +1289,18 @@ public class BoardManager : MonoBehaviour
 
         if (selected_piece)
         {
-            hover_info.text = selected_piece.GetPName() + " [ " + column_chars[selected_piece.position[0]] + selected_piece.position[1] + " ] ";
+            hover_info.text = selected_piece.GetPName() + "[ " + column_chars[selected_piece.position[0]] + selected_piece.position[1] + " ]";
 
             if (hovered_block.IsMovable())
             {
-                hover_info.text += "   >>   [" + column_chars[h[1]] + h[0] + " ] ";
+                hover_info.text += " >> [" + column_chars[h[1]] + h[0] + "] ";
             }
 
             if (hovered_block.IsAttackable())
             {
                 int roll_needed = Chess.RollNeeded(selected_piece.piece_id, pieces[h[0], h[1]].piece_id);
 
-                hover_info.text += "   >>   " + pieces[h[0], h[1]].GetPName() + " [ " + column_chars[h[1]] + h[0] + " ] ";
+                hover_info.text += " >> " + pieces[h[0], h[1]].GetPName() + "[ " + column_chars[h[1]] + h[0] + " ]";
                 hover_info.text += "\n Roll Needed:  " + roll_needed;
                 //hover_info.text += Math.Round((7f - roll_needed) / 6f * 100f, 2) + "%";
             }
