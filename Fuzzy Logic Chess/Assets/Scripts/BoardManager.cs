@@ -100,12 +100,10 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         PrintBoardSquares();
-        InitializeBoard(LoadPieces());
-        InitializeCorps(LoadCommand());
         BuildTable();
     }
 
-    public void buildTable()
+    public void BuildTable()
     {
         for(int i = 0; i < 16; i ++) // Loops for building the white table
         {

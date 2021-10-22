@@ -10,6 +10,7 @@ public class GameSetupHandler : MonoBehaviour
      */
 
     public BoardManager bm;
+    public GameManager gm;
 
     public Toggle asWhite, asBlack, asRandom;
     public Dropdown gameTypeSelection;
@@ -25,7 +26,7 @@ public class GameSetupHandler : MonoBehaviour
         if (gameInProgress == true)
         {
             buttonText.text = "PLAY";
-            bm.ResetBoard();
+            gm.ResetBoard();
         }
         else
         {
