@@ -25,7 +25,7 @@ public class GameSetupHandler : MonoBehaviour
         if (gameInProgress == true)
         {
             buttonText.text = "PLAY";
-            bm.ResetBoard();
+            bm.gm.ResetBoard();
         }
         else
         {
