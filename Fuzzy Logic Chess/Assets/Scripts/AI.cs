@@ -24,10 +24,9 @@ public class AI : Player
      * 
      */
 
-    public int look_count = 0; 
+    public int moves_examined = 0; 
 
     float[] material_values = new float[] { 1, 3, 5, 4, 6, 10 };
-
 
     public AI(string name, GameManager gm, BoardManager bm) : base(name, gm, bm)
     {
@@ -37,14 +36,12 @@ public class AI : Player
 
     public override void BeginMove()
     {
-        // Call on the AI solver to get next move.
-        Piece[,] pieces = bm.GetAllPieces();
+        Piece[,] pieces = bm.GetPieces();
 
         int[] best_from = new int[] { -1, -1 };
         int[] best_to = new int[] { -1, -1 };
 
-        float highest_expected_value = 0f;
-
+        float highest_value = 0f;
         bool attack_found = false; 
 
         foreach (Piece piece in pieces)
@@ -67,16 +64,16 @@ public class AI : Player
                     int material_index = Math.Abs(defender);
                     float expected_value = prob * material_values[material_index - 1];
 
-                    look_count++;
+                    moves_examined++;
 
-                    if (expected_value > highest_expected_value)
+                    if (expected_value > highest_value)
                     {
                         attack_found = true;
 
                         best_from = piece.position;
                         best_to = attack;
 
-                        highest_expected_value = expected_value;
+                        highest_value = expected_value;
                     }
                 }                
             }
@@ -88,8 +85,8 @@ public class AI : Player
             bm.Attack(best_from, best_to);
         }
 
-        bm.Print(look_count);
-        look_count = 0;
+        bm.Print(moves_examined);
+        moves_examined = 0;
     }
 
     public void EvaluateMaterial(int[,] board)

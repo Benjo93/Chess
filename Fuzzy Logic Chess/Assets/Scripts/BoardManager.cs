@@ -12,23 +12,7 @@ using UnityEngine.UI;
 
 public class BoardManager : MonoBehaviour
 {
-    // UI Game Objects List
-    public GameObject DelegationButton;
-    public GameObject EndTurnButton;
-    public GameObject ConfirmDelegationButton;
-    public GameObject CancelButton;
-
-    public GameObject RevokeButton;
-    public GameObject ConfirmRevokeButton;
-    public GameObject CancelRevokeButton;
-    public int GlobalDelegationID = 1;
-
-    // Determines if delegation mode is enabled
-    public bool delegation = false;
-
-    // Determines if revoke mode is enabled
-    public bool revoke = false;
-
+    public GameManager gm;
 
     // Color for pieces, assigned in the inspector.
     public Color color_one;
@@ -37,33 +21,42 @@ public class BoardManager : MonoBehaviour
     public Text hover_info;
     public Text game_log;
 
-    public GameManager gm;
-
     // Reference the game dice.
     public Dice dice;
 
     // Clickable Game Object assigned in unity. 
     public GameObject block;
 
+    // Array of pieces currently in play.
+    private Piece[,] pieces = new Piece[8, 8];
+
     // Array of blocks representing each chess board square. 
     private Block[,] blocks = new Block[8, 8];
+
+    // UI Game Objects List
+    private GameObject DelegationButton;
+    private GameObject EndTurnButton;
+    private GameObject ConfirmDelegationButton;
+    private GameObject CancelButton;
+    private GameObject RevokeButton;
+    private GameObject ConfirmRevokeButton;
+    private GameObject CancelRevokeButton;
+    private int GlobalDelegationID = 1;
+
+    // Determines if delegation mode is enabled
+    public bool delegation = false;
+
+    // Determines if revoke mode is enabled
+    public bool revoke = false;
 
     // Array of blocks representing each square of the capture box.
     private GameObject[,] whiteCaptureBox = new GameObject[16, 2];
 
     // Squares for capture table
     public GameObject captureSquare;
-
     public Transform WhiteCapture_origin;
-
-    // Array of pieces currently in play.
-    private Piece[,] pieces = new Piece[8, 8];
-
     private List<Piece> capturedWhite = new List<Piece>();
     private List<Piece> capturedBlack = new List<Piece>();
-
-    // List of all commanders
-    //private List<Commander> corps = new List<Commander>();
 
     // The 'Piece' component of the currently selected piece.
     private Piece selected_piece;
@@ -79,8 +72,6 @@ public class BoardManager : MonoBehaviour
 
     // Boolean to keep track of game setup. Called from the Game Manager.
     public bool setup_complete; 
-
-    private readonly string saveFileName = "/Saves/save_state.txt";
 
     // Used when initializing the board before a game.
     private int[,] board_init = new int[,]
@@ -98,27 +89,13 @@ public class BoardManager : MonoBehaviour
     private void Start()
     {
         PrintBoardSquares();
-
-        //InitializeBoard(LoadPieces());
-        //InitializeCorps(LoadCommand());
         BuildTable();
-    }
-
-    public void BuildTable()
-    {
-        for(int i = 0; i < 16; i ++) // Loops for building the white table
-        {
-            for(int j = 0; j < 2; j++)
-            {
-                whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.5f, Quaternion.identity);
-                whiteCaptureBox[i, j].transform.localScale = new Vector3(0.045f, 0.045f, 0.045f);
-            }
-        }
     }
 
     // Built-in Unity function that is called every frame.
     private void Update()
     {
+        // Wait for the game manager to set up the game.
         if (!setup_complete) return;
 
         // Check if the player is making a move.
@@ -180,14 +157,12 @@ public class BoardManager : MonoBehaviour
                     {
                         RefreshBlocks();
                         MovePiece(selected_index, index);
-                        //Autosave();
                     }
                     // Attacking 
                     else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
                     {
                         RefreshBlocks();
                         Attack(selected_index, index);
-                        //Autosave();
                     }
                     else
                     {
@@ -311,70 +286,6 @@ public class BoardManager : MonoBehaviour
                 {
                     pieces[p, q] = GeneratePiece(pieces_state[p, q], p, q);
                 }
-                /*
-                switch (pieces_state[p, q])
-                {
-                    case 1: // Pawn
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_pawn"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_pawn", 1, "white", 1, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
-                        break;
-
-                    case 2: // Rook
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_rook"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_rook", 2, "white", 2, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
-                        break;
-
-                    case 3: // Bishop
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_bishop"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_bishop", 3, "white", 2, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
-                        break;
-
-                    case 4: // Knight
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_knight"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_knight", 4, "white", 4, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
-                        break;
-
-                    case 5: // Queen
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_queen"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_queen", 5, "white", 3, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
-                        break;
-
-                    case 6: // King
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_king"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("w_king", 6, "white", 3, new int[] { p, q }, Chess.Colors.PLAYER_ONE);
-                        break;
-
-                    case -1: // Pawn
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_pawn"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_pawn", -1, "black", 1, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
-                        break;
-
-                    case -2: // Rook
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_rook"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_rook", -2, "black", 2, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
-                        break;
-
-                    case -3: // Bishop
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_bishop"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_bishop", -3, "black", 2, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
-                        break;
-
-                    case -4: // Knight
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_knight"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_knight", -4, "black", 4, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
-                        break;
-
-                    case -5: // Queen
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_queen"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_queen", -5, "black", 3, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
-                        break;
-
-                    case -6: // King
-                        pieces[p, q] = Instantiate(Chess.PIECES["pixel_king"], blocks[p, q].transform.position, Quaternion.identity).AddComponent<Piece>()
-                        .InitializePiece("b_king", -6, "black", 3, new int[] { p, q }, Chess.Colors.PLAYER_TWO);
-                        break;
-                }
-                */
             }
         }
     }
@@ -493,14 +404,19 @@ public class BoardManager : MonoBehaviour
         foreach (Piece p in b_bishop_two_memb) b_bishop_two.AddPiece(p);
     }
 
-
-    // Function called by the AI to get the current board state and to calculate the next move.
-    public Piece[,] GetAllPieces()
+    public void BuildTable()
     {
-        // Potentially validate board state first.
-        return pieces;
+        for (int i = 0; i < 16; i++) // Loops for building the white table
+        {
+            for (int j = 0; j < 2; j++)
+            {
+                whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.5f, Quaternion.identity);
+                whiteCaptureBox[i, j].transform.localScale = new Vector3(0.045f, 0.045f, 0.045f);
+            }
+        }
     }
 
+    // Function called by the AI to get the current board state and to calculate the next move.
     public Piece[,] GetPieces()
     {
         return pieces;
@@ -566,13 +482,6 @@ public class BoardManager : MonoBehaviour
 
 
         return corp_state;
-    }
-
-    // Function called by human players to make a move.
-    public void RequestInput(string message)
-    {
-        input_requested = true;
-        //Debug.Log(message);
     }
 
     public List<Piece> GetCapturedWhite()
@@ -947,6 +856,13 @@ public class BoardManager : MonoBehaviour
         capturedBlack.Add(capture);
     }
 
+    // Function called by human players to make a move.
+    public void RequestInput(string message)
+    {
+        input_requested = true;
+        //Debug.Log(message);
+    }
+
     /*
      * Move Piece:
      * Takes a position 'from' and position 'to', 
@@ -1098,14 +1014,6 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    // Command for moving piece to capture table
-    //public void movePieceToCapture(pieces captured)
-    //{
-
-    //}
-
-    // Command for moving piece
-
     /*
     * Get Attackable List:
     * Post-condition:
@@ -1214,7 +1122,6 @@ public class BoardManager : MonoBehaviour
             /* switches to the next generation if the current generation
              * has been depleted.
              */
-
             if (currentQueue.Count <= 0)
             {
                 currentQueue = buildQueue;

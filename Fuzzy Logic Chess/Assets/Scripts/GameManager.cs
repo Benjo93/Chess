@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,7 +19,6 @@ public class GameManager : MonoBehaviour
     private bool DidDelegate = false;
     private int moves_left = 6;
     private readonly string saveFileName = "/save_state.txt";
-    private Rect resetButton = new Rect(Screen.width - 150f, 100, 100, 50); // TEMPORARY PLACE HOLDER
 
     public void StartGame()
     {
