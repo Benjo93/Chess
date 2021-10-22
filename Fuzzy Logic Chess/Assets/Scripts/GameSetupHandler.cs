@@ -31,7 +31,6 @@ public class GameSetupHandler : MonoBehaviour
         else
         {
             buttonText.text = "NEW GAME";
-
         }
         gameTypeSelection.interactable = gameInProgress;
         asWhite.interactable = gameInProgress;

@@ -34,13 +34,13 @@ public class BoardManager : MonoBehaviour
     private Block[,] blocks = new Block[8, 8];
 
     // UI Game Objects List
-    private GameObject DelegationButton;
-    private GameObject EndTurnButton;
-    private GameObject ConfirmDelegationButton;
-    private GameObject CancelButton;
-    private GameObject RevokeButton;
-    private GameObject ConfirmRevokeButton;
-    private GameObject CancelRevokeButton;
+    public GameObject DelegationButton;
+    public GameObject EndTurnButton;
+    public GameObject ConfirmDelegationButton;
+    public GameObject CancelButton;
+    public GameObject RevokeButton;
+    public GameObject ConfirmRevokeButton;
+    public GameObject CancelRevokeButton;
     private int GlobalDelegationID = 1;
 
     // Determines if delegation mode is enabled
