@@ -22,13 +22,6 @@ public class GameManager : MonoBehaviour
     private readonly string saveFileName = "/save_state.txt";
     private Rect resetButton = new Rect(Screen.width - 150f, 100, 100, 50); // TEMPORARY PLACE HOLDER
 
-    // Temporary GUI for Reset Button
-    private void OnGUI()
-    {
-        if (GUI.Button(resetButton, "Reset"))
-            ResetBoard();
-    }
-
     public void StartGame()
     {
         InitializePlayer(LoadPlayer());
@@ -55,7 +48,7 @@ public class GameManager : MonoBehaviour
 
         // Assign black to go first for demo.
         // Note: This will be moved to LoadTeam()
-        team = Team.white;
+        team = Team.black;
 
         // Initiate the first move.
         CompleteGameState(0);
@@ -419,7 +412,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            player_type_init = new string[2] { "human", "human" };
+            player_type_init = new string[2] { "human", "ai" };
         }
         return player_type_init;
     }
