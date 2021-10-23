@@ -5,8 +5,9 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
-
+using UnityEngine;
 
 public class AI : Player
 {
@@ -28,6 +29,11 @@ public class AI : Player
 
     float[] material_values = new float[] { 1, 3, 5, 4, 6, 10 };
 
+    float[,] dist_map = new float[8, 8];
+    float[,] risk_map = new float[8, 8];
+
+    float difficulty = 0.5f;
+
     public AI(string name, GameManager gm, BoardManager bm) : base(name, gm, bm)
     {
         // AI specific constructor.
@@ -36,12 +42,15 @@ public class AI : Player
 
     public override void BeginMove()
     {
+        bm.input_requested = false;
+
         Piece[,] pieces = bm.GetPieces();
 
-        int[] best_from = new int[] { -1, -1 };
-        int[] best_to = new int[] { -1, -1 };
+        // Attack from and to.
+        int[] a_from = new int[] { -1, -1 };
+        int[] a_to = new int[] { -1, -1 };
 
-        float highest_value = 0f;
+        float attack_value = 0f;
         bool attack_found = false; 
 
         foreach (Piece piece in pieces)
@@ -66,27 +75,115 @@ public class AI : Player
 
                     moves_examined++;
 
-                    if (expected_value > highest_value)
+                    if (expected_value > attack_value)
                     {
                         attack_found = true;
+                        attack_value = expected_value;
 
-                        best_from = piece.position;
-                        best_to = attack;
-
-                        highest_value = expected_value;
+                        a_from = piece.position;
+                        a_to = attack;
                     }
                 }                
             }
         }
 
-        if (attack_found)
+        // RISK MAP.
+        // Create a risk map to calculate the risk of each move. Essentially, an int[8, 8] that tracks the highest piece_id that can attack 
+        // that position, add this value to the expected value function. 
+        // prob (success) * value of success - prob (failure) * cost of failure
+        // Compare the value in the risk map to the piece being moved to get the probability of success and the cost of failure.
+        // Add this to the current expected value.
+
+        // DISTANCE MAP.
+        // Create a distance map to store the distance from each empty piece to the king.
+        // Use this map to calculate the value of each move, avoid having to calculate distance for all possible moves.
+
+        // Find the position of the king.
+        int[] king_position = FindKing();
+
+        // Scan the board for possible moves.
+        for (int p = 0; p < 8; p++)
+        {
+            for (int q = 0; q < 8; q++)
+            {
+                // Check if the position is empty. 
+                if (!pieces[p, q])
+                {
+                    // Calculate the difference between the king position and the empty position. 
+                    float[] difference = new float[] { king_position[0] - p, king_position[1] - q };
+                    // Calculate the magnitude of the difference to get the distance. 
+                    float distance = Mathf.Sqrt(difference[0] * difference[0] + difference[1] * difference[1]);
+                    // Normalize the distance value. distance_value is inversely proportional to the distance. 
+                    float distance_value = 1f / distance;
+                    // Add the distance value to the dist map.
+                    float scalar = 1f;
+                    dist_map[p, q] = distance_value * scalar;
+                }
+            }
+        }
+
+        // Loop through all moves and compare move with the dist_map values.
+
+        float move_value = 0f;
+        bool move_found = false;
+
+        // Move from and to.
+        int[] m_from = new int[] { -1, -1 };
+        int[] m_to = new int[] { -1, -1 };
+
+        foreach (Piece piece in pieces)
+        {
+            if (!piece) continue;
+            if (piece.has_moved) continue;
+
+            if (piece.GetTeam() == gm.GetTeam())
+            {
+                List<int[]> moves = bm.GetMovesList(piece.position[0], piece.position[1], piece.GetNumberOfMoves());
+
+                foreach (int[] move in moves)
+                {
+                    float current_value = dist_map[move[0], move[1]];
+
+                    if (current_value > move_value)
+                    {
+                        move_value = current_value;
+                        move_found = true;
+
+                        m_from = piece.position;
+                        m_to = move;
+                    }
+                }
+            }
+        }
+
+        if (move_found && move_value > attack_value)
         {
             bm.RefreshBlocks();
-            bm.Attack(best_from, best_to);
+            bm.DelayedMove(m_from, m_to, 0.5f);
+        }
+        else if (attack_found)
+        {
+            bm.RefreshBlocks();
+            bm.DelayedAttack(a_from, a_to, 0.5f);
+        }
+        else
+        {
+            bm.RefreshBlocks();
+            gm.EndTurn();
         }
 
         bm.Print(moves_examined);
         moves_examined = 0;
+    }
+
+    public int[] FindKing()
+    {
+        int[] king_position = new int[2]; 
+        foreach (Piece piece in bm.GetPieces())
+            if (piece && piece.GetTeam() != gm.GetTeam() && piece.commander.king_piece)
+                king_position = piece.commander.king_piece.position;
+        //Debug.Log("King Pos: " + king_position[0] + ", " + king_position[1]);
+        return king_position;
     }
 
     public void EvaluateMaterial(int[,] board)

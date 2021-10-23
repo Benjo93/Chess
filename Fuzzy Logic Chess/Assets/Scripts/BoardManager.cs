@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -68,7 +69,7 @@ public class BoardManager : MonoBehaviour
     private int[] hovered_index = new int[] { 0, 0 };
 
     // Boolean to track whether the player is making a move.
-    private bool input_requested;
+    public bool input_requested;
 
     // Boolean to keep track of game setup. Called from the Game Manager.
     public bool setup_complete; 
@@ -380,7 +381,9 @@ public class BoardManager : MonoBehaviour
         Commander w_king = pieces[w_king_pos[0], w_king_pos[1]].MakeIntoCommander();
         Commander b_king = pieces[b_king_pos[0], b_king_pos[1]].MakeIntoCommander();
 
+        w_king.king_piece = pieces[w_king_pos[0], w_king_pos[1]];
         w_king.is_king = true;
+        b_king.king_piece = pieces[b_king_pos[0], b_king_pos[1]];
         b_king.is_king = true;
 
         Commander w_bishop_one = pieces[w_bishop_one_pos[0], w_bishop_one_pos[1]].MakeIntoCommander().SetKing(w_king);
@@ -861,6 +864,28 @@ public class BoardManager : MonoBehaviour
     {
         input_requested = true;
         //Debug.Log(message);
+    }
+
+    public void DelayedMove(int[] from, int[] to, float delay)
+    {
+        StartCoroutine(crMove(from, to, delay));
+    }
+
+    public void DelayedAttack(int[] from, int[] to, float delay)
+    {
+        StartCoroutine(crAttack(from, to, delay));
+    }
+
+    private IEnumerator crMove(int[] from, int[] to, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        MovePiece(from, to);
+    }
+
+    public IEnumerator crAttack(int[] from, int[] to, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Attack(from, to);
     }
 
     /*

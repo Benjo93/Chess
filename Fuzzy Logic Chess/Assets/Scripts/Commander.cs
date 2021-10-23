@@ -9,6 +9,7 @@ public class Commander : MonoBehaviour
     public int default_moves;
 
     private Commander king;
+    public Piece king_piece; 
     private Commander left;
     private Commander right;
     public bool is_king;
