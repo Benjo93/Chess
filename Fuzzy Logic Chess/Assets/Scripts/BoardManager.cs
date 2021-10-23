@@ -96,7 +96,6 @@ public class BoardManager : MonoBehaviour
     // Built-in Unity function that is called every frame.
     private void Update()
     {
-        // Wait for the game manager to set up the game.
         if (!setup_complete) return;
 
         // Check if the player is making a move.
@@ -127,47 +126,109 @@ public class BoardManager : MonoBehaviour
                     DisplayHoverInfo(hovered_index);
                 }
 
-                // Clicking.
-                if (Input.GetMouseButtonDown(0))
+                if (delegation == false)
                 {
-                    // Check if there is a piece at the selected blocks index.
-                    if (pieces[index[0], index[1]] && !pieces[index[0], index[1]].has_moved && pieces[index[0], index[1]].GetTeam() == gm.GetTeam())
+                    // Clicking.
+                    if (Input.GetMouseButtonDown(0))
                     {
-                        RefreshBlocks();
+                        // Check if there is a piece at the selected blocks index.
+                        if (pieces[index[0], index[1]] && !pieces[index[0], index[1]].has_moved && pieces[index[0], index[1]].GetTeam() == gm.GetTeam())
+                        {
+                            RefreshBlocks();
 
-                        // Select the piece.
-                        selected_index = index;
-                        selected_piece = pieces[index[0], index[1]];
+                            // Select the piece.
+                            selected_index = index;
+                            selected_piece = pieces[index[0], index[1]];
 
-                        // Highlight all pieces in selected piece corp.
-                        //ShowAllPiecesInCorp(selected_piece);
+                            // Highlight all pieces in selected piece corp.
+                            //ShowAllPiecesInCorp(selected_piece);
 
-                        // Get a list of all moveable blocks.
-                        List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves());
-                        List<int[]> availableAttacks = GetAttackableList(index[0], index[1]);
+                            // Get a list of all moveable blocks.
+                            List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves());
+                            List<int[]> availableAttacks = GetAttackableList(index[0], index[1]);
 
-                        // Paint the blocks that are moveable. 
-                        SetBlockListMovable(availableMoves, pieces[index[0], index[1]].GetTeam());
-                        SetBlockListAttackable(availableAttacks, pieces[index[0], index[1]].GetTeam());
+                            // Paint the blocks that are moveable. 
+                            SetBlockListMovable(availableMoves, pieces[index[0], index[1]].GetTeam());
+                            SetBlockListAttackable(availableAttacks, pieces[index[0], index[1]].GetTeam());
 
-                        // Color selected piece.
-                        blocks[index[0], index[1]].ChangeColor(Color.white);
+                            // Color selected piece.
+                            blocks[index[0], index[1]].ChangeColor(Color.white);
+                        }
+                        // Moving selected piece.
+                        else if (selected_piece && blocks[index[0], index[1]].IsMovable())
+                        {
+                            RefreshBlocks();
+                            MovePiece(selected_index, index);
+                            //Autosave();
+                        }
+                        // Attacking 
+                        else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
+                        {
+                            RefreshBlocks();
+                            Attack(selected_index, index);
+                            //Autosave();
+                        }
+                        else
+                        {
+                            RefreshBlocks();
+                        }
                     }
-                    // Moving selected piece.
-                    else if (selected_piece && blocks[index[0], index[1]].IsMovable())
+                }
+                // If Revoke Mode is enabled
+                else if (revoke == true)
+                {
+                    Block selectedBlock = blocks[index[0], index[1]];
+                    Piece selected_piece = pieces[index[0], index[1]];
+                    int corpID = selected_piece.GetCorpID();
+                    int delegationID = selected_piece.GetDelegationID();
+                    //Clicking.
+                    if (Input.GetMouseButtonDown(0))
                     {
+                        //Ensures that only one delegation is selected at a time
                         RefreshBlocks();
-                        MovePiece(selected_index, index);
+                        foreach (Piece piece in pieces)
+                        {
+                            if (piece != null)
+                            {
+                                //tempid is made 0 so that it doesn't break anything
+                                piece.SetTempID(0);
+                                if (piece.GetDelegationID() == delegationID && piece.GetDelegationID() != 0)
+                                {
+                                    //HIghlights every piece in the selected delegation
+                                    int[] nindex = piece.position;
+                                    blocks[nindex[0], nindex[1]].ChangeColor(Color.yellow);
+                                    //tempid is made 1 so that each piece can later be revoked
+                                    piece.SetTempID(1);
+                                }
+                            }
+
+                        }
                     }
-                    // Attacking 
-                    else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
+                }
+                // If delegation mode is enabled
+                else
+                {
+                    Block selectedBlock = blocks[index[0], index[1]];
+                    Piece selected_piece = pieces[index[0], index[1]];
+                    int corpID = selected_piece.GetCorpID();
+                    //whenever a piece in king corp is clicked, it changes colors
+                    if (Input.GetMouseButtonDown(0) && (selected_piece.GetTeam() == gm.GetTeam()) && selected_piece != null)
                     {
-                        RefreshBlocks();
-                        Attack(selected_index, index);
-                    }
-                    else
-                    {
-                        RefreshBlocks();
+                        selected_piece.IncrementTempID();
+                        if (selected_piece.GetTempID() == 0)
+                        {
+                            selectedBlock.ChangeColor(Color.grey);
+                        }
+                        // represents left bishop corps
+                        else if (selected_piece.GetTempID() == 1)
+                        {
+                            selectedBlock.ChangeColor(Color.blue);
+                        }
+                        // represents right bishop corps
+                        else
+                        {
+                            selectedBlock.ChangeColor(Color.green);
+                        }
                     }
                 }
             }

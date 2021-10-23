@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311912, g: 0.3807398, b: 0.3587272, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -908,7 +908,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &438317484
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1753,7 +1753,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: REVOKE
+  m_Text: 'Confirm
+
+    Revoke'
 --- !u!222 &738286040
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1826,7 +1828,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.0467998, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.00000667572, y: -37.448612}
+  m_AnchoredPosition: {x: 0.00000667572, y: -56.819218}
   m_SizeDelta: {x: -6.49, y: 991.88}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &777087976
@@ -2218,7 +2220,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: DELEGATE
+  m_Text: Cancel
 --- !u!222 &949794153
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2341,7 +2343,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: DELEGATE
+  m_Text: 'Confirm
+
+    Delegation'
 --- !u!222 &1123716021
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2708,7 +2712,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1337073326
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2841,7 +2845,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1433453796
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2974,7 +2978,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1469386179
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3159,7 +3163,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: REVOKE
+  m_Text: Cancel
 --- !u!222 &1480159042
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3281,6 +3285,7 @@ MonoBehaviour:
   revoke: 0
   captureSquare: {fileID: 9152371600408095551, guid: 089a87d47d450924cb0a41cf3025c43b, type: 3}
   WhiteCapture_origin: {fileID: 755789365}
+  input_requested: 0
   setup_complete: 0
 --- !u!1 &1731902105
 GameObject:
@@ -3364,7 +3369,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 69518835}
   m_HandleRect: {fileID: 69518834}
   m_Direction: 2
-  m_Value: 1.043384
+  m_Value: 1.0658247
   m_Size: 0.12974352
   m_NumberOfSteps: 0
   m_OnValueChanged:
