@@ -481,7 +481,7 @@ public class BoardManager : MonoBehaviour
             result += "\n";
         }
 
-        Debug.Log(result);
+        //Debug.Log(result);
 
 
         return corp_state;
@@ -1050,12 +1050,15 @@ public class BoardManager : MonoBehaviour
         List<int[]> newList = new List<int[]>();
         bool isWhitePiece = pieces[row, col].GetTeam().Equals("white");
         int range = 1;
+
         if (pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook"))
-            range = pieces[row, col].GetNumberOfMoves(); ;
+            range = pieces[row, col].GetNumberOfMoves();
+
         int west = Mathf.Max(0, row - range);
         int east = Mathf.Min(7, row + range);
         int north = Mathf.Max(0, col - range);
         int south = Mathf.Min(7, col + range);
+
         for (int i = west; i <= east; i++)
         {
             for (int j = north; j <= south; j++)
@@ -1065,6 +1068,33 @@ public class BoardManager : MonoBehaviour
                     if (pieces[i, j].GetTeam().Equals("white") != isWhitePiece)
                         newList.Add(new int[] { i, j });
                 }
+            }
+        }
+        return newList;
+    }
+
+    /*
+     * Get Attackable Range:
+     * Post-condition:
+     * Returns a list of coordinates of all adjacent blocks with or without enemy pieces within range. 
+     */
+    public List<int[]> GetAttackableRange(int row, int col)
+    {
+        List<int[]> newList = new List<int[]>();
+        int range =
+        pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook") ?
+        pieces[row, col].GetNumberOfMoves() : 1;
+
+        int west = Mathf.Max(0, row - range);
+        int east = Mathf.Min(7, row + range);
+        int north = Mathf.Max(0, col - range);
+        int south = Mathf.Min(7, col + range);
+
+        for (int i = west; i <= east; i++)
+        {
+            for (int j = north; j <= south; j++)
+            {
+                newList.Add(new int[] { i, j });
             }
         }
         return newList;

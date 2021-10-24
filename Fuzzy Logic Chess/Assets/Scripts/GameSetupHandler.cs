@@ -49,7 +49,7 @@ public class GameSetupHandler : MonoBehaviour
 
         foreach (string x in setupChoices)
         {
-            Debug.Log(x);
+            //Debug.Log(x);
         }
     }
 }
