@@ -22,6 +22,7 @@ public class Commander : MonoBehaviour
     public void AddPiece(Piece piece)
     {
         piece.commander = this;
+        //piece.SetHasMoved(piece.GetCommanderHasMoved());
         pieces.Add(piece);
     }
 
