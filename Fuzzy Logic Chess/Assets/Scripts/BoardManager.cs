@@ -457,9 +457,6 @@ public class BoardManager : MonoBehaviour
         w_king.SetLeft(w_bishop_one);
         w_king.SetRight(w_bishop_two);
 
-        //b_king.SetCorpID(-4);
-        //w_king.SetCorpID(4);
-
         foreach (Piece p in w_king_memb) w_king.AddPiece(p);
         foreach (Piece p in w_bishop_one_memb) w_bishop_one.AddPiece(p);
         foreach (Piece p in w_bishop_two_memb) w_bishop_two.AddPiece(p);
@@ -560,7 +557,7 @@ public class BoardManager : MonoBehaviour
 
     // Enables delegation mode
     public void EnableDelegationMode()
-    {
+    {                
         //Checking to make sure delegation can occur
         if (!gm.GetDidDelegate())
         {
@@ -638,19 +635,35 @@ public class BoardManager : MonoBehaviour
         int total2 = 0;
         if (gm.GetTeam() == "white")
         {
-            total1 = TotalMembers(5) + TempTotals(1);
-            total2 = TotalMembers(6) + TempTotals(2);
+            total1 = TotalMembers(2) + TempTotals(1);
+            total2 = TotalMembers(3) + TempTotals(2);
         }
         else
         {
-            total1 = TotalMembers(-5) + TempTotals(1);
-            total2 = TotalMembers(-6) + TempTotals(2);
+            total1 = TotalMembers(-2) + TempTotals(1);
+            total2 = TotalMembers(-3) + TempTotals(2);
         }
-        if (total1 > 5 || total2 > 5)
+        if (total1 > 6 || total2 > 6)
         {
             return false;
         }
         return true;
+    }
+
+    //Prevents a bug with delegations.
+    public void HasCommanderMoved(Piece input, int newID)
+    {
+        int corpID = input.GetCorpID();
+        foreach(Piece piece in pieces)
+        {
+            if(piece != null)
+            {
+                if(!piece.GetIsCommander() && newID == piece.GetCorpID())
+                {
+                    input.SetHasMoved(piece.GetHasMoved());
+                }
+            }
+        }
     }
 
     // Confirms Delegation
@@ -684,12 +697,14 @@ public class BoardManager : MonoBehaviour
                         king.RemovePiece(piece);
                         if (corpID > 0)
                         {
+                            HasCommanderMoved(piece, 2);
                             piece.SetCorpID(2);
                             king.GetLeft().AddPiece(piece);
                         }
                         //left bishop delegation
                         else
                         {
+                            HasCommanderMoved(piece, -2);
                             piece.SetCorpID(-2);
                             king.GetLeft().AddPiece(piece);
                         }
@@ -700,17 +715,25 @@ public class BoardManager : MonoBehaviour
                         //right bishop delegation
                         if (corpID > 0)
                         {
+                            HasCommanderMoved(piece, 3);
                             piece.SetCorpID(3);
                             king.GetRight().AddPiece(piece);
                         }
                         else
                         {
+                            HasCommanderMoved(piece, -3);
                             piece.SetCorpID(-3);
                             king.GetRight().AddPiece(piece);
                         }
                     }
                     piece.SetDelegationID(GlobalDelegationID);
+                    
+                    //piece.SetHasMoved(true);
 
+                    if (piece.GetHasMoved() == true)
+                    {
+                        piece.ColorDim();
+                    }
                 }
 
                 piece.SetTempID(0);
@@ -784,18 +807,21 @@ public class BoardManager : MonoBehaviour
         {
             if (piece != null && piece.GetTempID() == 1)
             {
+                
                 Commander currentCommander = piece.GetCommander();
                 currentCommander.RemovePiece(piece);
                 currentCommander.GetKing().AddPiece(piece);
                 piece.SetTempID(0);
                 if (gm.GetTeam() == "white")
                 {
-                    piece.SetCorpID(4);
+                    piece.SetCorpID(1);
                 }
                 else
                 {
-                    piece.SetCorpID(-4);
+                    piece.SetCorpID(-1);
                 }
+
+                
             }
         }
         gm.SetDidDelegate(true);

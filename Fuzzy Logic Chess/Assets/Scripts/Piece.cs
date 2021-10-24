@@ -278,4 +278,9 @@ public class Piece : MonoBehaviour
     {
         return piece_id;
     }
+
+    public bool GetIsCommander()
+    {
+        return is_commander;
+    }
 }
