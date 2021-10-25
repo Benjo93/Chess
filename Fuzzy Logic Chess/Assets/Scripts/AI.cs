@@ -27,7 +27,8 @@ public class AI : Player
 
     public int moves_examined = 0; 
 
-    float[] material_values = new float[] { 1, 3, 5, 4, 6, 7 };
+    float[] material_values = new float[] { 1, 2, 2, 3, 4, 100 };
+    //float[] material_values = new float[] { 1, 1, 1, 1, 1, 1 };
 
     float[,] dist_map = new float[8, 8];
     int[,] risk_map = new int[8, 8];
@@ -45,6 +46,8 @@ public class AI : Player
         bm.input_requested = false;
 
         Piece[,] pieces = bm.GetPieces();
+
+        int[,] board_state = bm.GetBoardState();
 
         // RISK MAP.
         // Create a risk map to calculate the risk of making a move or attack. (What are the chances of being captured the next round?) 
@@ -85,7 +88,7 @@ public class AI : Player
             risk_result += "\n";
         }
 
-        Debug.Log(risk_result);
+        //Debug.Log(risk_result);
 
         // DISTANCE MAP.
         // Create a distance map to store the distance from each empty position to the king.
@@ -109,7 +112,7 @@ public class AI : Player
                     // Normalize the distance value. distance_value is inversely proportional to the distance. 
                     float distance_value = 1f / distance;
                     // Add the distance value to the dist map.
-                    float scalar = 1f;
+                    float scalar = 0.25f;
                     dist_map[p, q] = distance_value * scalar;
                 }
             }
@@ -125,7 +128,7 @@ public class AI : Player
             dist_result += "\n";
         }
 
-        Debug.Log(dist_result);
+        //Debug.Log(dist_result);
 
 
         // Attack from and to.
@@ -151,18 +154,23 @@ public class AI : Player
                     // Calculate the value of a successful attack.
                     int defender = pieces[attack[0], attack[1]].piece_id;
                     int attacker = piece.piece_id;
-                    float prob_success = Chess.RollNeeded(attacker, defender) / 6f;
+                    float prob_success = (7f - Chess.RollNeeded(attacker, defender)) / 6f;
 
                     float success_value = prob_success * material_values[Math.Abs(defender) - 1];
 
                     // Calculate the risk value. (Risk aquired from moving position after the attack is successful)
                     int this_piece = piece.piece_id;
                     int highest_risk = risk_map[attack[0], attack[1]];
-                    float prob_failure = Chess.RollNeeded(highest_risk, this_piece) / 6f;
+                    float prob_failure = (7f - Chess.RollNeeded(highest_risk, this_piece)) / 6f;
 
                     float failure_value = prob_failure * material_values[Math.Abs(this_piece) - 1];
 
                     expected_value = success_value - failure_value;
+
+                    //Debug.Log("Risk Evaluation");
+                    //Debug.Log(piece.piece_id + " | " + board_state[attack[0], attack[1]] + ": ");
+                    //Debug.Log(prob_success + ", " + material_values[Math.Abs(defender) - 1] + ": " + success_value);
+                    //Debug.Log(prob_failure + ", " + material_values[Math.Abs(this_piece) - 1] + ": " + failure_value);
 
                     if (expected_value > attack_value)
                     {
@@ -203,7 +211,7 @@ public class AI : Player
                     int this_piece = piece.piece_id;
                     int highest_risk = risk_map[move[0], move[1]];
 
-                    float prob_captured = (highest_risk == 0) ? 0 : Chess.RollNeeded(highest_risk, this_piece) / 6f;
+                    float prob_captured = (highest_risk == 0) ? 0 : (7f - Chess.RollNeeded(highest_risk, this_piece)) / 6f;
 
                     // Calculate the cost of being captued. 
                     float risk_value = prob_captured * material_values[Math.Abs(this_piece) - 1];

@@ -1033,7 +1033,7 @@ public class BoardManager : MonoBehaviour
         // Compare roll.
         if (roll < roll_needed)
         {
-            Debug.Log("Attack Failed! " + from[0] + ", " + from[1] + " -> " + to[0] + ", " + to[1]);
+            //Debug.Log("Attack Failed! " + from[0] + ", " + from[1] + " -> " + to[0] + ", " + to[1]);
             Chess.SOUNDS["block"].Play();
 
             // Null path and Null new_position, attack_successful = false
@@ -1053,7 +1053,7 @@ public class BoardManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("Attack Successful! " + from[0] + ", " + from[1] + " -> " + to[0] + ", " + to[1]);
+            //Debug.Log("Attack Successful! " + from[0] + ", " + from[1] + " -> " + to[0] + ", " + to[1]);
             Chess.SOUNDS["capture"].Play();
 
             // Create a new path with only one position, was_successful = true.
@@ -1063,7 +1063,7 @@ public class BoardManager : MonoBehaviour
             if (pieces[to[0], to[1]].is_commander && pieces[to[0], to[1]].commander.is_king)
             {
                 Debug.Log("Game Over");
-                Debug.Log(pieces[to[0], to[1]].GetPName());
+                //Debug.Log(pieces[to[0], to[1]].GetPName());
                 gm.EraseSave();
 
                 //If Black

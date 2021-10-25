@@ -410,7 +410,8 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            player_type_init = new string[2] { "human", "ai" };
+            //player_type_init = new string[2] { "human", "ai" };
+            player_type_init = Session.players; 
         }
         return player_type_init;
     }

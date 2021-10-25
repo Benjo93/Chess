@@ -31,6 +31,7 @@ public class GameSetupHandler : MonoBehaviour
         else
         {
             buttonText.text = "NEW GAME";
+            GetGameSetup();
         }
         gameTypeSelection.interactable = gameInProgress;
         asWhite.interactable = gameInProgress;
@@ -47,9 +48,11 @@ public class GameSetupHandler : MonoBehaviour
         Toggle selectedToggle = playAs.ActiveToggles().FirstOrDefault();
         setupChoices[1] = selectedToggle.name;
 
-        foreach (string x in setupChoices)
-        {
-            //Debug.Log(x);
-        }
+        string game_type_choice = gameTypeSelection.options[gameTypeSelection.value].text;
+        string[] choices = game_type_choice.Split(new string[] { " vs. " }, System.StringSplitOptions.RemoveEmptyEntries);
+
+        Session.players[0] = choices[0].ToLower();
+        Session.players[1] = choices[1].ToLower();
+
     }
 }
