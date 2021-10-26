@@ -5,8 +5,8 @@ using UnityEngine.SceneManagement;
 
 /*
  * Game Manager:
- * Manages the flow of the game and which actions should be taken 
- * at any given time. Attached to the 'Game Manager' object in the unity inspector. 
+ * Manages the flow of the game and which actions should be taken
+ * at any given time. Attached to the 'Game Manager' object in the unity inspector.
  */
 
 public class GameManager : MonoBehaviour
@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
+        EraseSave();
         InitializePlayer(LoadPlayer());
         InitializeName(LoadName());
         InitializeCurrentTeam(LoadCurrentTeam());
@@ -37,7 +38,7 @@ public class GameManager : MonoBehaviour
 
         bm.setup_complete = true;
 
-        // Create players with session data. 
+        // Create players with session data.
         CreatePlayer((int)Team.white);
         CreatePlayer((int)Team.black);
 
@@ -81,7 +82,7 @@ public class GameManager : MonoBehaviour
 
     public void EndTurn()
     {
-        // Reset all piece colors and moves. 
+        // Reset all piece colors and moves.
         bm.RefreshPieces();
         bm.RefreshBlocks();
 
@@ -207,7 +208,7 @@ public class GameManager : MonoBehaviour
             }
             sw.WriteLine();
 
-            // Integer representation of the corps. 
+            // Integer representation of the corps.
             // -1 = black king, -2 = black bishop left, -3 = black bishop right
             // 1 = white king, 2 = white bishop left, 3 = white bishop right
             // 0 = empty.
@@ -411,7 +412,7 @@ public class GameManager : MonoBehaviour
         else
         {
             //player_type_init = new string[2] { "human", "ai" };
-            player_type_init = Session.players; 
+            player_type_init = Session.players;
         }
         return player_type_init;
     }
@@ -555,7 +556,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            // Integer representation of the corps. 
+            // Integer representation of the corps.
             // -1 = black king corp, -2 = black bishop left corp, -3 = black bishop right corp
             // 1 = white king corp, 2 = white bishop left corp, 3 = white bishop right corp
             // 0 = empty.
