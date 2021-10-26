@@ -31,7 +31,7 @@ public class AI : Player
     float[,] dist_map = new float[8, 8];
     int[,] risk_map = new int[8, 8];
 
-    float difficulty = 0.5f;
+    float difficulty = 0.25f;
 
     public AI(string name, GameManager gm, BoardManager bm) : base(name, gm, bm)
     {
@@ -311,11 +311,4 @@ public class AI : Player
         //Debug.Log("King Pos: " + king_position[0] + ", " + king_position[1]);
         return king_position;
     }
-
-    public void EvaluateMaterial(int[,] board)
-    {
-
-    }
-
-    // AI specific functions...
 }
