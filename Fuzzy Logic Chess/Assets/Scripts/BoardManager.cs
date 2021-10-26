@@ -986,6 +986,8 @@ public class BoardManager : MonoBehaviour
      */
     public void MovePiece(int[] from, int[] to)
     {
+        RefreshBlocks();
+
         Piece p = pieces[from[0], from[1]];
 
         // Find the best path. 
@@ -1020,6 +1022,8 @@ public class BoardManager : MonoBehaviour
      */
     public bool Attack(int[] from, int[] to)
     {
+        RefreshBlocks();
+
         int roll = dice.RollDice();
 
         // Get attacker and defender integer piece type.
