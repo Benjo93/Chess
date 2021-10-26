@@ -471,8 +471,9 @@ public class BoardManager : MonoBehaviour
         {
             for (int j = 0; j < 2; j++)
             {
-                whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.5f, Quaternion.identity);
+                whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity);
                 whiteCaptureBox[i, j].transform.localScale = new Vector3(0.045f, 0.045f, 0.045f);
+                whiteCaptureBox[i, j].GetComponent<SpriteRenderer>().material.color = Chess.Colors.BOARD_DARK;
             }
         }
     }
@@ -935,6 +936,7 @@ public class BoardManager : MonoBehaviour
     public void GenerateCaptureWhite(Piece capture)
     {
         capture.transform.position = whiteCaptureBox[capturedWhite.Count, 0].transform.position;
+        capture.transform.localScale = new Vector3(0.04f, 0.04f, 0.04f);
         capture.ResetPiece();
         capturedWhite.Add(capture);
     }
@@ -942,6 +944,7 @@ public class BoardManager : MonoBehaviour
     public void GenerateCaptureBlack(Piece capture)
     {
         capture.transform.position = whiteCaptureBox[capturedBlack.Count, 1].transform.position;
+        capture.transform.localScale = new Vector3(0.04f, 0.04f, 0.04f);
         capture.ResetPiece();
         capturedBlack.Add(capture);
     }
