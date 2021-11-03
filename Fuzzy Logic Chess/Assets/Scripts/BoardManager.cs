@@ -542,7 +542,6 @@ public class BoardManager : MonoBehaviour
 
         //Debug.Log(result);
 
-
         return corp_state;
     }
 

@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,18 +21,22 @@ public class GameSetupHandler : MonoBehaviour
     public ToggleGroup playAs;
     public string[] setupChoices = new string[2];
 
-
     public void OnPlayButtonClick()
     {
-        if (gameInProgress == true)
+        if (gameInProgress == true) // this is the actual New Game function
         {
+            Debug.Log("A");
+            gm.SetAutoSaveActive(false);
+            gm.EraseSave();
+            gm.StartGame();
+            gm.SetAutoSaveActive(true);
             buttonText.text = "PLAY";
-            gm.ResetBoard();
         }
-        else
+        else // this will be called first after first click and will turn "Play" into "New Game" 
         {
-            buttonText.text = "NEW GAME";
+            Debug.Log("B");
             GetGameSetup();
+            buttonText.text = "NEW GAME";
         }
         gameTypeSelection.interactable = gameInProgress;
         asWhite.interactable = gameInProgress;
@@ -53,6 +58,5 @@ public class GameSetupHandler : MonoBehaviour
 
         Session.players[0] = choices[0].ToLower();
         Session.players[1] = choices[1].ToLower();
-
     }
 }

@@ -19,10 +19,18 @@ public class GameManager : MonoBehaviour
     private bool DidDelegate = false;
     private int moves_left = 6;
     private readonly string saveFileName = "/save_state.txt";
+    private bool autoSaveActive = true;
 
     public void StartGame()
     {
-        EraseSave();
+        if (File.Exists(Application.dataPath + saveFileName))
+        {
+            Debug.Log("There is an existing file.");
+        }
+        else
+        {
+            Debug.Log("File not found.");
+        }
         InitializePlayer(LoadPlayer());
         InitializeName(LoadName());
         InitializeCurrentTeam(LoadCurrentTeam());
@@ -74,10 +82,21 @@ public class GameManager : MonoBehaviour
         if (moves_left > 0)
         {
             players[(int)team].BeginMove();
-            Autosave();
+            Debug.Log("Critical Check " + autoSaveActive);
+            if (autoSaveActive)
+            {
+                Debug.Log("Autosaved");
+                Autosave();
+            }
         }
         else
             EndTurn();
+    }
+
+    public void SetAutoSaveActive(bool active)
+    {
+        autoSaveActive = active;
+        Debug.Log(autoSaveActive);
     }
 
     public void EndTurn()
