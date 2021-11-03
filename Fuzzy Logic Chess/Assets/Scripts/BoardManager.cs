@@ -250,7 +250,7 @@ public class BoardManager : MonoBehaviour
             for (int file = 0; file < blocks.GetLength(1); file++)
             {
                 // Set the blocks array to the component 'Block' from the instantiated game object.
-                blocks[rank, file] = Instantiate(block, new Vector3(file, blocks.GetLength(1) - rank, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
+                blocks[rank, file] = Instantiate(block, new Vector3(file, blocks.GetLength(1) - rank, 0f) * 1.2f, Quaternion.identity).AddComponent<Block>();
                 blocks[rank, file].SetPosition(rank, file);
                 blocks[rank, file].transform.name = "Block #" + index++;
 
