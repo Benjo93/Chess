@@ -23,20 +23,18 @@ public class GameSetupHandler : MonoBehaviour
 
     public void OnPlayButtonClick()
     {
-        if (gameInProgress == true) // this is the actual New Game function
+        // Will reset to a blank board
+        if (gameInProgress == true)
         {
-            Debug.Log("A");
-            gm.SetAutoSaveActive(false);
-            gm.EraseSave();
-            gm.StartGame();
-            gm.SetAutoSaveActive(true);
-            buttonText.text = "PLAY";
+            gm.ResetBoard();
+            buttonText.text = "PLAY"; // switch from NEW GAME to PLAY
         }
-        else // this will be called first after first click and will turn "Play" into "New Game" 
+        // Press play to fill a blank board
+        else
         {
-            Debug.Log("B");
             GetGameSetup();
-            buttonText.text = "NEW GAME";
+            gm.StartGame();
+            buttonText.text = "NEW GAME"; // switch from PLAY to NEW GAME
         }
         gameTypeSelection.interactable = gameInProgress;
         asWhite.interactable = gameInProgress;

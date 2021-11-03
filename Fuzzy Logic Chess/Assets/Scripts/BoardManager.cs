@@ -263,6 +263,7 @@ public class BoardManager : MonoBehaviour
 
     public Piece GeneratePiece(int pieceID, int row, int col)
     {
+        Debug.Log("Generate");
         Piece newPiece;
         switch (pieceID)
         {
@@ -351,7 +352,6 @@ public class BoardManager : MonoBehaviour
             }
         }
     }
-
 
     /* 
      * Initialize Corps:

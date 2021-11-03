@@ -19,18 +19,9 @@ public class GameManager : MonoBehaviour
     private bool DidDelegate = false;
     private int moves_left = 6;
     private readonly string saveFileName = "/save_state.txt";
-    private bool autoSaveActive = true;
 
     public void StartGame()
     {
-        if (File.Exists(Application.dataPath + saveFileName))
-        {
-            Debug.Log("There is an existing file.");
-        }
-        else
-        {
-            Debug.Log("File not found.");
-        }
         InitializePlayer(LoadPlayer());
         InitializeName(LoadName());
         InitializeCurrentTeam(LoadCurrentTeam());
@@ -82,21 +73,10 @@ public class GameManager : MonoBehaviour
         if (moves_left > 0)
         {
             players[(int)team].BeginMove();
-            Debug.Log("Critical Check " + autoSaveActive);
-            if (autoSaveActive)
-            {
-                Debug.Log("Autosaved");
-                Autosave();
-            }
+            Autosave();
         }
         else
             EndTurn();
-    }
-
-    public void SetAutoSaveActive(bool active)
-    {
-        autoSaveActive = active;
-        Debug.Log(autoSaveActive);
     }
 
     public void EndTurn()
@@ -379,9 +359,9 @@ public class GameManager : MonoBehaviour
 
     public void ResetBoard()
     {
-        EraseSave();
         //Chess.PIECES = new Dictionary<string, GameObject>();
         //Chess.SOUNDS = new Dictionary<string, AudioSource>();
+        EraseSave();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     public void EraseSave()
