@@ -1143,18 +1143,22 @@ public class BoardManager : MonoBehaviour
         List<int[]> newList = new List<int[]>();
         bool isWhitePiece = pieces[row, col].GetTeam().Equals("white");
         int range = 1;
-
         if (pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook"))
             range = pieces[row, col].GetNumberOfMoves();
 
-        int west = Mathf.Max(0, row - range);
-        int east = Mathf.Min(7, row + range);
-        int north = Mathf.Max(0, col - range);
-        int south = Mathf.Min(7, col + range);
+        int north = Mathf.Max(0, row - range);
+        int south = Mathf.Min(7, row + range);
+        int west = Mathf.Max(0, col - range);
+        int east = Mathf.Min(7, col + range);
 
-        for (int i = west; i <= east; i++)
+        if (pieces[row, col].GetPName().Equals("w_pawn"))
+            north = row + range;
+        else if (pieces[row, col].GetPName().Equals("b_pawn"))
+            south = row - range;
+
+        for (int i = north; i <= south; i++)
         {
-            for (int j = north; j <= south; j++)
+            for (int j = west; j <= east; j++)
             {
                 if (pieces[i, j])
                 {
@@ -1178,14 +1182,19 @@ public class BoardManager : MonoBehaviour
         pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook") ?
         pieces[row, col].GetNumberOfMoves() : 1;
 
-        int west = Mathf.Max(0, row - range);
-        int east = Mathf.Min(7, row + range);
-        int north = Mathf.Max(0, col - range);
-        int south = Mathf.Min(7, col + range);
+        int north = Mathf.Max(0, row - range);
+        int south = Mathf.Min(7, row + range);
+        int west = Mathf.Max(0, col - range);
+        int east = Mathf.Min(7, col + range);
 
-        for (int i = west; i <= east; i++)
+        if (pieces[row, col].GetPName().Equals("w_pawn"))
+            north = row + range;
+        else if (pieces[row, col].GetPName().Equals("b_pawn"))
+            south = row - range;
+
+        for (int i = north; i <= south; i++)
         {
-            for (int j = north; j <= south; j++)
+            for (int j = west; j <= east; j++)
             {
                 newList.Add(new int[] { i, j });
             }
