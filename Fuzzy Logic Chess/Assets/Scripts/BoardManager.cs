@@ -59,6 +59,7 @@ public class BoardManager : MonoBehaviour
     private List<Piece> capturedWhite = new List<Piece>();
     private List<Piece> capturedBlack = new List<Piece>();
 
+    private Dice diceInstance;
     // The 'Piece' component of the currently selected piece.
     private Piece selected_piece;
 
@@ -89,8 +90,11 @@ public class BoardManager : MonoBehaviour
 
     private void Start()
     {
+        RepositionBoard();
         PrintBoardSquares();
         BuildTable();
+        SpawnDice();
+        RefitBoard();
     }
 
     // Built-in Unity function that is called every frame.
@@ -249,8 +253,7 @@ public class BoardManager : MonoBehaviour
         {
             for (int file = 0; file < blocks.GetLength(1); file++)
             {
-                // Set the blocks array to the component 'Block' from the instantiated game object.
-                blocks[rank, file] = Instantiate(block, new Vector3(file, blocks.GetLength(1) - rank, 0f) * 1.2f, Quaternion.identity).AddComponent<Block>();
+                blocks[rank, file] = Instantiate(block, new Vector3(file, blocks.GetLength(1) - rank, 0f) * 1.2f, Quaternion.identity, transform).AddComponent<Block>();
                 blocks[rank, file].SetPosition(rank, file);
                 blocks[rank, file].transform.name = "Block #" + index++;
 
@@ -263,7 +266,6 @@ public class BoardManager : MonoBehaviour
 
     public Piece GeneratePiece(int pieceID, int row, int col)
     {
-        Debug.Log("Generate");
         Piece newPiece;
         switch (pieceID)
         {
@@ -471,7 +473,7 @@ public class BoardManager : MonoBehaviour
         {
             for (int j = 0; j < 2; j++)
             {
-                whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity);
+                whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity,transform);
                 whiteCaptureBox[i, j].transform.localScale = new Vector3(0.045f, 0.045f, 0.045f);
                 whiteCaptureBox[i, j].GetComponent<SpriteRenderer>().material.color = Chess.Colors.BOARD_DARK;
             }
@@ -1026,7 +1028,7 @@ public class BoardManager : MonoBehaviour
     {
         RefreshBlocks();
 
-        int roll = dice.RollDice();
+        int roll = diceInstance.RollDice();
 
         // Get attacker and defender integer piece type.
         int attacker = pieces[from[0], from[1]].piece_id;
@@ -1462,6 +1464,25 @@ public class BoardManager : MonoBehaviour
                 //hover_info.text += Math.Round((7f - roll_needed) / 6f * 100f, 2) + "%";
             }
         }
+    }
+
+    public void RepositionBoard()
+    {
+        transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, 0);
+    }
+    public void RefitBoard()
+    {
+        float boardWidthProportion = 121 / 100f; // board's width scale
+        float screenRatio = (float)Screen.width / (float)Screen.height; // screen ratio
+        float spaceToFit = screenRatio * .55f; // available space's width scale
+        float scaleToFitMultiplier = spaceToFit / boardWidthProportion; // multiplier for board scale to fit on space 
+        transform.localScale = new Vector3(scaleToFitMultiplier, scaleToFitMultiplier, 1);
+    }
+
+    public void SpawnDice()
+    {
+        diceInstance = Instantiate(dice, new Vector3(-1.12f, 5.3752f, -1), Quaternion.identity, transform) as Dice;
+        diceInstance.transform.localScale = new Vector3(0.07376f, 0.07376f, 0.07376f);
     }
 
     // Print out board state for debugging.
