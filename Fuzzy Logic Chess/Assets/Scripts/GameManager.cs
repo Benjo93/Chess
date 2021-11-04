@@ -20,6 +20,11 @@ public class GameManager : MonoBehaviour
     private int moves_left = 6;
     private readonly string saveFileName = "/save_state.txt";
 
+    // Text boxes for turn indicator
+    public GameObject p1Turn;
+    public GameObject p2Turn;
+    public bool turn = false;
+
     public void StartGame()
     {
         EraseSave();
@@ -48,6 +53,7 @@ public class GameManager : MonoBehaviour
         // Assign black to go first for demo.
         // Note: This will be moved to LoadTeam()
         team = Team.black;
+        p1Turn.SetActive(true);
 
         // Initiate the first move.
         CompleteGameState(0);
@@ -95,6 +101,19 @@ public class GameManager : MonoBehaviour
         //Reset Delegation Action
         DidDelegate = false;
 
+        //Swaps player turn indicator
+        if (turn == false)
+        {
+            p1Turn.SetActive(false);
+            p2Turn.SetActive(true);
+            turn = true;
+        }
+        else
+        {
+            p1Turn.SetActive(true);
+            p2Turn.SetActive(false);
+            turn = false;
+        }
         CompleteGameState(0);
     }
 
