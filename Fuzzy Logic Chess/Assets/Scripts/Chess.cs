@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 /* 
@@ -25,6 +26,15 @@ public class Chess : MonoBehaviour
 
     public AudioSource[] sounds; 
     public static Dictionary<string, AudioSource> SOUNDS = new Dictionary<string, AudioSource>();
+
+    // Singular audio player
+    private static AudioSource AudioSourceOneshot;
+
+    public static readonly string saveFileName = "/save_state.txt";
+    public static readonly string settingFileName = "/save_setting.txt";
+    public static float volume;
+    public static int resolution;
+    public static bool fullscreen;
 
     // Array of integers that correspond to the die roll needed for the column row pair. 
     private static int[,] roll_needed = new int[,]
@@ -55,6 +65,11 @@ public class Chess : MonoBehaviour
 
         Colors.MOVES_ONE = new Color(Colors.PLAYER_ONE.r, Colors.PLAYER_ONE.g, Colors.PLAYER_ONE.b, 0.5f);
         Colors.MOVES_TWO = new Color(Colors.PLAYER_TWO.r, Colors.PLAYER_TWO.g, Colors.PLAYER_TWO.b, 0.5f);
+
+        AudioSourceOneshot = gameObject.AddComponent(typeof(AudioSource)) as AudioSource;
+        AudioSourceOneshot.playOnAwake = false;
+
+        LoadSetting();
     }
 
     /* 
@@ -66,6 +81,63 @@ public class Chess : MonoBehaviour
     public static int RollNeeded(int attacker, int defender)
     {
         return roll_needed[6 - Math.Abs(attacker), 6 - Math.Abs(defender)];
+    }
+
+    public static void PlayAudioClip(string audioName)
+    {
+        AudioSourceOneshot.PlayOneShot(Chess.SOUNDS[audioName].clip, volume);
+    }
+
+    public static void SaveSetting()
+    {
+        if (File.Exists(Application.dataPath + Chess.settingFileName))
+        {
+            File.Delete(Application.dataPath + Chess.settingFileName);
+        }
+        using (StreamWriter sw = new StreamWriter(Application.dataPath + Chess.settingFileName))
+        {
+            sw.WriteLine(volume.ToString());
+            sw.WriteLine(resolution.ToString());
+            sw.WriteLine(fullscreen ? "1" : "0");
+            sw.Close();
+        }
+    }
+
+    public static void RefreshScreen()
+    {
+        switch(resolution)
+        {
+            case 0:
+                Screen.SetResolution(1366, 768, fullscreen);
+                break;
+            case 1:
+                Screen.SetResolution(1920, 1080, fullscreen);
+                break;
+            case 2:
+                Screen.SetResolution(2560, 1440, fullscreen);
+                break;
+        }
+    }
+
+    public static void LoadSetting()
+    {
+        if (File.Exists(Application.dataPath + settingFileName))
+        {
+            using (StreamReader sr = new StreamReader(Application.dataPath + Chess.settingFileName))
+            {
+                volume = (float)Convert.ToDouble(sr.ReadLine());
+                resolution = Convert.ToInt32(sr.ReadLine());
+                fullscreen = sr.ReadLine().Equals("1");
+                sr.Close();
+            }
+        }
+        else
+        {
+            volume = 1f;
+            resolution = 1;
+            fullscreen = false;
+            SaveSetting();
+        }
     }
 
     // Library of colors used in the GUI and chess board.

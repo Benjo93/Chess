@@ -55,7 +55,9 @@ public class BoardManager : MonoBehaviour
 
     // Squares for capture table
     public GameObject captureSquare;
-    public Transform WhiteCapture_origin;
+
+    private Vector2 resolution = new Vector2(Screen.width, Screen.height);
+
     private List<Piece> capturedWhite = new List<Piece>();
     private List<Piece> capturedBlack = new List<Piece>();
 
@@ -100,6 +102,15 @@ public class BoardManager : MonoBehaviour
     // Built-in Unity function that is called every frame.
     private void Update()
     {
+        if (resolution.x != Screen.width || resolution.y != Screen.height)
+        {
+            RepositionBoard();
+            RefitBoard();
+
+            resolution.x = Screen.width;
+            resolution.y = Screen.height;
+        }
+
         if (!setup_complete) return;
 
         // Check if the player is making a move.
@@ -469,11 +480,12 @@ public class BoardManager : MonoBehaviour
 
     public void BuildTable()
     {
+        Vector3 WhiteCapture_origin = new Vector3(9.3f, 8.15f, -15.79625f);
         for (int i = 0; i < 16; i++) // Loops for building the white table
         {
             for (int j = 0; j < 2; j++)
             {
-                whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin.position + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity,transform);
+                whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity,transform);
                 whiteCaptureBox[i, j].transform.localScale = new Vector3(0.045f, 0.045f, 0.045f);
                 whiteCaptureBox[i, j].GetComponent<SpriteRenderer>().material.color = Chess.Colors.BOARD_DARK;
             }
@@ -1042,7 +1054,7 @@ public class BoardManager : MonoBehaviour
         if (roll < roll_needed)
         {
             //Debug.Log("Attack Failed! " + from[0] + ", " + from[1] + " -> " + to[0] + ", " + to[1]);
-            Chess.SOUNDS["block"].Play();
+            Chess.PlayAudioClip("block");
 
             // Null path and Null new_position, attack_successful = false
             int moves_used = pieces[from[0], from[1]].Attack(null, null, false);
@@ -1062,7 +1074,7 @@ public class BoardManager : MonoBehaviour
         else
         {
             //Debug.Log("Attack Successful! " + from[0] + ", " + from[1] + " -> " + to[0] + ", " + to[1]);
-            Chess.SOUNDS["capture"].Play();
+            Chess.PlayAudioClip("capture");
 
             // Create a new path with only one position, was_successful = true.
             int moves_used = pieces[from[0], from[1]].Attack(new List<Vector3>() { blocks[to[0], to[1]].transform.position }, to, true);
