@@ -22,7 +22,6 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
-        EraseSave();
         InitializePlayer(LoadPlayer());
         InitializeName(LoadName());
         InitializeCurrentTeam(LoadCurrentTeam());
@@ -360,9 +359,9 @@ public class GameManager : MonoBehaviour
 
     public void ResetBoard()
     {
-        EraseSave();
         //Chess.PIECES = new Dictionary<string, GameObject>();
         //Chess.SOUNDS = new Dictionary<string, AudioSource>();
+        EraseSave();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     public void EraseSave()

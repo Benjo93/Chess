@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,18 +21,20 @@ public class GameSetupHandler : MonoBehaviour
     public ToggleGroup playAs;
     public string[] setupChoices = new string[2];
 
-
     public void OnPlayButtonClick()
     {
+        // Will reset to a blank board
         if (gameInProgress == true)
         {
-            buttonText.text = "PLAY";
             gm.ResetBoard();
+            buttonText.text = "PLAY"; // switch from NEW GAME to PLAY
         }
+        // Press play to fill a blank board
         else
         {
-            buttonText.text = "NEW GAME";
             GetGameSetup();
+            gm.StartGame();
+            buttonText.text = "NEW GAME"; // switch from PLAY to NEW GAME
         }
         gameTypeSelection.interactable = gameInProgress;
         asWhite.interactable = gameInProgress;
@@ -53,6 +56,5 @@ public class GameSetupHandler : MonoBehaviour
 
         Session.players[0] = choices[0].ToLower();
         Session.players[1] = choices[1].ToLower();
-
     }
 }
