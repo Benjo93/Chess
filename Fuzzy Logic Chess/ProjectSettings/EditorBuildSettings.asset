@@ -8,15 +8,18 @@ EditorBuildSettings:
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
-  - enabled: 1
-    path: Assets/Scenes/Chess.unity
-    guid: d9db9064573c73649bec4e3261c1db8e
-  - enabled: 1
-    path: Assets/Scenes/Game Setup.unity
-    guid: 270e4c1f35ea38c4ea34054448c4ec98
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 1
     path: Assets/Scenes/Start Menu 2.unity
     guid: d0c40bcd3cd42aa4a88d41ba730c3471
+  - enabled: 1
+    path: Assets/Scenes/Chess.unity
+    guid: f72c19b55b0539f488dee080466d657a
+  - enabled: 1
+    path: Assets/Scenes/Game Setup.unity
+    guid: 270e4c1f35ea38c4ea34054448c4ec98
   - enabled: 1
     path: Assets/Scenes/Player One Wins.unity
     guid: 655af28f5d76c0040b3cea65995efca3

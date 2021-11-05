@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 /*
  * Game Manager:
@@ -18,12 +19,11 @@ public class GameManager : MonoBehaviour
     private Team team;
     private bool DidDelegate = false;
     private int moves_left = 6;
-    private readonly string saveFileName = "/save_state.txt";
 
     // Text boxes for turn indicator
     public GameObject p1Turn;
     public GameObject p2Turn;
-    public bool turn = false;
+    private bool turn = false;
 
     public void StartGame()
     {
@@ -41,21 +41,35 @@ public class GameManager : MonoBehaviour
         bm.InitializeCaptureBlack(LoadCapturedBlack());
 
         bm.setup_complete = true;
-
+        IndicateActiveTeam();
+        RecolorPlayerIndicator();
         // Create players with session data.
         CreatePlayer((int)Team.white);
         CreatePlayer((int)Team.black);
-
-        // Randomly select a player to go first.
-        //team = Random.Range(0, 2) == 0 ? Team.black : Team.white;
-
-        // Assign black to go first for demo.
-        // Note: This will be moved to LoadTeam()
-        team = Team.black;
-        p1Turn.SetActive(true);
+        
 
         // Initiate the first move.
         CompleteGameState(0);
+    }
+
+    public void RecolorPlayerIndicator()
+    {
+        p1Turn.GetComponent<Text>().color = Chess.Colors.PLAYER_ONE;
+        p2Turn.GetComponent<Text>().color = Chess.Colors.PLAYER_TWO;
+    }
+
+    private void IndicateActiveTeam()
+    {
+        if (team == Team.white)
+        {
+            p1Turn.SetActive(true);
+            p2Turn.SetActive(false);
+        }
+        else
+        {
+            p1Turn.SetActive(false);
+            p2Turn.SetActive(true);
+        }
     }
 
     private void CreatePlayer(int p)
@@ -100,19 +114,8 @@ public class GameManager : MonoBehaviour
         //Reset Delegation Action
         DidDelegate = false;
 
-        //Swaps player turn indicator
-        if (turn == false)
-        {
-            p1Turn.SetActive(false);
-            p2Turn.SetActive(true);
-            turn = true;
-        }
-        else
-        {
-            p1Turn.SetActive(true);
-            p2Turn.SetActive(false);
-            turn = false;
-        }
+        IndicateActiveTeam();
+
         CompleteGameState(0);
     }
 
@@ -154,12 +157,11 @@ public class GameManager : MonoBehaviour
     // Captured Black
     public void Autosave()
     {
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
-            File.Delete(sDirectory + saveFileName);
+            File.Delete(Application.dataPath + Chess.saveFileName);
         }
-        using (StreamWriter sw = new StreamWriter(sDirectory + saveFileName))
+        using (StreamWriter sw = new StreamWriter(Application.dataPath + Chess.saveFileName))
         {
             // Saves the player type of player 1 and player 2
             sw.Write(Session.players[0] + "," + Session.players[1]);
@@ -378,17 +380,16 @@ public class GameManager : MonoBehaviour
 
     public void ResetBoard()
     {
-        //Chess.PIECES = new Dictionary<string, GameObject>();
-        //Chess.SOUNDS = new Dictionary<string, AudioSource>();
+        // Chess.PIECES.Clear();
+        // Chess.SOUNDS.Clear();
         EraseSave();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     public void EraseSave()
     {
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
-            File.Delete(sDirectory + saveFileName);
+            File.Delete(Application.dataPath + Chess.saveFileName);
         }
     }
 
@@ -417,11 +418,10 @@ public class GameManager : MonoBehaviour
     private string[] LoadPlayer()
     {
         string[] player_type_init;
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
             player_type_init = new string[2];
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            using (StreamReader sr = new StreamReader(Application.dataPath + Chess.saveFileName))
             {
                 player_type_init = sr.ReadLine().Split(',');
                 sr.Close();
@@ -438,11 +438,10 @@ public class GameManager : MonoBehaviour
     private string[] LoadName()
     {
         string[] player_name_init;
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
             player_name_init = new string[2];
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            using (StreamReader sr = new StreamReader(Application.dataPath + Chess.saveFileName))
             {
                 sr.ReadLine();
                 player_name_init = sr.ReadLine().Split(',');
@@ -459,11 +458,10 @@ public class GameManager : MonoBehaviour
     private Team LoadCurrentTeam()
     {
         Team current_team_init;
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
             int currentTeamUsedLine;
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            using (StreamReader sr = new StreamReader(Application.dataPath + Chess.saveFileName))
             {
                 sr.ReadLine();
                 sr.ReadLine();
@@ -474,7 +472,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            current_team_init = Team.white;
+            current_team_init = Team.black; // should change which default should move
         }
         return current_team_init;
     }
@@ -482,11 +480,10 @@ public class GameManager : MonoBehaviour
     private int LoadMovesLeft()
     {
         int moves_left_init;
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
             string moves_left_init_line;
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            using (StreamReader sr = new StreamReader(Application.dataPath + Chess.saveFileName))
             {
                 sr.ReadLine();
                 sr.ReadLine();
@@ -506,11 +503,10 @@ public class GameManager : MonoBehaviour
     private int[,] LoadBoard()
     {
         int[,] board_init = new int[8, 8];
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
             string piecesLine;
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            using (StreamReader sr = new StreamReader(Application.dataPath + Chess.saveFileName))
             {
                 sr.ReadLine();
                 sr.ReadLine();
@@ -548,12 +544,11 @@ public class GameManager : MonoBehaviour
     private int[,] LoadCorps()
     {
         int[,] command_init = new int[8, 8];
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
             command_init = new int[8, 8];
             string commandLine;
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            using (StreamReader sr = new StreamReader(Application.dataPath + Chess.saveFileName))
             {
                 sr.ReadLine();
                 sr.ReadLine();
@@ -597,12 +592,11 @@ public class GameManager : MonoBehaviour
     private int[,] LoadDelegation()
     {
         int[,] delegation_init = new int[8, 8];
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
             delegation_init = new int[8, 8];
             string delegationLine;
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            using (StreamReader sr = new StreamReader(Application.dataPath + Chess.saveFileName))
             {
                 sr.ReadLine();
                 sr.ReadLine();
@@ -632,12 +626,11 @@ public class GameManager : MonoBehaviour
     private int[,] LoadHasMoved()
     {
         int[,] has_moved_init = new int[8, 8];
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
             has_moved_init = new int[8, 8];
             string hasMovedLine;
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            using (StreamReader sr = new StreamReader(Application.dataPath + Chess.saveFileName))
             {
                 sr.ReadLine();
                 sr.ReadLine();
@@ -668,12 +661,11 @@ public class GameManager : MonoBehaviour
     private int[] LoadCommandNMoves()
     {
         int[] command_n_moves_init;
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
             command_n_moves_init = new int[6];
             string commandNMovesLine;
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            using (StreamReader sr = new StreamReader(Application.dataPath + Chess.saveFileName))
             {
                 sr.ReadLine();
                 sr.ReadLine();
@@ -702,11 +694,10 @@ public class GameManager : MonoBehaviour
     private int[] LoadCapturedWhite()
     {
         int[] captured_white_init;
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
             string capturedWhiteLine;
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            using (StreamReader sr = new StreamReader(Application.dataPath + Chess.saveFileName))
             {
                 sr.ReadLine();
                 sr.ReadLine();
@@ -738,11 +729,10 @@ public class GameManager : MonoBehaviour
     private int[] LoadCapturedBlack()
     {
         int[] captured_black_init;
-        string sDirectory = Application.dataPath;
-        if (File.Exists(sDirectory + saveFileName))
+        if (File.Exists(Application.dataPath + Chess.saveFileName))
         {
             string capturedBlackLine;
-            using (StreamReader sr = new StreamReader(sDirectory + saveFileName))
+            using (StreamReader sr = new StreamReader(Application.dataPath + Chess.saveFileName))
             {
                 sr.ReadLine();
                 sr.ReadLine();

@@ -900,7 +900,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 6915150528420423371}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: ButtonHandler, Assembly-CSharp
         m_MethodName: OnPlayButtonClick
         m_Mode: 1
@@ -2042,7 +2042,6 @@ GameObject:
   - component: {fileID: 6915150528420423370}
   - component: {fileID: 6915150528420423369}
   - component: {fileID: 6915150528420423368}
-  - component: {fileID: 6915150528420423371}
   m_Layer: 0
   m_Name: MenuPanel
   m_TagString: Untagged
@@ -2110,22 +2109,3 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &6915150528420423371
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6915150528420423373}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d18ec84d613b40848a4568fbec1c40c4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  asWhite: {fileID: 6915150527375080545}
-  asBlack: {fileID: 6915150527475841708}
-  asRandom: {fileID: 6915150527865110800}
-  gameTypeSelection: {fileID: 6915150526953098589}
-  playButton: {fileID: 6915150527102219198}
-  offon: 0
-  buttonText: {fileID: 6915150527261175711}

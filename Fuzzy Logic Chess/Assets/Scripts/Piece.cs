@@ -72,7 +72,7 @@ public class Piece : MonoBehaviour
             {
                 if (path_index < path.Count - 1)
                 {
-                    Chess.SOUNDS["move"].Play();
+                    Chess.PlayAudioClip("move");
                 }
                 path_index++;
             }
@@ -93,7 +93,7 @@ public class Piece : MonoBehaviour
      */
     public int MovePiece(List<Vector3> path, int[] new_position)
     {
-        Chess.SOUNDS["move"].Play();
+        //Chess.PlayAudioClip("move");
 
         this.path = path;
         path_index = 0;
