@@ -232,7 +232,7 @@ public class BoardManager : MonoBehaviour
                         selected_piece.IncrementTempID();
                         if (selected_piece.GetTempID() == 0)
                         {
-                            selectedBlock.ChangeColor(Color.grey);
+                            selectedBlock.DullColor();
                         }
                         // represents left bishop corps
                         else if (selected_piece.GetTempID() == 1)
@@ -286,6 +286,8 @@ public class BoardManager : MonoBehaviour
                 break;
 
             case 2: // Rook
+                //Debug.Log(Chess.PIECES.Count);
+                //Debug.Log(Chess.PLAYER_TWO_REF.Count);
                 newPiece = Instantiate(Chess.PIECES["pixel_rook"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
                 .InitializePiece("w_rook", 2, "white", 2, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
@@ -344,6 +346,57 @@ public class BoardManager : MonoBehaviour
                 break;
         }
         return newPiece;
+    }
+    public void RunRigidbody()
+    {
+        StartCoroutine(ApplyRigidBody());
+    }
+    IEnumerator ApplyRigidBody()
+    {
+        yield return new WaitForSeconds(1f);
+        foreach (Block block in blocks)
+        {
+            Rigidbody2D rb = block.gameObject.AddComponent<Rigidbody2D>();
+            Vector2 rand = new Vector2(UnityEngine.Random.Range(-10f, 10.0f), UnityEngine.Random.Range(0, 10.0f));
+            rb.AddForce(rand, ForceMode2D.Impulse);
+            rb.AddTorque(UnityEngine.Random.Range(-10f, 10.0f), ForceMode2D.Impulse);
+        }
+        foreach (Piece piece in pieces)
+        {
+            if (piece)
+            {
+                piece.gameObject.AddComponent<CircleCollider2D>();
+                Rigidbody2D rb = piece.gameObject.AddComponent<Rigidbody2D>();
+                Vector2 rand = new Vector2(UnityEngine.Random.Range(-10f, 10.0f), UnityEngine.Random.Range(0, 10.0f));
+                rb.AddForce(rand, ForceMode2D.Impulse);
+            } 
+        }
+        foreach (Piece piece in capturedWhite)
+        {
+            if (piece)
+            {
+                piece.gameObject.AddComponent<CircleCollider2D>();
+                Rigidbody2D rb = piece.gameObject.AddComponent<Rigidbody2D>();
+                Vector2 rand = new Vector2(UnityEngine.Random.Range(-10f, 10.0f), UnityEngine.Random.Range(0, 10.0f));
+                rb.AddForce(rand, ForceMode2D.Impulse);
+            }
+        }
+        foreach (Piece piece in capturedBlack)
+        {
+            if (piece)
+            {
+                piece.gameObject.AddComponent<CircleCollider2D>();
+                Rigidbody2D rb = piece.gameObject.AddComponent<Rigidbody2D>();
+                Vector2 rand = new Vector2(UnityEngine.Random.Range(0, 10.0f), UnityEngine.Random.Range(0, 10.0f));
+                rb.AddForce(rand, ForceMode2D.Impulse);
+            }
+        }
+        diceInstance.gameObject.AddComponent<CircleCollider2D>();
+        Rigidbody2D rbDice = diceInstance.gameObject.AddComponent<Rigidbody2D>();
+        Vector2 randDice = new Vector2(UnityEngine.Random.Range(0, 10.0f), UnityEngine.Random.Range(0, 10.0f));
+        rbDice.AddForce(randDice, ForceMode2D.Impulse);
+        yield return new WaitForSeconds(2.5f);
+        Debug.Log("Explosion Simulation done after 2.5 seconds passed.  Write additional tasks to do.");
     }
 
     /* 
@@ -480,14 +533,16 @@ public class BoardManager : MonoBehaviour
 
     public void BuildTable()
     {
+        GameObject blankBlock = new GameObject("Blank Block");
         Vector3 WhiteCapture_origin = new Vector3(9.3f, 8.15f, -15.79625f);
         for (int i = 0; i < 16; i++) // Loops for building the white table
         {
             for (int j = 0; j < 2; j++)
             {
-                whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity,transform);
+                //whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity,transform);
+                whiteCaptureBox[i, j] = Instantiate(blankBlock, WhiteCapture_origin + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity,transform);
                 whiteCaptureBox[i, j].transform.localScale = new Vector3(0.045f, 0.045f, 0.045f);
-                whiteCaptureBox[i, j].GetComponent<SpriteRenderer>().material.color = Chess.Colors.BOARD_DARK;
+                //whiteCaptureBox[i, j].GetComponent<SpriteRenderer>().material.color = Chess.Colors.BOARD_DARK;
             }
         }
     }
@@ -510,7 +565,6 @@ public class BoardManager : MonoBehaviour
                 board_state[rank, file] = pieces[rank, file] ? pieces[rank, file].piece_id : 0;
             }
         }
-
         return board_state;
     }
 
@@ -520,7 +574,7 @@ public class BoardManager : MonoBehaviour
         foreach (Piece piece in selected_piece.GetCommander().GetPiecesInCorp())
         {
             int[] index = piece.position;
-            blocks[index[0], index[1]].ChangeColor(Color.grey);
+            blocks[index[0], index[1]].HoverColor();
         }
     }
 
@@ -591,7 +645,7 @@ public class BoardManager : MonoBehaviour
                 {
                     if (piece != null && piece.GetCorpID() == 1 && !piece.is_commander)
                     {
-                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.grey);
+                        blocks[piece.position[0], piece.position[1]].HoverColor();
                     }
                 }
             }
@@ -601,7 +655,7 @@ public class BoardManager : MonoBehaviour
                 {
                     if (piece != null && piece.GetCorpID() == -1 && !piece.is_commander)
                     {
-                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.grey);
+                        blocks[piece.position[0], piece.position[1]].HoverColor();
                     }
                 }
             }
@@ -1361,7 +1415,7 @@ public class BoardManager : MonoBehaviour
         foreach (int[] pos in list)
         {
             blocks[pos[0], pos[1]].SetAttackable(true);
-            blocks[pos[0], pos[1]].ChangeColor(team == "white" ? Chess.Colors.B_ATTACK : Chess.Colors.B_ATTACK);
+            blocks[pos[0], pos[1]].ChangeColor(team == "white" ? Chess.Colors.W_ATTACK : Chess.Colors.B_ATTACK);
         }
     }
 
@@ -1425,7 +1479,7 @@ public class BoardManager : MonoBehaviour
             positions.Add(blocks[p[0], p[1]].transform.position);
 
             // Highlight path.
-            blocks[p[0], p[1]].ChangeColor(Color.grey);
+            blocks[p[0], p[1]].DullColor();
         }
 
         // Highlight destination.
@@ -1477,7 +1531,41 @@ public class BoardManager : MonoBehaviour
             }
         }
     }
-
+    public void RefreshColor()
+    {
+        bool flip = false;
+        int index = 0;
+        for (int row = 0; row < blocks.GetLength(0); row++)
+        {
+            for (int col = 0; col < blocks.GetLength(1); col++)
+            {
+                blocks[row, col].SetColor(blocks[row, col].GetComponent<SpriteRenderer>().material.color = flip
+                    ? Chess.Colors.BOARD_LIGHT : Chess.Colors.BOARD_DARK);
+                index++;
+                if (index % 8 != 0) flip = !flip;
+                if (pieces[row,col])
+                {
+                    if (pieces[row,col].GetTeam().Equals("white"))
+                        pieces[row, col].color = Chess.Colors.PLAYER_ONE;
+                    else
+                        pieces[row, col].color = Chess.Colors.PLAYER_TWO;
+                    pieces[row, col].GetComponent<SpriteRenderer>().material.color = pieces[row, col].color;
+                    if(pieces[row,col].GetHasMoved())
+                        pieces[row, col].ColorDim();
+                }
+            }
+        }
+        foreach (Piece piece in capturedWhite)
+        {
+            piece.color = Chess.Colors.PLAYER_ONE;
+            piece.GetComponent<SpriteRenderer>().material.color = piece.color;
+        }
+        foreach (Piece piece in capturedBlack)
+        {
+            piece.color = Chess.Colors.PLAYER_TWO;
+            piece.GetComponent<SpriteRenderer>().material.color = piece.color;
+        }
+    }
     public void RepositionBoard()
     {
         transform.position = new Vector3(Camera.main.transform.position.x, Camera.main.transform.position.y, 0);
@@ -1496,6 +1584,8 @@ public class BoardManager : MonoBehaviour
         diceInstance = Instantiate(dice, new Vector3(-1.12f, 5.3752f, -1), Quaternion.identity, transform) as Dice;
         diceInstance.transform.localScale = new Vector3(0.07376f, 0.07376f, 0.07376f);
     }
+
+
 
     // Print out board state for debugging.
     private void ShowPositions()

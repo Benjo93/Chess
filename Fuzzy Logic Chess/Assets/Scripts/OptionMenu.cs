@@ -5,36 +5,59 @@ using UnityEngine.UI;
 
 public class OptionMenu : MonoBehaviour
 {
-    [SerializeField] Slider volume;
-    [SerializeField] Dropdown resolution;
-    [SerializeField] Toggle fullscreen;
+    [SerializeField] private Slider volume;
+    [SerializeField] private Dropdown resolution;
+    [SerializeField] private Toggle fullscreen;
+    [SerializeField] private Button player1;
+    [SerializeField] private Button player2;
+    [SerializeField] private Button square1;
+    [SerializeField] private Button square2;
     // Start is called before the first frame update
     void Start()
     {
         LoadFromChess();
-        volume.onValueChanged.AddListener(delegate { ValueChangeCheck(volume); });
-        fullscreen.onValueChanged.AddListener(delegate { ToggleValueChanged(fullscreen); });
-        resolution.onValueChanged.AddListener(delegate { DropdownValueChanged(resolution); });
         gameObject.SetActive(false);
     }
 
-    private void ValueChangeCheck(Slider change)
+    public void SetVolume()
     {
-        Chess.volume = change.value;
+        Chess.volume = volume.value;
     }
-    private void DropdownValueChanged(Dropdown change)
+    public void SetResolution()
     {
-        Chess.resolution = change.value;
+        Chess.resolution = resolution.value;
+        Chess.RefreshScreen();
+    }
+    public void SetFullescreen()
+    {
+        Chess.fullscreen = fullscreen.isOn;
         Chess.RefreshScreen();
     }
 
-    private void ToggleValueChanged(Toggle change)
+    public void SetPlayerOneColor()
     {
-        Chess.fullscreen = change.isOn;
-        Chess.RefreshScreen();
+        Chess.IncrementPlayer1Color();
+        player1.GetComponent<Image>().color = Chess.Colors.PLAYER_ONE;
     }
 
-    public void ToggleOptionsMenu()
+    public void SetPlayerTwoColor()
+    {
+        Chess.IncrementPlayer2Color();
+        player2.GetComponent<Image>().color = Chess.Colors.PLAYER_TWO;
+    }
+
+    public void SetBlockOneColor()
+    {
+        Chess.IncrementBlock1Color();
+        square1.GetComponent<Image>().color = Chess.Colors.BOARD_LIGHT;
+    }
+
+    public void SetBlockTwoColor()
+    {
+        Chess.IncrementBlock2Color();
+        square2.GetComponent<Image>().color = Chess.Colors.BOARD_DARK;
+    }
+    public void SaveOptions()
     {
         Chess.SaveSetting();
         gameObject.SetActive(!gameObject.activeSelf);
@@ -44,6 +67,7 @@ public class OptionMenu : MonoBehaviour
     {
         Chess.LoadSetting();
         LoadFromChess();
+        gameObject.SetActive(!gameObject.activeSelf);
     }
 
     private void LoadFromChess()
@@ -51,6 +75,9 @@ public class OptionMenu : MonoBehaviour
         volume.value = Chess.volume;
         resolution.value = Chess.resolution;
         fullscreen.isOn = Chess.fullscreen;
+        player1.GetComponent<Image>().color = Chess.Colors.PLAYER_ONE;
+        player2.GetComponent<Image>().color = Chess.Colors.PLAYER_TWO;
+        square1.GetComponent<Image>().color = Chess.Colors.BOARD_LIGHT;
+        square2.GetComponent<Image>().color = Chess.Colors.BOARD_DARK;
     }
 }
-

@@ -27,7 +27,7 @@ public class GameSetupHandler : MonoBehaviour
         if (gameInProgress == true)
         {
             gm.ResetBoard();
-            buttonText.text = "PLAY"; // switch from NEW GAME to PLAY
+            buttonText.text = "PLAY"; // switch from NEW GAME to PLAY 
         }
         // Press play to fill a blank board
         else
@@ -35,6 +35,7 @@ public class GameSetupHandler : MonoBehaviour
             GetGameSetup();
             gm.StartGame();
             buttonText.text = "NEW GAME"; // switch from PLAY to NEW GAME
+
         }
         gameTypeSelection.interactable = gameInProgress;
         asWhite.interactable = gameInProgress;

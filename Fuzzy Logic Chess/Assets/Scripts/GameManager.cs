@@ -350,8 +350,8 @@ public class GameManager : MonoBehaviour
 
     public void ResetBoard()
     {
-        //Chess.PIECES = new Dictionary<string, GameObject>();
-        //Chess.SOUNDS = new Dictionary<string, AudioSource>();
+        // Chess.PIECES.Clear();
+        // Chess.SOUNDS.Clear();
         EraseSave();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
