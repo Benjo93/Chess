@@ -19,6 +19,11 @@ public class GameManager : MonoBehaviour
     private bool DidDelegate = false;
     private int moves_left = 6;
 
+    // Text boxes for turn indicator
+    public GameObject p1Turn;
+    public GameObject p2Turn;
+    private bool turn = false;
+
     public void StartGame()
     {
         InitializePlayer(LoadPlayer());
@@ -35,13 +40,29 @@ public class GameManager : MonoBehaviour
         bm.InitializeCaptureBlack(LoadCapturedBlack());
 
         bm.setup_complete = true;
+        IndicateActiveTeam();
 
         // Create players with session data.
         CreatePlayer((int)Team.white);
         CreatePlayer((int)Team.black);
+        
 
         // Initiate the first move.
         CompleteGameState(0);
+    }
+
+    private void IndicateActiveTeam()
+    {
+        if (team == Team.white)
+        {
+            p1Turn.SetActive(true);
+            p2Turn.SetActive(false);
+        }
+        else
+        {
+            p1Turn.SetActive(false);
+            p2Turn.SetActive(true);
+        }
     }
 
     private void CreatePlayer(int p)
@@ -85,6 +106,8 @@ public class GameManager : MonoBehaviour
 
         //Reset Delegation Action
         DidDelegate = false;
+
+        IndicateActiveTeam();
 
         CompleteGameState(0);
     }
