@@ -16,7 +16,11 @@ public class OptionMenu : MonoBehaviour
     void Start()
     {
         LoadFromChess();
-        gameObject.SetActive(false);
+    }
+
+    public void ToggleOptionsMenu()
+    {
+        gameObject.SetActive(true);
     }
 
     public void SetVolume()
