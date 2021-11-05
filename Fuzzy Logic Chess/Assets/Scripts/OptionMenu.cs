@@ -74,6 +74,11 @@ public class OptionMenu : MonoBehaviour
         gameObject.SetActive(!gameObject.activeSelf);
     }
 
+    public void RecolorTurnIndicator()
+    {
+
+    }
+
     private void LoadFromChess()
     {
         volume.value = Chess.volume;

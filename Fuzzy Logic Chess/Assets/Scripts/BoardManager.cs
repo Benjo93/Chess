@@ -156,7 +156,7 @@ public class BoardManager : MonoBehaviour
                             selected_piece = pieces[index[0], index[1]];
 
                             // Highlight all pieces in selected piece corp.
-                            //ShowAllPiecesInCorp(selected_piece);
+                            ShowAllPiecesInCorp(selected_piece);
 
                             // Get a list of all moveable blocks.
                             List<int[]> availableMoves = GetMovesList(index[0], index[1], selected_piece.GetNumberOfMoves());
@@ -225,10 +225,11 @@ public class BoardManager : MonoBehaviour
                 {
                     Block selectedBlock = blocks[index[0], index[1]];
                     Piece selected_piece = pieces[index[0], index[1]];
-                    int corpID = selected_piece.GetCorpID();
+                    
                     //whenever a piece in king corp is clicked, it changes colors
                     if (Input.GetMouseButtonDown(0) && (selected_piece.GetTeam() == gm.GetTeam()) && selected_piece != null)
                     {
+                        int corpID = selected_piece.GetCorpID();
                         selected_piece.IncrementTempID();
                         if (selected_piece.GetTempID() == 0)
                         {
@@ -573,8 +574,10 @@ public class BoardManager : MonoBehaviour
         // Highlight all pieces in corp.
         foreach (Piece piece in selected_piece.GetCommander().GetPiecesInCorp())
         {
+            Debug.Log("A");
             int[] index = piece.position;
             blocks[index[0], index[1]].HoverColor();
+            //blocks[index[0], index[1]].ChangeColor(Color.white);
         }
     }
 

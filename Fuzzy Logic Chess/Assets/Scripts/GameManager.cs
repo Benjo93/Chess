@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 /*
  * Game Manager:
@@ -41,7 +42,7 @@ public class GameManager : MonoBehaviour
 
         bm.setup_complete = true;
         IndicateActiveTeam();
-
+        RecolorPlayerIndicator();
         // Create players with session data.
         CreatePlayer((int)Team.white);
         CreatePlayer((int)Team.black);
@@ -49,6 +50,12 @@ public class GameManager : MonoBehaviour
 
         // Initiate the first move.
         CompleteGameState(0);
+    }
+
+    public void RecolorPlayerIndicator()
+    {
+        p1Turn.GetComponent<Text>().color = Chess.Colors.PLAYER_ONE;
+        p2Turn.GetComponent<Text>().color = Chess.Colors.PLAYER_TWO;
     }
 
     private void IndicateActiveTeam()
