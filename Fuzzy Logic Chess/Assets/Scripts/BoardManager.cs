@@ -42,6 +42,9 @@ public class BoardManager : MonoBehaviour
     public GameObject RevokeButton;
     public GameObject ConfirmRevokeButton;
     public GameObject CancelRevokeButton;
+    public GameObject Knight_Attack_Button;
+    public GameObject Knight_Wait_Button;
+
     private int GlobalDelegationID = 1;
 
     // Determines if delegation mode is enabled
@@ -49,6 +52,11 @@ public class BoardManager : MonoBehaviour
 
     // Determines if revoke mode is enabled
     public bool revoke = false;
+
+    public bool knightMove = false;
+
+    public int knightx = -1;
+    public int knighty = -1;
 
     // Array of blocks representing each square of the capture box.
     private GameObject[,] whiteCaptureBox = new GameObject[16, 2];
@@ -141,7 +149,7 @@ public class BoardManager : MonoBehaviour
                     DisplayHoverInfo(hovered_index);
                 }
 
-                if (delegation == false)
+                if (delegation == false && knightMove == false)
                 {
                     // Clicking.
                     if (Input.GetMouseButtonDown(0))
@@ -219,6 +227,24 @@ public class BoardManager : MonoBehaviour
 
                         }
                     }
+                }
+                else if(knightMove == true)
+                {
+                    Debug.Log("poopoopeepee");
+                    Piece selected_piece = pieces[index[0], index[1]];
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        if (pieces[index[0], index[1]] != null)
+                        {
+                            if (selected_piece.GetTempID() == 1)
+                            {
+                                int[] knightPosition = { knightx, knighty };
+                                Attack(knightPosition, index);
+                                knightMove = false;
+                            }
+                            //fight                            
+                        }
+                    }   
                 }
                 // If delegation mode is enabled
                 else
@@ -1048,6 +1074,51 @@ public class BoardManager : MonoBehaviour
         Attack(from, to);
     }
 
+
+    public void HighlightAdjacentPieces(int[] knight)
+    {
+        int zero = knight[0];
+        int one = knight[1];
+        knightx = zero;
+        knighty = one;
+        for(int i = zero - 1; i <= zero + 1; i++)
+        {
+            for(int j = one - 1; j <= one + 1; j++)
+            {
+                if(i > -1 && j < 9 && i < 9 && j > -1)
+                {
+                    if (pieces[i, j] != null && !(zero == i && one == j))
+                    {
+                        blocks[i, j].ChangeColor(Color.blue);
+                        pieces[i, j].SetTempID(1);
+                    }
+                }
+                    
+            }
+        }    
+    }
+
+    public bool PiecesAdjacent(int[] knight)
+    {
+        int zero = knight[0];
+        int one = knight[1];
+        for (int i = zero - 1; i <= zero + 1; i++)
+        {
+            for (int j = one - 1; j <= one + 1; j++)
+            {
+                if (i > -1 && j < 9 && i < 9 && j > -1)
+                {
+                    if (pieces[i, j] != null && !(zero == i && one == j))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+
     /*
      * Move Piece:
      * Takes a position 'from' and position 'to', 
@@ -1076,14 +1147,63 @@ public class BoardManager : MonoBehaviour
         selected_piece = null;
         input_requested = false;
 
+
+        if((pieces[to[0],to[1]].GetPName() == "w_knight" || pieces[to[0],to[1]].GetPName() == "b_knight") && PiecesAdjacent(to))
+        {
+            Enable_Knight_Options();
+            HighlightAdjacentPieces(to);
+        }
+
         // Log move info.
         game_log.text += hover_info.text + "\n";
         //hover_info.text = "";
+
+
+
 
         // Notify the Game Manager of the moves used. 
         gm.CompleteGameState(moves_used);
     }
 
+    void Enable_Knight_Options()
+    {
+        // knight being moved AND has adjacent enemy triggers buttons to appear
+        DelegationButton.gameObject.SetActive(false);
+        RevokeButton.gameObject.SetActive(false);
+        EndTurnButton.gameObject.SetActive(false);
+
+        knightMove = true;
+
+        Knight_Attack_Button.gameObject.SetActive(true);
+        Knight_Wait_Button.gameObject.SetActive(true);
+    }
+
+    // Opens Knight attack options
+    public void Enable_Knight_Attack()
+    {
+        // knight does attack: it epic fail or fat dub 
+        // closes knight options
+        Knight_Attack_Button.gameObject.SetActive(false);
+        Knight_Wait_Button.gameObject.SetActive(false);
+
+        DelegationButton.gameObject.SetActive(true);
+        RevokeButton.gameObject.SetActive(true);
+        EndTurnButton.gameObject.SetActive(true);
+    }
+
+    // Ends knight turn
+    public void Enable_Knight_Wait()
+    {
+        Knight_Attack_Button.gameObject.SetActive(false);
+        Knight_Wait_Button.gameObject.SetActive(false);
+
+        knightMove = false;
+        RefreshBlocks();
+
+        DelegationButton.gameObject.SetActive(true);
+        RevokeButton.gameObject.SetActive(true);
+        EndTurnButton.gameObject.SetActive(true);
+    }
     /* 
      * Attack:
      * Gets a random number from the dice object. 
@@ -1098,6 +1218,10 @@ public class BoardManager : MonoBehaviour
         RefreshBlocks();
 
         int roll = diceInstance.RollDice();
+        if(knightMove == true)
+        {
+            roll++;
+        }
 
         // Get attacker and defender integer piece type.
         int attacker = pieces[from[0], from[1]].piece_id;
