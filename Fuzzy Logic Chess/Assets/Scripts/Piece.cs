@@ -21,7 +21,7 @@ public class Piece : MonoBehaviour
     public int temp_id;
 
     // Name of the team (white/black)
-    private string team;
+    public string team;
 
     // Current position of the piece.
     public int[] position;

@@ -1401,7 +1401,6 @@ public class BoardManager : MonoBehaviour
     {
         bool within_board = row >= 0 && col >= 0 && row < 8 && col < 8;
         return within_board && !pieces[row, col] && !blocks[row, col].IsVisited();
-
     }
 
     private void SetBlockListMovable(List<int[]> list, string team)

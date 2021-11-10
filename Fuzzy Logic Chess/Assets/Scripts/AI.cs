@@ -26,17 +26,127 @@ public class AI : Player
     public int moves_examined = 0; 
 
     float[] material_values = new float[] { 1, 2, 2, 3, 4, 100 };
-    //float[] material_values = new float[] { 1, 1, 1, 1, 1, 1 };
 
     float[,] dist_map = new float[8, 8];
     int[,] risk_map = new int[8, 8];
 
     float difficulty = 0.25f;
 
+    VrtBlock[,] virtual_blocks = new VrtBlock[8, 8];
+
     public AI(string name, GameManager gm, BoardManager bm) : base(name, gm, bm)
     {
         // AI specific constructor.
         // Inherits a name, game manager and board manager (Assigned in the GameManager)
+    }
+
+    public void BeginMove2()
+    {
+        bm.input_requested = false;
+        Piece[,] pieces = bm.GetPieces();
+
+        // Convert Pieces into virtual pieces.
+        VrtPiece[,] vrt_pieces = new VrtPiece[8, 8];
+        for (int p = 0; p < 8; p++)
+        {
+            for (int q = 0; q < 8; q++)
+            {
+                if (pieces[p, q])
+                {
+                    vrt_pieces[p, q] = new VrtPiece(
+                        pieces[p, q].position, 
+                        pieces[p, q].piece_id, 
+                        pieces[p, q].GetNumberOfMoves(), 
+                        pieces[p, q].team == "white" ? 1 : -1);
+                }
+                else
+                {
+                    vrt_pieces[p, q] = null;
+                }
+            }
+        }
+
+        AISolve(vrt_pieces, gm.GetTeam().Equals("white") ? 1 : -1, 0);
+    }
+
+    private int AISolve(VrtPiece[,] vrt_board, int which_team, int moves_solved)
+    {
+        int value = 0; 
+
+        // Evaluation of board state. 
+        // Calculate expected value of move/attack. 
+
+        // Ending condition: 
+        // moves_solved / X == depth
+
+        // Create a list of tuples that contain the piece and all of its moves/attacks.
+        List<(VrtPiece piece, List<int[]> attacks)> all_attacks = new List<(VrtPiece, List<int[]>)>();
+        List<(VrtPiece piece, List<int[]> moves)> all_moves = new List<(VrtPiece, List<int[]>)>();
+
+        // Populate all attacks and moves.
+        foreach (VrtPiece piece in vrt_board)
+        {
+            if (piece != null) continue;
+            if (piece.has_moved) continue;
+            if (piece.team == which_team) continue;
+            // Possible check for corp membership.
+
+            // Get list of attacks based off of virtual board.
+            // TODO make a virtual get attacks function.
+            // Add each attack to all_attacks.
+
+            // Get List of moves based off of virtual board.
+            // TODO make a virtual get moves function.
+            // Add each move to all_moves.
+        }
+
+        // Check for attacks.
+        if (all_attacks.Count > 0)
+        {
+            // Refresh virtual blocks.
+
+            foreach (var (piece, attacks) in all_attacks)
+            {
+                foreach (var to in attacks)
+                {
+                    // Assess the success and failure scenarios.
+                }
+            }
+        }
+
+        // Check for moves.
+        if (all_moves.Count > 0)
+        {         
+            // Refresh virtual blocks.
+
+            foreach (var (piece, moves) in all_moves)
+            {
+                foreach (var to in moves)
+                {
+                    int[] from = piece.position; 
+
+                    // Move the position on the vrt board.
+                    vrt_board[to[0], to[1]] = vrt_board[from[0], from[1]];
+                    vrt_board[from[0], from[1]] = null;
+
+                    piece.has_moved = true;
+                    // Update corp moves. 
+                    // Update AI Solver moves_solved until next team. 
+                    // If moves_solved % X == 0 then which_team *= -1
+
+                    // Call AI Solve...
+                    int branch_value = AISolve(vrt_board, which_team, moves_solved + 1);
+
+                    // Revert the virtual board move.
+                    vrt_board[from[0], from[1]] = vrt_board[to[0], to[1]];
+                    vrt_board[to[0], to[1]] = null;
+
+                    // Change piece position.
+                }
+            }
+        }
+
+        return value;
     }
 
     public override void BeginMove()
@@ -258,7 +368,7 @@ public class AI : Player
 
             if (piece.GetTeam() == gm.GetTeam())
             {
-                moves = bm.GetMovesList(piece.position[0], piece.position[1], piece.GetNumberOfMoves());
+                //moves = bm.GetMovesList(piece.position[0], piece.position[1], piece.GetNumberOfMoves());
 
                 foreach (int[] move in moves)
                 {
@@ -311,4 +421,28 @@ public class AI : Player
         //Debug.Log("King Pos: " + king_position[0] + ", " + king_position[1]);
         return king_position;
     }
+}
+
+public class VrtPiece
+{
+    public int[] position;
+    public int piece_id;
+
+    public int moves; 
+    public bool has_moved = true;
+    public int team; 
+
+    public VrtPiece(int[] position, int piece_id, int moves, int team)
+    {
+        this.position = position;
+        this.piece_id = piece_id;
+        this.team = team;
+    }
+}
+
+public class VrtBlock
+{
+    public bool moveable;
+    public bool visited;
+    public bool attackable;
 }

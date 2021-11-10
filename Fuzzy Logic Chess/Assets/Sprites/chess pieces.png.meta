@@ -240,6 +240,7 @@ TextureImporter:
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
+  ignoreMasterTextureLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -248,12 +249,12 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: -1
-    aniso: -1
-    mipBias: -100
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
     wrapU: 1
     wrapV: 1
-    wrapW: -1
+    wrapW: 0
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
@@ -1852,6 +1853,79 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
+    nameFileIdTable:
+      chess pieces_32: -1848249902116593421
+      chess pieces_70: -7443332574687659505
+      chess pieces_33: 3670558958176426529
+      chess pieces_38: -2257800899667831894
+      chess pieces_28: -3915137057320560621
+      chess pieces_23: 2447939093144075543
+      chess pieces_29: 3768885482425141581
+      chess pieces_18: 8291946383329403595
+      chess pieces_4: -8593854955757590946
+      chess pieces_48: -5550792619780650335
+      chess pieces_5: 900151559341354416
+      chess pieces_61: -2849684729059519825
+      chess pieces_31: 1382373243966298037
+      chess pieces_1: -3850564729132929338
+      chess pieces_24: 6513855143957311131
+      chess pieces_36: 8467698882325647667
+      chess pieces_64: -6113546083960272339
+      chess pieces_30: 1356507890245975791
+      chess pieces_27: 1602920544665127970
+      chess pieces_17: -8531855595518446917
+      chess pieces_47: 6934096782387244980
+      chess pieces_12: 2967594331476596415
+      chess pieces_63: -8184853692312988927
+      chess pieces_16: 1809214634122606810
+      chess pieces_34: 7363098203298180609
+      chess pieces_59: -3202835047325526760
+      chess pieces_3: -4851611443628960507
+      chess pieces_25: 7046164501383530966
+      chess pieces_7: -1955974323913242728
+      chess pieces_14: -6855829602987402974
+      chess pieces_21: -7893747255573390531
+      chess pieces_65: -6869455781521528753
+      chess pieces_22: -6744870052168533022
+      chess pieces_26: -162886723020592258
+      chess pieces_68: 1559922615950388226
+      chess pieces_60: -5325917143303767220
+      chess pieces_19: 3475178798648355386
+      chess pieces_40: -6813231838665851456
+      chess pieces_43: -8231319545277068021
+      chess pieces_69: -357306707216837375
+      chess pieces_6: -5590637269028187137
+      chess pieces_35: 7568141099242810944
+      chess pieces_41: -8233604557656361297
+      chess pieces_20: 7827046021868827558
+      chess pieces_53: 628648967830420808
+      chess pieces_8: -2131653744642292409
+      chess pieces_62: 8133994232183713940
+      chess pieces_15: 1946722520403624774
+      chess pieces_2: -2368360533026937623
+      chess pieces_39: 236028274764829234
+      chess pieces_57: 1645025248745821730
+      chess pieces_66: 381663819314735030
+      chess pieces_44: 1921893719079784897
+      chess pieces_49: -6088184927004704217
+      chess pieces_0: -650517862024266325
+      chess pieces_10: 2733206427754647557
+      chess pieces_45: -4491067523139650885
+      chess pieces_51: 8295569045669409519
+      chess pieces_58: 1051281423404353455
+      chess pieces_9: 857079921831273240
+      chess pieces_42: 8702629916070943126
+      chess pieces_56: -24705647993200986
+      chess pieces_71: -8275060881545914333
+      chess pieces_50: 5566777084971713695
+      chess pieces_13: -6429125886333724942
+      chess pieces_46: 6279458374442910642
+      chess pieces_54: 8103119389848483464
+      chess pieces_37: 4584105420707652862
+      chess pieces_55: -3118839080246431037
+      chess pieces_52: -8893905845590685760
+      chess pieces_11: 8333762695492568133
+      chess pieces_67: 2005634467862403615
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0
