@@ -230,7 +230,6 @@ public class BoardManager : MonoBehaviour
                 }
                 else if(knightMove == true)
                 {
-                    Debug.Log("poopoopeepee");
                     Piece selected_piece = pieces[index[0], index[1]];
                     if (Input.GetMouseButtonDown(0))
                     {
@@ -241,8 +240,14 @@ public class BoardManager : MonoBehaviour
                                 int[] knightPosition = { knightx, knighty };
                                 Attack(knightPosition, index);
                                 knightMove = false;
-                            }
-                            //fight                            
+                                foreach(Piece piece in pieces)
+                                {
+                                    if (piece != null)
+                                    {
+                                        piece.SetTempID(0);
+                                    }
+                                }
+                            }                       
                         }
                     }   
                 }
@@ -1087,7 +1092,7 @@ public class BoardManager : MonoBehaviour
             {
                 if(i > -1 && j < 9 && i < 9 && j > -1)
                 {
-                    if (pieces[i, j] != null && !(zero == i && one == j))
+                    if (pieces[i, j] != null && !(zero == i && one == j) && gm.GetTeam() != pieces[i, j].GetTeam())
                     {
                         blocks[i, j].ChangeColor(Color.blue);
                         pieces[i, j].SetTempID(1);
@@ -1108,7 +1113,7 @@ public class BoardManager : MonoBehaviour
             {
                 if (i > -1 && j < 9 && i < 9 && j > -1)
                 {
-                    if (pieces[i, j] != null && !(zero == i && one == j))
+                    if (pieces[i, j] != null && !(zero == i && one == j) && gm.GetTeam() != pieces[i, j].GetTeam())
                     {
                         return true;
                     }
