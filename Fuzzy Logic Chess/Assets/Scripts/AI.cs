@@ -57,7 +57,7 @@ public class AI : Player
                         pieces[p, q].position, 
                         pieces[p, q].piece_id, 
                         pieces[p, q].GetNumberOfMoves(), 
-                        pieces[p, q].team == "white" ? 1 : -1);
+                        pieces[p, q].team == gm.GetTeam() ? 1 : -1);
                 }
                 else
                 {
@@ -66,18 +66,25 @@ public class AI : Player
             }
         }
 
-        AISolve(vrt_pieces, gm.GetTeam().Equals("white") ? 1 : -1, 0);
+        AISolve(vrt_pieces, gm.GetTeam().Equals(gm.GetTeam()) ? 1 : -1, 0);
     }
 
-    private int AISolve(VrtPiece[,] vrt_board, int which_team, int moves_solved)
+    private int AISolve(VrtPiece[,] vrt_board, int min_max, int depth)
     {
-        int value = 0; 
+        // Ending Condition..
 
-        // Evaluation of board state. 
-        // Calculate expected value of move/attack. 
+        if (depth >= 12)
+        {
 
-        // Ending condition: 
-        // moves_solved / X == depth
+            /*
+             * 
+             * Evaluate board state. 
+             * 
+            */
+
+            int eval = 0;
+            return eval;
+        }
 
         // Create a list of tuples that contain the piece and all of its moves/attacks.
         List<(VrtPiece piece, List<int[]> attacks)> all_attacks = new List<(VrtPiece, List<int[]>)>();
@@ -88,7 +95,7 @@ public class AI : Player
         {
             if (piece != null) continue;
             if (piece.has_moved) continue;
-            if (piece.team == which_team) continue;
+            if (piece.team == min_max) continue;
             // Possible check for corp membership.
 
             // Get list of attacks based off of virtual board.
@@ -100,53 +107,80 @@ public class AI : Player
             // Add each move to all_moves.
         }
 
-        // Check for attacks.
-        if (all_attacks.Count > 0)
-        {
-            // Refresh virtual blocks.
+        int current_value = 0;
 
-            foreach (var (piece, attacks) in all_attacks)
+        // Check for attacks.
+        foreach (var (piece, attacks) in all_attacks)
+        {
+            foreach (var to in attacks)
             {
-                foreach (var to in attacks)
-                {
-                    // Assess the success and failure scenarios.
-                }
+                int[] from = piece.position;
+
+                //int value_failure = AISolve(vrt_board, min_max, moves_solved + 1);
+
+                Move(vrt_board, from, to);
+
+                int value_success = AISolve(vrt_board, min_max, depth + 1);
+
+                // Maximize.
+                if (min_max > 0) if (value_success > current_value) current_value = value_success;
+
+                // Minimize. 
+                if (min_max < 0) if (value_success < current_value) current_value = value_success;
+
+                MoveUndo(vrt_board, from, to);
+
             }
-        }
+        }     
 
         // Check for moves.
-        if (all_moves.Count > 0)
-        {         
-            // Refresh virtual blocks.
-
-            foreach (var (piece, moves) in all_moves)
+        foreach (var (piece, moves) in all_moves)
+        {
+            foreach (var to in moves)
             {
-                foreach (var to in moves)
-                {
-                    int[] from = piece.position; 
+                int[] from = piece.position;
 
-                    // Move the position on the vrt board.
-                    vrt_board[to[0], to[1]] = vrt_board[from[0], from[1]];
-                    vrt_board[from[0], from[1]] = null;
+                Move(vrt_board, from, to);
 
-                    piece.has_moved = true;
-                    // Update corp moves. 
-                    // Update AI Solver moves_solved until next team. 
-                    // If moves_solved % X == 0 then which_team *= -1
+                // Branch Move.
+                int value_below = AISolve(vrt_board, min_max, depth + 1);
 
-                    // Call AI Solve...
-                    int branch_value = AISolve(vrt_board, which_team, moves_solved + 1);
-
-                    // Revert the virtual board move.
-                    vrt_board[from[0], from[1]] = vrt_board[to[0], to[1]];
-                    vrt_board[to[0], to[1]] = null;
-
-                    // Change piece position.
-                }
+                // Maximize.
+                if (min_max > 0) if (value_below > current_value) current_value = value_below;
+                
+                // Minimize. 
+                if (min_max < 0) if (value_below < current_value) current_value = value_below;
+                
+                MoveUndo(vrt_board, from, to);
             }
         }
 
-        return value;
+        if ((all_attacks.Count == 0 && all_moves.Count == 0) || depth % 6 == 0)
+        {
+            int value_below = AISolve(vrt_board, -min_max, depth + 1);
+        }
+
+        return current_value;
+    }
+
+    public void Move(VrtPiece[,] vrt_board, int[] a, int[] z)
+    {
+        vrt_board[a[0], a[1]].has_moved = true;
+        vrt_board[a[0], a[1]].position = z;
+        vrt_board[z[0], z[1]] = vrt_board[a[0], a[1]];
+        vrt_board[a[0], a[1]] = null;
+
+        // Update corp moves..
+    }
+
+    public void MoveUndo(VrtPiece[,] vrt_board, int[] a, int[] z)
+    {
+        vrt_board[a[0], a[1]].has_moved = false;
+        vrt_board[a[0], a[1]].position = a;
+        vrt_board[a[0], a[1]] = vrt_board[z[0], z[1]];
+        vrt_board[z[0], z[1]] = null;
+
+        // Update corp moves..
     }
 
     public override void BeginMove()
