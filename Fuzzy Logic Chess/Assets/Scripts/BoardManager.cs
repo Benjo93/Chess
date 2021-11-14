@@ -1645,7 +1645,7 @@ public class BoardManager : MonoBehaviour
 
         if (selected_piece)
         {
-            hover_info.text = selected_piece.GetPName() + "[ " + column_chars[selected_piece.position[0]] + selected_piece.position[1] + " ]";
+            hover_info.text = selected_piece.GetPName() + "[" + column_chars[selected_piece.position[1]] + selected_piece.position[0] + "]";
 
             if (hovered_block.IsMovable())
             {
