@@ -4,12 +4,12 @@ using System.Collections.Generic;
 
 public class VirtualBoard
 {
-    private VirtualBlock[,] vblocks = new VirtualBlock[8, 8];
-    private VirtualPiece[,] vpieces = new VirtualPiece[8, 8];
+    public VirtualBlock[,] vblocks = new VirtualBlock[8, 8];
+    public VirtualPiece[,] vpieces = new VirtualPiece[8, 8];
 
     public Dice dice;
 
-    public VirtualBoard(Piece[,] pieces)
+    public VirtualBoard(Piece[,] pieces, string team)
     {
         for (int rank = 0; rank < vblocks.GetLength(0); rank++)
         {
@@ -19,9 +19,9 @@ public class VirtualBoard
                 if (pieces[rank,file])
                 {
                     Piece currPiece = pieces[rank, file];
-                    vpieces[rank, file] = new VirtualPiece(currPiece.GetPName(), currPiece.GetPieceID(), currPiece.GetTeam(), 
+                    vpieces[rank, file] = new VirtualPiece(currPiece.GetPName(), currPiece.GetPieceID(), currPiece.GetTeam() == team ? 1 : -1, 
                                                            currPiece.GetNumberOfMoves(), currPiece.GetCorpID(), currPiece.is_commander,
-                                                           currPiece.has_moved, currPiece.GetDelegationID());
+                                                           currPiece.has_moved, currPiece.GetDelegationID(), currPiece.position, currPiece);
                 }
             }
         }
@@ -37,9 +37,9 @@ public class VirtualBoard
                 if (pieces[rank, file]!= null)
                 {
                     VirtualPiece currPiece = pieces[rank, file];
-                    vpieces[rank, file] = new VirtualPiece(currPiece.p_name, currPiece.piece_id, currPiece.team, currPiece.n_moves,
-                                                           currPiece.corp_id, currPiece.is_commander, currPiece.has_moved,
-                                                           currPiece.delegation_id);
+                    //vpieces[rank, file] = new VirtualPiece(currPiece.p_name, currPiece.piece_id, currPiece.team, currPiece.n_moves,
+                                                           //currPiece.corp_id, currPiece.is_commander, currPiece.has_moved,
+                                                           //currPiece.delegation_id, currPiece.position);
                 }
             }
         }
@@ -212,10 +212,11 @@ public class VirtualBoard
     {
         VirtualRefreshBlocks();
 
-        VirtualPiece p = vpieces[from[0], from[1]];
-
         vpieces[to[0], to[1]] = vpieces[from[0], from[1]];
         vpieces[from[0], from[1]] = null;
+
+        vpieces[to[0], to[1]].has_moved = true;
+        vpieces[to[0], to[1]].position = to;
 
         /*
         if ((pieces[to[0], to[1]].GetPName() == "w_knight" || pieces[to[0], to[1]].GetPName() == "b_knight") && PiecesAdjacent(to))
@@ -226,4 +227,12 @@ public class VirtualBoard
         */
     }
 
+    public void VirtualUndoMovePiece(int[] from, int[] to)
+    {
+        vpieces[from[0], from[1]] = vpieces[to[0], to[1]];
+        vpieces[to[0], to[1]] = null;
+
+        vpieces[from[0], from[1]].has_moved = false;
+        vpieces[from[0], from[1]].position = from;
+    }
 }

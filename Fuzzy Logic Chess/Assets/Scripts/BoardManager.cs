@@ -1,4 +1,4 @@
-using System;
+    using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -605,7 +605,7 @@ public class BoardManager : MonoBehaviour
         // Highlight all pieces in corp.
         foreach (Piece piece in selected_piece.GetCommander().GetPiecesInCorp())
         {
-            Debug.Log("A");
+            //Debug.Log("A");
             int[] index = piece.position;
             blocks[index[0], index[1]].HoverColor();
             //blocks[index[0], index[1]].ChangeColor(Color.white);
@@ -1079,7 +1079,6 @@ public class BoardManager : MonoBehaviour
         Attack(from, to);
     }
 
-
     public void HighlightAdjacentPieces(int[] knight)
     {
         int zero = knight[0];
@@ -1162,9 +1161,6 @@ public class BoardManager : MonoBehaviour
         // Log move info.
         game_log.text += hover_info.text + "\n";
         //hover_info.text = "";
-
-
-
 
         // Notify the Game Manager of the moves used. 
         gm.CompleteGameState(moves_used);
