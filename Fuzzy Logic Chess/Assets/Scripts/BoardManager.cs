@@ -1159,11 +1159,11 @@ public class BoardManager : MonoBehaviour
             HighlightAdjacentPieces(to);
         }
 
-        char[] column_chars = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
-        
+        char[] column_chars = new char[] { 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' };
+
         //Log move info
-        game_log.text += pieces[to[0], to[1]].GetPName() + " [" + column_chars[from[1]] + from[0] + "]";
-        game_log.text += " >> [" + column_chars[to[1]] + to[0] + "]\n\n";
+        game_log.text += pieces[to[0], to[1]].GetPName() + " [" + column_chars[from[1]] + (from[0] + 1) + "]";
+        game_log.text += " >> [" + column_chars[to[1]] + (to[0] + 1) + "]\n\n";
 
         // Old method for loggin move info. Replaced because it didn't track the moves done by the AI
         //game_log.text += hover_info.text + "\n";
@@ -1228,7 +1228,7 @@ public class BoardManager : MonoBehaviour
     {
         RefreshBlocks();
 
-        char[] column_chars = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
+        char[] column_chars = new char[] { 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' };
         Block hovered_block = blocks[to[0], to[1]];
 
         int roll = diceInstance.RollDice();
@@ -1654,23 +1654,23 @@ public class BoardManager : MonoBehaviour
 
     public void DisplayHoverInfo(int[] h)
     {
-        char[] column_chars = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
+        char[] column_chars = new char[] { 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' };
         Block hovered_block = blocks[h[0], h[1]];
 
         if (selected_piece)
         {
-            hover_info.text = selected_piece.GetPName() + "[" + column_chars[selected_piece.position[1]] + selected_piece.position[0] + "]";
+            hover_info.text = selected_piece.GetPName() + "[" + column_chars[selected_piece.position[1]] + (selected_piece.position[0] + 1) + "]";
 
             if (hovered_block.IsMovable())
             {
-                hover_info.text += " >> [" + column_chars[h[1]] + h[0] + "] ";
+                hover_info.text += " >> [" + column_chars[h[1]] + (h[0] + 1) + "] ";
             }
 
             if (hovered_block.IsAttackable())
             {
                 int roll_needed = Chess.RollNeeded(selected_piece.piece_id, pieces[h[0], h[1]].piece_id);
 
-                hover_info.text += " >> " + pieces[h[0], h[1]].GetPName() + "[ " + column_chars[h[1]] + h[0] + " ]";
+                hover_info.text += " >> " + pieces[h[0], h[1]].GetPName() + "[ " + column_chars[h[1]] + (h[0] + 1) + " ]";
                 hover_info.text += "\n Roll Needed:  " + roll_needed;
                 //hover_info.text += Math.Round((7f - roll_needed) / 6f * 100f, 2) + "%";
             }
