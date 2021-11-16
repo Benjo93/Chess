@@ -1163,7 +1163,7 @@ public class BoardManager : MonoBehaviour
 
         //Log move info
         game_log.text += pieces[to[0], to[1]].GetPName() + " [" + column_chars[from[1]] + (from[0] + 1) + "]";
-        game_log.text += " >> [" + column_chars[to[1]] + (to[0] + 1) + "]\n\n";
+        game_log.text += " >> [" + column_chars[to[1]] + (to[0] + 1) + "]\n";
 
         // Old method for loggin move info. Replaced because it didn't track the moves done by the AI
         //game_log.text += hover_info.text + "\n";
@@ -1257,7 +1257,7 @@ public class BoardManager : MonoBehaviour
             selected_piece = null;
             input_requested = false;
 
-            game_log.text += pieces[from[0], from[1]].GetPName() + " >>> " + pieces[to[0], to[1]].GetPName() + " Failed\n\n";
+            game_log.text += pieces[from[0], from[1]].GetPName() + " >>> " + pieces[to[0], to[1]].GetPName() + " Failed\n";
 
             // Log attack info. Old method which could not track moves done by the AI
             //game_log.text += hover_info.text + "  Failed " + "\n";
@@ -1332,7 +1332,7 @@ public class BoardManager : MonoBehaviour
             input_requested = false;
             
             // Log attack info. New method that also tracks moves done by the AI
-            game_log.text += pieces[from[0], from[1]].GetPName() + " >>> " + pieces[to[0], to[1]].GetPName() + " Success\n\n";
+            game_log.text += pieces[from[0], from[1]].GetPName() + " >>> " + pieces[to[0], to[1]].GetPName() + " Success\n";
 
             // Log attack info. Old method which does not track moves done by the AI
             //game_log.text += hover_info.text + "  Success " + "\n";
