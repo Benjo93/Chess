@@ -53,7 +53,11 @@ public class BoardManager : MonoBehaviour
     // Determines if revoke mode is enabled
     public bool revoke = false;
 
+    //Determines if knight is about to attack
     public bool knightMove = false;
+
+    //Determines if knight is waiting for attack or wait to be pressed
+    public bool knightReady = false;
 
     public int knightx = -1;
     public int knighty = -1;
@@ -122,7 +126,7 @@ public class BoardManager : MonoBehaviour
         if (!setup_complete) return;
 
         // Check if the player is making a move.
-        if (!input_requested) return;
+        if (!input_requested || knightReady) return;
 
         // Cast a line in to where the mouse is on the screen.
         RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
@@ -198,7 +202,7 @@ public class BoardManager : MonoBehaviour
                     }
                 }
                 // If Revoke Mode is enabled
-                else if (revoke == true)
+                else if (revoke)
                 {
                     Block selectedBlock = blocks[index[0], index[1]];
                     Piece selected_piece = pieces[index[0], index[1]];
@@ -247,9 +251,15 @@ public class BoardManager : MonoBehaviour
                                         piece.SetTempID(0);
                                     }
                                 }
+                                knightx = -1;
+                                knighty = -1;
                             }                       
                         }
                     }   
+                }
+                else if(knightReady == true)
+                {
+                    //This isn't needed, but I have it here for debug purposes and I may need it again one day.
                 }
                 // If delegation mode is enabled
                 else
@@ -1083,6 +1093,11 @@ public class BoardManager : MonoBehaviour
     {
         int zero = knight[0];
         int one = knight[1];
+        if(zero == -1 && one == -1)
+        {
+            Debug.Log("HighlightAdjacentPieces should not have been called");
+            return;
+        }
         knightx = zero;
         knighty = one;
         for(int i = zero - 1; i <= zero + 1; i++)
@@ -1106,6 +1121,10 @@ public class BoardManager : MonoBehaviour
     {
         int zero = knight[0];
         int one = knight[1];
+        if(zero == -1 && one == -1)
+        {
+            return false;
+        }
         for (int i = zero - 1; i <= zero + 1; i++)
         {
             for (int j = one - 1; j <= one + 1; j++)
@@ -1148,15 +1167,17 @@ public class BoardManager : MonoBehaviour
         pieces[to[0], to[1]] = pieces[from[0], from[1]];
         pieces[from[0], from[1]] = null;
 
-        selected_piece = null;
-        input_requested = false;
+        
 
 
-        if((pieces[to[0],to[1]].GetPName() == "w_knight" || pieces[to[0],to[1]].GetPName() == "b_knight") && PiecesAdjacent(to))
+        if((pieces[to[0],to[1]].GetPName() == "w_knight" || pieces[to[0],to[1]].GetPName() == "b_knight") && PiecesAdjacent(to) && input_requested)
         {
             Enable_Knight_Options();
             HighlightAdjacentPieces(to);
         }
+
+        selected_piece = null;
+        input_requested = false;
 
         char[] column_chars = new char[] { 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' };
 
@@ -1179,7 +1200,7 @@ public class BoardManager : MonoBehaviour
         RevokeButton.gameObject.SetActive(false);
         EndTurnButton.gameObject.SetActive(false);
 
-        knightMove = true;
+        knightReady = true;
 
         Knight_Attack_Button.gameObject.SetActive(true);
         Knight_Wait_Button.gameObject.SetActive(true);
@@ -1193,6 +1214,9 @@ public class BoardManager : MonoBehaviour
         Knight_Attack_Button.gameObject.SetActive(false);
         Knight_Wait_Button.gameObject.SetActive(false);
 
+        knightMove = true;
+        knightReady = false;
+
         DelegationButton.gameObject.SetActive(true);
         RevokeButton.gameObject.SetActive(true);
         EndTurnButton.gameObject.SetActive(true);
@@ -1205,6 +1229,9 @@ public class BoardManager : MonoBehaviour
         Knight_Wait_Button.gameObject.SetActive(false);
 
         knightMove = false;
+        knightReady = false;
+        knightx = -1;
+        knighty = -1;
         RefreshBlocks();
 
         DelegationButton.gameObject.SetActive(true);
@@ -1326,9 +1353,14 @@ public class BoardManager : MonoBehaviour
 
             selected_piece = null;
             input_requested = false;
-            
+
             // Log attack info. New method that also tracks moves done by the AI
-            game_log.text += pieces[from[0], from[1]].GetPName() + " >>> " + pieces[to[0], to[1]].GetPName() + " Success\n";
+            //This was placed in an if statement because an error kept coming up whenever a knight was moved and this fixed that. Make a message in Discord if you have a problem with this.
+            if (pieces[from[0], from[1]] != null && pieces[to[0], to[1]] != null)
+            {
+                game_log.text += pieces[from[0], from[1]].GetPName() + " >>> " + pieces[to[0], to[1]].GetPName() + " Success\n";
+            }
+            
 
             // Log attack info. Old method which does not track moves done by the AI
             //game_log.text += hover_info.text + "  Success " + "\n";
