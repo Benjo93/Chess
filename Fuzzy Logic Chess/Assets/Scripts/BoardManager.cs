@@ -268,7 +268,7 @@ public class BoardManager : MonoBehaviour
                     Piece selected_piece = pieces[index[0], index[1]];
                     
                     //whenever a piece in king corp is clicked, it changes colors
-                    if (Input.GetMouseButtonDown(0) && (selected_piece.GetTeam() == gm.GetTeam()) && selected_piece != null)
+                    if (Input.GetMouseButtonDown(0) && (selected_piece.GetTeam() == gm.GetTeam()) && selected_piece != null && (selected_piece.GetCorpID() == 1 || selected_piece.GetCorpID() == -1))
                     {
                         int corpID = selected_piece.GetCorpID();
                         selected_piece.IncrementTempID();
@@ -687,6 +687,17 @@ public class BoardManager : MonoBehaviour
             {
                 foreach (Piece piece in pieces)
                 {
+                    if(piece!=null && piece.is_commander && piece.GetCorpID() > 0)
+                    {
+                        if(piece.GetCorpID() == 2)
+                        {
+                            blocks[piece.position[0], piece.position[1]].ChangeColor(Color.blue);
+                        }
+                        if(piece.GetCorpID() == 3)
+                        {
+                            blocks[piece.position[0], piece.position[1]].ChangeColor(Color.green);
+                        }
+                    }
                     if (piece != null && piece.GetCorpID() == 1 && !piece.is_commander)
                     {
                         blocks[piece.position[0], piece.position[1]].HoverColor();
@@ -697,6 +708,17 @@ public class BoardManager : MonoBehaviour
             {
                 foreach (Piece piece in pieces)
                 {
+                    if (piece != null && piece.is_commander && piece.GetCorpID() < 0)
+                    {
+                        if (piece.GetCorpID() == -2)
+                        {
+                            blocks[piece.position[0], piece.position[1]].ChangeColor(Color.blue);
+                        }
+                        if (piece.GetCorpID() == -3)
+                        {
+                            blocks[piece.position[0], piece.position[1]].ChangeColor(Color.green);
+                        }
+                    }
                     if (piece != null && piece.GetCorpID() == -1 && !piece.is_commander)
                     {
                         blocks[piece.position[0], piece.position[1]].HoverColor();
