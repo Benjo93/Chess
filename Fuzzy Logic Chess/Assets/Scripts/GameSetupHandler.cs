@@ -13,6 +13,11 @@ public class GameSetupHandler : MonoBehaviour
     public BoardManager bm;
     public GameManager gm;
 
+    // Button objects
+    public GameObject DelegationButton;
+    public GameObject EndTurnButton;
+    public GameObject RevokeButton;
+
     public Toggle asWhite, asBlack, asRandom;
     public Dropdown gameTypeSelection;
     public Button playButton;
@@ -32,6 +37,9 @@ public class GameSetupHandler : MonoBehaviour
         // Press play to fill a blank board
         else
         {
+            DelegationButton.gameObject.SetActive(true);
+            EndTurnButton.gameObject.SetActive(true);
+            RevokeButton.gameObject.SetActive(true);
             GetGameSetup();
             gm.StartGame();
             buttonText.text = "NEW GAME"; // switch from PLAY to NEW GAME

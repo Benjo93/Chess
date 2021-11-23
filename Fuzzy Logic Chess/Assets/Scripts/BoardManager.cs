@@ -44,6 +44,9 @@ public class BoardManager : MonoBehaviour
     public GameObject CancelRevokeButton;
     public GameObject Knight_Attack_Button;
     public GameObject Knight_Wait_Button;
+    public GameObject GameOver;
+
+    public Text gameOverText;
 
     private int GlobalDelegationID = 1;
 
@@ -104,6 +107,9 @@ public class BoardManager : MonoBehaviour
 
     private void Start()
     {
+        DelegationButton.gameObject.SetActive(false);
+        EndTurnButton.gameObject.SetActive(false);
+        RevokeButton.gameObject.SetActive(false);
         RepositionBoard();
         PrintBoardSquares();
         BuildTable();
@@ -268,7 +274,7 @@ public class BoardManager : MonoBehaviour
                     Piece selected_piece = pieces[index[0], index[1]];
                     
                     //whenever a piece in king corp is clicked, it changes colors
-                    if (Input.GetMouseButtonDown(0) && (selected_piece.GetTeam() == gm.GetTeam()) && selected_piece != null && (selected_piece.GetCorpID() == 1 || selected_piece.GetCorpID() == -1))
+                    if (Input.GetMouseButtonDown(0) && (selected_piece.GetTeam() == gm.GetTeam()) && selected_piece != null)
                     {
                         int corpID = selected_piece.GetCorpID();
                         selected_piece.IncrementTempID();
@@ -687,17 +693,6 @@ public class BoardManager : MonoBehaviour
             {
                 foreach (Piece piece in pieces)
                 {
-                    if(piece!=null && piece.is_commander && piece.GetCorpID() > 0)
-                    {
-                        if(piece.GetCorpID() == 2)
-                        {
-                            blocks[piece.position[0], piece.position[1]].ChangeColor(Color.blue);
-                        }
-                        if(piece.GetCorpID() == 3)
-                        {
-                            blocks[piece.position[0], piece.position[1]].ChangeColor(Color.green);
-                        }
-                    }
                     if (piece != null && piece.GetCorpID() == 1 && !piece.is_commander)
                     {
                         blocks[piece.position[0], piece.position[1]].HoverColor();
@@ -708,17 +703,6 @@ public class BoardManager : MonoBehaviour
             {
                 foreach (Piece piece in pieces)
                 {
-                    if (piece != null && piece.is_commander && piece.GetCorpID() < 0)
-                    {
-                        if (piece.GetCorpID() == -2)
-                        {
-                            blocks[piece.position[0], piece.position[1]].ChangeColor(Color.blue);
-                        }
-                        if (piece.GetCorpID() == -3)
-                        {
-                            blocks[piece.position[0], piece.position[1]].ChangeColor(Color.green);
-                        }
-                    }
                     if (piece != null && piece.GetCorpID() == -1 && !piece.is_commander)
                     {
                         blocks[piece.position[0], piece.position[1]].HoverColor();
@@ -1332,14 +1316,20 @@ public class BoardManager : MonoBehaviour
                 if (pieces[to[0], to[1]].GetPName() == "b_king")
                 {
                     //White win screen
-                    SceneManager.LoadScene("Player One Wins");
+                    //SceneManager.LoadScene("Player One Wins");
+                    GameOver.gameObject.SetActive(true);
+                    gameOverText.text = "Player  One  Wins";
+                    RunRigidbody();
                     return true;
                 }
                 //else white
                 else
                 {
                     //Black win screen
-                    SceneManager.LoadScene("Player Two Wins");
+                    //SceneManager.LoadScene("Player Two Wins");
+                    GameOver.gameObject.SetActive(true);
+                    gameOverText.text = "Player  Two  Wins";
+                    RunRigidbody();
                     return true;
                 }
                 // Insert Wilhelm Scream..
