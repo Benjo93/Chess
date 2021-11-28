@@ -16,7 +16,7 @@ public class VirtualBoard
             for (int file = 0; file < vblocks.GetLength(1); file++)
             {
                 vblocks[rank, file] = new VirtualBlock();
-                if (pieces[rank,file])
+                if (pieces[rank, file])
                 {
                     Piece currPiece = pieces[rank, file];
                     vpieces[rank, file] = new VirtualPiece(currPiece.GetPName(), currPiece.GetPieceID(), currPiece.GetTeam() == team ? 1 : -1, 
@@ -27,22 +27,20 @@ public class VirtualBoard
         }
     }
 
-    public VirtualBoard(VirtualPiece[,] pieces)
+    public string ShowVirtualBoard()
     {
-        for (int rank = 0; rank < vblocks.GetLength(0); rank++)
+        string result = "";
+        for (int p=0; p<8; p++)
         {
-            for (int file = 0; file < vblocks.GetLength(1); file++)
+            for (int q=0; q<8; q++)
             {
-                vblocks[rank, file] = new VirtualBlock();
-                if (pieces[rank, file]!= null)
-                {
-                    VirtualPiece currPiece = pieces[rank, file];
-                    //vpieces[rank, file] = new VirtualPiece(currPiece.p_name, currPiece.piece_id, currPiece.team, currPiece.n_moves,
-                                                           //currPiece.corp_id, currPiece.is_commander, currPiece.has_moved,
-                                                           //currPiece.delegation_id, currPiece.position);
-                }
+                if (vpieces[p, q] == null) result += " 0 ";
+                else result += vpieces[p, q].team == 1 ? " 1 " : "-1 "; 
             }
+            result += " \n";
         }
+
+        return result;
     }
 
     private bool VirtualIsValidBlock(int row, int col)
@@ -159,7 +157,7 @@ public class VirtualBoard
             {
                 if (vpieces[i, j] != null)
                 {
-                    if (vpieces[i, j].team.Equals("white") != isWhitePiece)
+                    if (vpieces[i, j].team == -1)
                         newList.Add(new int[] { i, j });
                 }
             }
@@ -218,6 +216,18 @@ public class VirtualBoard
         vpieces[to[0], to[1]].has_moved = true;
         vpieces[to[0], to[1]].position = to;
 
+        if (vpieces[to[0], to[1]].is_commander)
+        {
+            foreach (VirtualPiece piece in vpieces)
+            {
+                if (piece == null) continue;
+                if (piece.corp_id == vpieces[to[0], to[1]].corp_id)
+                {
+                    piece.has_moved = true;
+                }
+            }
+        }
+
         /*
         if ((pieces[to[0], to[1]].GetPName() == "w_knight" || pieces[to[0], to[1]].GetPName() == "b_knight") && PiecesAdjacent(to))
         {
@@ -234,5 +244,69 @@ public class VirtualBoard
 
         vpieces[from[0], from[1]].has_moved = false;
         vpieces[from[0], from[1]].position = from;
+
+        if (vpieces[from[0], from[1]].is_commander)
+        {
+            foreach (VirtualPiece piece in vpieces)
+            {
+                if (piece == null) continue;
+                if (piece.corp_id == vpieces[from[0], from[1]].corp_id)
+                {
+                    piece.has_moved = false;
+                }
+            }
+        }
+
+        VirtualRefreshBlocks();
+    }
+
+    public VirtualPiece VirtualAttackPiece(int[] from, int[] to)
+    {
+        VirtualRefreshBlocks();
+
+        VirtualPiece captured_piece = vpieces[to[0], to[1]];
+
+        vpieces[to[0], to[1]] = vpieces[from[0], from[1]];
+        vpieces[from[0], from[1]] = null;
+
+        vpieces[to[0], to[1]].has_moved = true;
+        vpieces[to[0], to[1]].position = to;
+
+        if (vpieces[to[0], to[1]].is_commander)
+        {
+            foreach (VirtualPiece piece in vpieces)
+            {
+                if (piece == null) continue;
+                if (piece.corp_id == vpieces[to[0], to[1]].corp_id)
+                {
+                    piece.has_moved = true;
+                }
+            }
+        }
+
+        return captured_piece; 
+    }
+
+    public void VirtualUndoAttackPiece(int[] from, int[] to, VirtualPiece replace_piece)
+    {
+        vpieces[from[0], from[1]] = vpieces[to[0], to[1]];
+        vpieces[to[0], to[1]] = replace_piece;
+
+        vpieces[from[0], from[1]].has_moved = false;
+        vpieces[from[0], from[1]].position = from;
+
+        if (vpieces[from[0], from[1]].is_commander)
+        {
+            foreach (VirtualPiece piece in vpieces)
+            {
+                if (piece == null) continue;
+                if (piece.corp_id == vpieces[from[0], from[1]].corp_id)
+                {
+                    piece.has_moved = false;
+                }
+            }
+        }
+
+        VirtualRefreshBlocks();
     }
 }

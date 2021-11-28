@@ -40,10 +40,11 @@ public class AI : Player
 
     public override void BeginMove()
     {
-        Debug.Log("Begin AI Move");
+        //Debug.Log("Begin AI Move");
         bm.input_requested = false;
 
         VirtualBoard vrt_board = new VirtualBoard(bm.GetPieces(), gm.GetTeam());
+        //Debug.Log(vrt_board.ShowVirtualBoard());
 
         // Create a list of tuples that contain the piece and all of its moves/attacks.
         List<(VirtualPiece piece, List<int[]> attacks)> all_attacks = new List<(VirtualPiece, List<int[]>)>();
@@ -63,9 +64,12 @@ public class AI : Player
             if (m.Count > 0) all_moves.Add((piece, m));
         }
 
+        Debug.Log("Attacks: " + all_attacks.Count);
+        Debug.Log("Moves =: " + all_moves.Count);
+
         bool _attack = false;
         bool _move = false;
-        int _best = 0;
+        int _best = -9999;
 
         Piece _piece = null;
         int[] _to = new int[] { -1, -1 };
@@ -77,6 +81,7 @@ public class AI : Player
                 int _val = SolveBoard(vrt_board, 1, 0);
                 if (_val > _best)
                 {
+                    _best = _val;
                     _piece = piece.self;
                     _to = to;
                     _move = true;
@@ -88,9 +93,10 @@ public class AI : Player
         {
             foreach (var to in attacks)
             {
-                int val = SolveBoard(vrt_board, 1, 0);
-                if (val > _best)
+                int _val = SolveBoard(vrt_board, 1, 0);
+                if (_val > _best)
                 {
+                    _best = _val;
                     _piece = piece.self;
                     _to = to;
                     _attack = true;
@@ -101,21 +107,25 @@ public class AI : Player
 
         if (_move)
         {
+            //Debug.Log("Move");
             bm.MovePiece(_piece.position, _to); 
         }
-        else if (_attack)
+        if (_attack)
         {
+            //Debug.Log("Attack");
             bm.Attack(_piece.position, _to);
         }
 
-        //int val = SolveBoard(vrt_board, 1, 0);
+        // No possible moves, end turn.
+        if (!_move && !_attack) gm.CompleteGameState(6);
+
        Debug.Log("Done");
     }
 
     private int SolveBoard(VirtualBoard vbm, int min_max, int depth)
     {
-        Debug.Log("Depth: " + depth);
-        Debug.Log("min_max: " + min_max);
+        //Debug.Log("Depth: " + depth);
+        //Debug.Log("min_max: " + min_max);
 
         // Ending Condition..
 
@@ -171,7 +181,7 @@ public class AI : Player
 
                 //int value_failure = AISolve(vrt_board, min_max, moves_solved + 1);
 
-                vbm.VirtualMovePiece(from, to);
+                VirtualPiece captured_piece = vbm.VirtualAttackPiece(from, to);
 
                 int value_success = SolveBoard(vbm, min_max, depth + 1);
 
@@ -181,7 +191,7 @@ public class AI : Player
                 // Minimize. 
                 if (min_max < 0) if (value_success < current_value) current_value = value_success;
 
-                vbm.VirtualUndoMovePiece(from, to);
+                vbm.VirtualUndoAttackPiece(from, to, captured_piece);
             }
         }     
 
@@ -207,11 +217,11 @@ public class AI : Player
             }
         }
 
-        if ((all_attacks.Count == 0 && all_moves.Count == 0) || depth % 6 == 0)
+        if ((all_attacks.Count == 0 && all_moves.Count == 0) && false)
         {
-            Debug.Log("Team switch");
+            //Debug.Log("Team switch");
             //return SolveBoard(vbm, -min_max, depth + 1);
-            return SolveBoard(vbm, min_max, depth + 1);
+            //return SolveBoard(vbm, min_max, depth + 1);
         }
 
         return current_value;

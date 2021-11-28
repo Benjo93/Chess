@@ -1081,6 +1081,7 @@ public class BoardManager : MonoBehaviour
 
     public void HighlightAdjacentPieces(int[] knight)
     {
+        return;
         int zero = knight[0];
         int one = knight[1];
         knightx = zero;
@@ -1104,6 +1105,7 @@ public class BoardManager : MonoBehaviour
 
     public bool PiecesAdjacent(int[] knight)
     {
+        return false;
         int zero = knight[0];
         int one = knight[1];
         for (int i = zero - 1; i <= zero + 1; i++)

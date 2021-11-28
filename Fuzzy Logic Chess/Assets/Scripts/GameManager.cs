@@ -95,8 +95,7 @@ public class GameManager : MonoBehaviour
             players[(int)team].BeginMove();
             Autosave();
         }
-        else
-            EndTurn();
+        else  EndTurn();
     }
 
     public void EndTurn()
