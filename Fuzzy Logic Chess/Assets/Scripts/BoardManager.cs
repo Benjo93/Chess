@@ -274,7 +274,7 @@ public class BoardManager : MonoBehaviour
                     Piece selected_piece = pieces[index[0], index[1]];
                     
                     //whenever a piece in king corp is clicked, it changes colors
-                    if (Input.GetMouseButtonDown(0) && (selected_piece.GetTeam() == gm.GetTeam()) && selected_piece != null)
+                    if (Input.GetMouseButtonDown(0) && (selected_piece.GetTeam() == gm.GetTeam()) && selected_piece != null && !selected_piece.GetIsCommander() && (selected_piece.GetCorpID() == 1 || selected_piece.GetCorpID() == -1))
                     {
                         int corpID = selected_piece.GetCorpID();
                         selected_piece.IncrementTempID();
