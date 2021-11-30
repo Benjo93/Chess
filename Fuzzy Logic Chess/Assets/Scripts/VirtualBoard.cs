@@ -198,7 +198,7 @@ public class VirtualBoard
             if (piece != null)
             {
                 piece.has_moved = false;
-                if(piece.is_commander)
+                if (piece.is_commander)
                 {
                     piece.n_moves = piece.default_moves;
                 }

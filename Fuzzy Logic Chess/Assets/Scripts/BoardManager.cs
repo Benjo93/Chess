@@ -181,14 +181,16 @@ public class BoardManager : MonoBehaviour
                         else if (selected_piece && blocks[index[0], index[1]].IsMovable())
                         {
                             RefreshBlocks();
-                            MovePiece(selected_index, index);
+                            int moves_used = MovePiece(selected_index, index);
+                            EndMove(moves_used);
                             //Autosave();
                         }
                         // Attacking 
                         else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
                         {
                             RefreshBlocks();
-                            Attack(selected_index, index);
+                            int moves_used = Attack(selected_index, index).moves_used;
+                            EndMove(moves_used);
                             //Autosave();
                         }
                         else
@@ -1059,24 +1061,26 @@ public class BoardManager : MonoBehaviour
 
     public void DelayedMove(int[] from, int[] to, float delay)
     {
-        StartCoroutine(crMove(from, to, delay));
+        int moves_used = MovePiece(from, to);
+        StartCoroutine(crMove(moves_used, delay));
     }
 
     public void DelayedAttack(int[] from, int[] to, float delay)
     {
-        StartCoroutine(crAttack(from, to, delay));
+        int moves_used = Attack(from, to).moves_used;
+        StartCoroutine(crAttack(moves_used, delay));
     }
 
-    private IEnumerator crMove(int[] from, int[] to, float delay)
+    private IEnumerator crMove(int moves_used, float delay)
     {
         yield return new WaitForSeconds(delay);
-        MovePiece(from, to);
+        EndMove(moves_used);
     }
 
-    public IEnumerator crAttack(int[] from, int[] to, float delay)
+    public IEnumerator crAttack(int moves_used, float delay)
     {
         yield return new WaitForSeconds(delay);
-        Attack(from, to);
+        EndMove(moves_used);
     }
 
     public void HighlightAdjacentPieces(int[] knight)
@@ -1134,7 +1138,7 @@ public class BoardManager : MonoBehaviour
      * then notifies the game manager. 
      * 
      */
-    public void MovePiece(int[] from, int[] to)
+    public int MovePiece(int[] from, int[] to)
     {
         RefreshBlocks();
 
@@ -1162,8 +1166,13 @@ public class BoardManager : MonoBehaviour
 
         // Log move info.
         game_log.text += hover_info.text + "\n";
-        //hover_info.text = "";
+        //hover_info.text = "";    
 
+        return moves_used; 
+    }
+
+    public void EndMove(int moves_used)
+    {
         // Notify the Game Manager of the moves used. 
         gm.CompleteGameState(moves_used);
     }
@@ -1216,7 +1225,7 @@ public class BoardManager : MonoBehaviour
      * Unsuccessful attacks -> Only update the number of turns used (Passed back to the game manager) and handle commander stuff.
      * 
      */
-    public bool Attack(int[] from, int[] to)
+    public (bool success, int moves_used) Attack(int[] from, int[] to)
     {
         RefreshBlocks();
 
@@ -1250,10 +1259,10 @@ public class BoardManager : MonoBehaviour
             game_log.text += hover_info.text + "  Failed " + "\n";
             //hover_info.text = "";
 
-            gm.CompleteGameState(moves_used);
+            //gm.CompleteGameState(moves_used);
 
             // Notify function caller that the attack was unsuccessful.
-            return false;
+            return (false, moves_used);
         }
         else
         {
@@ -1275,14 +1284,14 @@ public class BoardManager : MonoBehaviour
                 {
                     //White win screen
                     SceneManager.LoadScene("Player One Wins");
-                    return true;
+                    return (true, moves_used);
                 }
                 //else white
                 else
                 {
                     //Black win screen
                     SceneManager.LoadScene("Player Two Wins");
-                    return true;
+                    return (true, moves_used);
                 }
                 // Insert Wilhelm Scream..
             }
@@ -1323,10 +1332,10 @@ public class BoardManager : MonoBehaviour
             //hover_info.text = "";
 
             // Notify game manager. 
-            gm.CompleteGameState(moves_used);
+            //gm.CompleteGameState(moves_used);
 
             // Notify function caller that the attack was successful.
-            return true;
+            return (true, moves_used);
         }
     }
 
