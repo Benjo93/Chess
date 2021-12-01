@@ -497,7 +497,7 @@ public class BoardManager : MonoBehaviour
                 switch (command_state[row, col])
                 {
                     case 1:
-                        if (pieces[row, col].GetPName().Equals("w_king"))
+                        if (pieces[row, col].GetPName().Equals("p1 king"))
                         {
                             w_king_pos[0] = row;
                             w_king_pos[1] = col;
@@ -524,7 +524,7 @@ public class BoardManager : MonoBehaviour
                             w_bishop_two_memb.Add(pieces[row, col]);
                         break;
                     case -1:
-                        if (pieces[row, col].GetPName().Equals("b_king"))
+                        if (pieces[row, col].GetPName().Equals("p2 king"))
                         {
                             b_king_pos[0] = row;
                             b_king_pos[1] = col;
@@ -1313,7 +1313,7 @@ public class BoardManager : MonoBehaviour
                 gm.EraseSave();
 
                 //If Black
-                if (pieces[to[0], to[1]].GetPName() == "b_king")
+                if (pieces[to[0], to[1]].GetPName() == "p2 king")
                 {
                     //White win screen
                     //SceneManager.LoadScene("Player One Wins");
