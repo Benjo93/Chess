@@ -330,64 +330,64 @@ public class BoardManager : MonoBehaviour
         {
             case 1: // Pawn
                 newPiece = Instantiate(Chess.PIECES["pixel_pawn"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("w_pawn", 1, "white", 1, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                .InitializePiece("p1 pawn", 1, "white", 1, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
 
             case 2: // Rook
                 //Debug.Log(Chess.PIECES.Count);
                 //Debug.Log(Chess.PLAYER_TWO_REF.Count);
                 newPiece = Instantiate(Chess.PIECES["pixel_rook"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("w_rook", 2, "white", 2, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                .InitializePiece("p1 rook", 2, "white", 2, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
 
             case 3: // Bishop
                 newPiece = Instantiate(Chess.PIECES["pixel_bishop"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("w_bishop", 3, "white", 2, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                .InitializePiece("p1 bishop", 3, "white", 2, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
 
             case 4: // Knight
                 newPiece = Instantiate(Chess.PIECES["pixel_knight"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("w_knight", 4, "white", 4, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                .InitializePiece("p1 knight", 4, "white", 4, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
 
             case 5: // Queen
                 newPiece = Instantiate(Chess.PIECES["pixel_queen"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("w_queen", 5, "white", 3, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                .InitializePiece("p1 queen", 5, "white", 3, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
 
             case 6: // King
                 newPiece = Instantiate(Chess.PIECES["pixel_king"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("w_king", 6, "white", 3, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                .InitializePiece("p1 king", 6, "white", 3, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
 
             case -1: // Pawn
                 newPiece = Instantiate(Chess.PIECES["pixel_pawn"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("b_pawn", -1, "black", 1, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                .InitializePiece("p2 pawn", -1, "black", 1, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
                 break;
 
             case -2: // Rook
                 newPiece = Instantiate(Chess.PIECES["pixel_rook"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("b_rook", -2, "black", 2, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                .InitializePiece("p2 rook", -2, "black", 2, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
                 break;
 
             case -3: // Bishop
                 newPiece = Instantiate(Chess.PIECES["pixel_bishop"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("b_bishop", -3, "black", 2, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                .InitializePiece("p2 bishop", -3, "black", 2, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
                 break;
 
             case -4: // Knight
                 newPiece = Instantiate(Chess.PIECES["pixel_knight"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("b_knight", -4, "black", 4, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                .InitializePiece("p2 knight", -4, "black", 4, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
                 break;
 
             case -5: // Queen
                 newPiece = Instantiate(Chess.PIECES["pixel_queen"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("b_queen", -5, "black", 3, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                .InitializePiece("p2 queen", -5, "black", 3, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
                 break;
 
             case -6: // King
                 newPiece = Instantiate(Chess.PIECES["pixel_king"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("b_king", -6, "black", 3, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                .InitializePiece("p2 king", -6, "black", 3, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
                 break;
             default:
                 newPiece = Instantiate(new GameObject()).AddComponent<Piece>();
@@ -1176,7 +1176,7 @@ public class BoardManager : MonoBehaviour
         
 
 
-        if((pieces[to[0],to[1]].GetPName() == "w_knight" || pieces[to[0],to[1]].GetPName() == "b_knight") && PiecesAdjacent(to) && input_requested)
+        if((pieces[to[0],to[1]].GetPName() == "p1 knight" || pieces[to[0],to[1]].GetPName() == "p2 knight") && PiecesAdjacent(to) && input_requested)
         {
             Enable_Knight_Options();
             HighlightAdjacentPieces(to);
