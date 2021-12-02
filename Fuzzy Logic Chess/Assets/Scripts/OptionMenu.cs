@@ -23,6 +23,7 @@ public class OptionMenu : MonoBehaviour
     public void ToggleOptionsMenu()
     {
         gameObject.SetActive(true);
+        Time.timeScale = 0;
     }
 
     public void SetVolume()
@@ -67,6 +68,7 @@ public class OptionMenu : MonoBehaviour
     {
         Chess.SaveSetting();
         gameObject.SetActive(!gameObject.activeSelf);
+        Time.timeScale = 1;
     }
 
     public void RevertSettings()
@@ -74,6 +76,7 @@ public class OptionMenu : MonoBehaviour
         Chess.LoadSetting();
         LoadFromChess();
         gameObject.SetActive(!gameObject.activeSelf);
+        Time.timeScale = 1;
     }
 
     public void SetDifficulty()

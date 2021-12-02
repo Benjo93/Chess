@@ -45,7 +45,6 @@ public class BoardManager : MonoBehaviour
     public GameObject Knight_Attack_Button;
     public GameObject Knight_Wait_Button;
     public GameObject GameOver;
-
     public Text gameOverText;
 
     private int GlobalDelegationID = 1;
@@ -90,7 +89,7 @@ public class BoardManager : MonoBehaviour
     public bool input_requested;
 
     // Boolean to keep track of game setup. Called from the Game Manager.
-    public bool setup_complete; 
+    public bool setup_complete;
 
     // Used when initializing the board before a game.
     private int[,] board_init = new int[,]
@@ -240,7 +239,7 @@ public class BoardManager : MonoBehaviour
                         }
                     }
                 }
-                else if(knightMove == true)
+                else if (knightMove == true)
                 {
                     Piece selected_piece = pieces[index[0], index[1]];
                     if (Input.GetMouseButtonDown(0))
@@ -252,7 +251,7 @@ public class BoardManager : MonoBehaviour
                                 int[] knightPosition = { knightx, knighty };
                                 Attack(knightPosition, index);
                                 knightMove = false;
-                                foreach(Piece piece in pieces)
+                                foreach (Piece piece in pieces)
                                 {
                                     if (piece != null)
                                     {
@@ -261,11 +260,11 @@ public class BoardManager : MonoBehaviour
                                 }
                                 knightx = -1;
                                 knighty = -1;
-                            }                       
+                            }
                         }
-                    }   
+                    }
                 }
-                else if(knightReady == true)
+                else if (knightReady == true)
                 {
                     //This isn't needed, but I have it here for debug purposes and I may need it again one day.
                 }
@@ -274,7 +273,7 @@ public class BoardManager : MonoBehaviour
                 {
                     Block selectedBlock = blocks[index[0], index[1]];
                     Piece selected_piece = pieces[index[0], index[1]];
-                    
+
                     //whenever a piece in king corp is clicked, it changes colors
                     if (Input.GetMouseButtonDown(0) && (selected_piece.GetTeam() == gm.GetTeam()) && selected_piece != null && !selected_piece.GetIsCommander() && (selected_piece.GetCorpID() == 1 || selected_piece.GetCorpID() == -1))
                     {
@@ -419,7 +418,7 @@ public class BoardManager : MonoBehaviour
                 Rigidbody2D rb = piece.gameObject.AddComponent<Rigidbody2D>();
                 Vector2 rand = new Vector2(UnityEngine.Random.Range(-10f, 10.0f), UnityEngine.Random.Range(0, 10.0f));
                 rb.AddForce(rand, ForceMode2D.Impulse);
-            } 
+            }
         }
         foreach (Piece piece in capturedWhite)
         {
@@ -446,6 +445,7 @@ public class BoardManager : MonoBehaviour
         Vector2 randDice = new Vector2(UnityEngine.Random.Range(0, 10.0f), UnityEngine.Random.Range(0, 10.0f));
         rbDice.AddForce(randDice, ForceMode2D.Impulse);
         yield return new WaitForSeconds(2.5f);
+        Debug.Log("Explosion Simulation done after 2.5 seconds passed.  Write additional tasks to do.");
     }
 
     /* 
@@ -589,7 +589,7 @@ public class BoardManager : MonoBehaviour
             for (int j = 0; j < 2; j++)
             {
                 //whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity,transform);
-                whiteCaptureBox[i, j] = Instantiate(blankBlock, WhiteCapture_origin + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity,transform);
+                whiteCaptureBox[i, j] = Instantiate(blankBlock, WhiteCapture_origin + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity, transform);
                 whiteCaptureBox[i, j].transform.localScale = new Vector3(0.045f, 0.045f, 0.045f);
                 //whiteCaptureBox[i, j].GetComponent<SpriteRenderer>().material.color = Chess.Colors.BOARD_DARK;
             }
@@ -676,7 +676,7 @@ public class BoardManager : MonoBehaviour
 
     // Enables delegation mode
     public void EnableDelegationMode()
-    {                
+    {
         //Checking to make sure delegation can occur
         if (!gm.GetDidDelegate())
         {
@@ -773,11 +773,11 @@ public class BoardManager : MonoBehaviour
     public void HasCommanderMoved(Piece input, int newID)
     {
         int corpID = input.GetCorpID();
-        foreach(Piece piece in pieces)
+        foreach (Piece piece in pieces)
         {
-            if(piece != null)
+            if (piece != null)
             {
-                if(!piece.GetIsCommander() && newID == piece.GetCorpID())
+                if (!piece.GetIsCommander() && newID == piece.GetCorpID())
                 {
                     input.SetHasMoved(piece.GetHasMoved());
                 }
@@ -846,7 +846,7 @@ public class BoardManager : MonoBehaviour
                         }
                     }
                     piece.SetDelegationID(GlobalDelegationID);
-                    
+
                     //piece.SetHasMoved(true);
 
                     if (piece.GetHasMoved() == true)
@@ -926,7 +926,7 @@ public class BoardManager : MonoBehaviour
         {
             if (piece != null && piece.GetTempID() == 1)
             {
-                
+
                 Commander currentCommander = piece.GetCommander();
                 currentCommander.RemovePiece(piece);
                 currentCommander.GetKing().AddPiece(piece);
@@ -940,7 +940,7 @@ public class BoardManager : MonoBehaviour
                     piece.SetCorpID(-1);
                 }
 
-                
+
             }
         }
         gm.SetDidDelegate(true);
@@ -1110,11 +1110,11 @@ public class BoardManager : MonoBehaviour
         }
         knightx = zero;
         knighty = one;
-        for(int i = zero - 1; i <= zero + 1; i++)
+        for (int i = zero - 1; i <= zero + 1; i++)
         {
-            for(int j = one - 1; j <= one + 1; j++)
+            for (int j = one - 1; j <= one + 1; j++)
             {
-                if(i > -1 && j < 9 && i < 9 && j > -1)
+                if (i > -1 && j < 9 && i < 9 && j > -1)
                 {
                     if (pieces[i, j] != null && !(zero == i && one == j) && gm.GetTeam() != pieces[i, j].GetTeam())
                     {
@@ -1122,9 +1122,9 @@ public class BoardManager : MonoBehaviour
                         pieces[i, j].SetTempID(1);
                     }
                 }
-                    
+
             }
-        }    
+        }
     }
 
     public bool PiecesAdjacent(int[] knight)
@@ -1132,7 +1132,7 @@ public class BoardManager : MonoBehaviour
         //return false;
         int zero = knight[0];
         int one = knight[1];
-        if(zero == -1 && one == -1)
+        if (zero == -1 && one == -1)
         {
             return false;
         }
@@ -1142,7 +1142,7 @@ public class BoardManager : MonoBehaviour
             {
                 if (i > -1 && j < 9 && i < 9 && j > -1)
                 {
-                    if (pieces[i, j] != null && !(zero == i && one == j) && gm.GetTeam() != pieces[i, j].GetTeam())
+                    if (pieces[i, j] && !(zero == i && one == j) && gm.GetTeam() != pieces[i, j].GetTeam())
                     {
                         return true;
                     }
@@ -1178,41 +1178,31 @@ public class BoardManager : MonoBehaviour
         pieces[to[0], to[1]] = pieces[from[0], from[1]];
         pieces[from[0], from[1]] = null;
 
-        if((pieces[to[0],to[1]].GetPName() == "p1 knight" || pieces[to[0],to[1]].GetPName() == "p2 knight") && PiecesAdjacent(to) && input_requested)
-        {
-            if (PiecesAdjacent(to))
-            {
-                Enable_Knight_Options();
-                HighlightAdjacentPieces(to);
-            }            
-        }
-
         selected_piece = null;
 
         char[] column_chars = new char[] { 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' };
 
-        if ((pieces[to[0], to[1]].GetPName() == "w_knight" || pieces[to[0], to[1]].GetPName() == "b_knight") && input_requested)
+        if ((pieces[to[0], to[1]].GetPName() == "p1 knight" || pieces[to[0], to[1]].GetPName() == "p2 knight") && PiecesAdjacent(to) && input_requested)
         {
             if (PiecesAdjacent(to))
             {
                 Enable_Knight_Options();
                 HighlightAdjacentPieces(to);
-            }            
+            }
         }
         input_requested = false;
+
 
         //Log move info
         game_log.text += pieces[to[0], to[1]].GetPName() + " [" + column_chars[from[1]] + (from[0] + 1) + "]";
         game_log.text += " >> [" + column_chars[to[1]] + (to[0] + 1) + "]\n";
-
         // Old method for loggin move info. Replaced because it didn't track the moves done by the AI
         //game_log.text += hover_info.text + "\n";
         //hover_info.text = "";
-
         // Notify the Game Manager of the moves used.
-        gm.CompleteGameState(moves_used);
+        //gm.CompleteGameState(moves_used);
 
-        return moves_used; 
+        return moves_used;
     }
 
     public void EndMove(int moves_used)
@@ -1283,7 +1273,7 @@ public class BoardManager : MonoBehaviour
         Block hovered_block = blocks[to[0], to[1]];
 
         int roll = diceInstance.RollDice();
-        if(knightMove == true)
+        if (knightMove == true)
         {
             roll++;
         }
@@ -1309,7 +1299,6 @@ public class BoardManager : MonoBehaviour
             input_requested = false;
 
             game_log.text += pieces[from[0], from[1]].GetPName() + " >>> " + pieces[to[0], to[1]].GetPName() + " Failed\n";
-
             // Log attack info. Old method which could not track moves done by the AI
             //game_log.text += hover_info.text + "  Failed " + "\n";
             //hover_info.text = "";
@@ -1394,7 +1383,6 @@ public class BoardManager : MonoBehaviour
             {
                 game_log.text += pieces[from[0], from[1]].GetPName() + " >>> " + pieces[to[0], to[1]].GetPName() + " Success\n";
             }
-            
 
             // Log attack info. Old method which does not track moves done by the AI
             //game_log.text += hover_info.text + "  Success " + "\n";
@@ -1750,14 +1738,14 @@ public class BoardManager : MonoBehaviour
                     ? Chess.Colors.BOARD_LIGHT : Chess.Colors.BOARD_DARK);
                 index++;
                 if (index % 8 != 0) flip = !flip;
-                if (pieces[row,col])
+                if (pieces[row, col])
                 {
-                    if (pieces[row,col].GetTeam().Equals("white"))
+                    if (pieces[row, col].GetTeam().Equals("white"))
                         pieces[row, col].color = Chess.Colors.PLAYER_ONE;
                     else
                         pieces[row, col].color = Chess.Colors.PLAYER_TWO;
                     pieces[row, col].GetComponent<SpriteRenderer>().material.color = pieces[row, col].color;
-                    if(pieces[row,col].GetHasMoved())
+                    if (pieces[row, col].GetHasMoved())
                         pieces[row, col].ColorDim();
                 }
             }
