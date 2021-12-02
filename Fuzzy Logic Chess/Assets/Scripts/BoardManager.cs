@@ -1182,7 +1182,7 @@ public class BoardManager : MonoBehaviour
 
         char[] column_chars = new char[] { 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' };
 
-        if ((pieces[to[0], to[1]].GetPName() == "p1 knight" || pieces[to[0], to[1]].GetPName() == "p2 knight") && PiecesAdjacent(to) && input_requested)
+        if ((pieces[to[0], to[1]].GetPName() == "p1 knight" || pieces[to[0], to[1]].GetPName() == "p2 knight") /*&& PiecesAdjacent(to) */&& input_requested)
         {
             if (PiecesAdjacent(to))
             {
@@ -1192,15 +1192,9 @@ public class BoardManager : MonoBehaviour
         }
         input_requested = false;
 
-
         //Log move info
         game_log.text += pieces[to[0], to[1]].GetPName() + " [" + column_chars[from[1]] + (from[0] + 1) + "]";
         game_log.text += " >> [" + column_chars[to[1]] + (to[0] + 1) + "]\n";
-        // Old method for loggin move info. Replaced because it didn't track the moves done by the AI
-        //game_log.text += hover_info.text + "\n";
-        //hover_info.text = "";
-        // Notify the Game Manager of the moves used.
-        //gm.CompleteGameState(moves_used);
 
         return moves_used;
     }
