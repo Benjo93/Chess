@@ -55,7 +55,6 @@ public class BoardManager : MonoBehaviour
     // Determines if revoke mode is enabled
     public bool revoke = false;
 
-    //Determines if knight is about to attack
     public bool knightMove = false;
 
     //Determines if knight is waiting for attack or wait to be pressed
@@ -445,7 +444,6 @@ public class BoardManager : MonoBehaviour
         Vector2 randDice = new Vector2(UnityEngine.Random.Range(0, 10.0f), UnityEngine.Random.Range(0, 10.0f));
         rbDice.AddForce(randDice, ForceMode2D.Impulse);
         yield return new WaitForSeconds(2.5f);
-        Debug.Log("Explosion Simulation done after 2.5 seconds passed.  Write additional tasks to do.");
     }
 
     /* 
@@ -1100,14 +1098,9 @@ public class BoardManager : MonoBehaviour
 
     public void HighlightAdjacentPieces(int[] knight)
     {
-        //return;
+        return;
         int zero = knight[0];
         int one = knight[1];
-        if (zero == -1 && one == -1)
-        {
-            Debug.Log("HighlightAdjacentPieces should not have been called");
-            return;
-        }
         knightx = zero;
         knighty = one;
         for (int i = zero - 1; i <= zero + 1; i++)
@@ -1129,7 +1122,7 @@ public class BoardManager : MonoBehaviour
 
     public bool PiecesAdjacent(int[] knight)
     {
-        //return false;
+        return false;
         int zero = knight[0];
         int one = knight[1];
         if (zero == -1 && one == -1)
@@ -1179,6 +1172,7 @@ public class BoardManager : MonoBehaviour
         pieces[from[0], from[1]] = null;
 
         selected_piece = null;
+        input_requested = false;
 
         char[] column_chars = new char[] { 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' };
 
@@ -1212,7 +1206,7 @@ public class BoardManager : MonoBehaviour
         RevokeButton.gameObject.SetActive(false);
         EndTurnButton.gameObject.SetActive(false);
 
-        knightReady = true;
+        knightMove = true;
 
         Knight_Attack_Button.gameObject.SetActive(true);
         Knight_Wait_Button.gameObject.SetActive(true);
@@ -1226,9 +1220,6 @@ public class BoardManager : MonoBehaviour
         Knight_Attack_Button.gameObject.SetActive(false);
         Knight_Wait_Button.gameObject.SetActive(false);
 
-        knightMove = true;
-        knightReady = false;
-
         DelegationButton.gameObject.SetActive(true);
         RevokeButton.gameObject.SetActive(true);
         EndTurnButton.gameObject.SetActive(true);
@@ -1241,9 +1232,6 @@ public class BoardManager : MonoBehaviour
         Knight_Wait_Button.gameObject.SetActive(false);
 
         knightMove = false;
-        knightReady = false;
-        knightx = -1;
-        knighty = -1;
         RefreshBlocks();
 
         DelegationButton.gameObject.SetActive(true);
@@ -1313,9 +1301,8 @@ public class BoardManager : MonoBehaviour
             // King has been captured, end the game.
             if (pieces[to[0], to[1]].is_commander && pieces[to[0], to[1]].commander.is_king)
             {
-                Debug.Log("Game Over");
                 //Debug.Log(pieces[to[0], to[1]].GetPName());
-                gm.EraseSave();
+                StopAllCoroutines();
 
                 //If Black
                 if (pieces[to[0], to[1]].GetPName() == "p2 king")
@@ -1772,24 +1759,5 @@ public class BoardManager : MonoBehaviour
     {
         diceInstance = Instantiate(dice, new Vector3(-1.12f, 5.3752f, -1), Quaternion.identity, transform) as Dice;
         diceInstance.transform.localScale = new Vector3(0.07376f, 0.07376f, 0.07376f);
-    }
-
-
-
-    // Print out board state for debugging.
-    private void ShowPositions()
-    {
-        string output = "";
-        int index = 0;
-        foreach (int position in board_init)
-        {
-            output += position + "   ";
-            if (index++ >= 7)
-            {
-                output += "\n";
-                index = 0;
-            }
-        }
-        Debug.Log(output);
     }
 }
