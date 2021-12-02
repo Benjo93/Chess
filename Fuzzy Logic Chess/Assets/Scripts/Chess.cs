@@ -48,6 +48,7 @@ public class Chess : MonoBehaviour
     public static float volume;
     public static int resolution;
     public static bool fullscreen;
+    public static float difficulty;
 
     // Array of integers that correspond to the die roll needed for the column row pair. 
     private static int[,] roll_needed = new int[,]
