@@ -280,6 +280,7 @@ public class BoardManager : MonoBehaviour
                         selected_piece.IncrementTempID();
                         if (selected_piece.GetTempID() == 0)
                         {
+                            selectedBlock.ChangeColor(Color.red);
                             selectedBlock.DullColor();
                         }
                         // represents left bishop corps
@@ -694,7 +695,15 @@ public class BoardManager : MonoBehaviour
                 {
                     if (piece != null && piece.GetCorpID() == 1 && !piece.is_commander)
                     {
-                        blocks[piece.position[0], piece.position[1]].HoverColor();
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.red);
+                    }
+                    if (piece!=null && piece.GetCorpID() == 2 && piece.is_commander)
+                    {
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.blue);
+                    }
+                    if(piece != null && piece.GetCorpID() == 3 && piece.is_commander)
+                    {
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.green);
                     }
                 }
             }
@@ -704,7 +713,15 @@ public class BoardManager : MonoBehaviour
                 {
                     if (piece != null && piece.GetCorpID() == -1 && !piece.is_commander)
                     {
-                        blocks[piece.position[0], piece.position[1]].HoverColor();
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.red);
+                    }
+                    if (piece != null && piece.GetCorpID() == -2 && piece.is_commander)
+                    {
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.blue);
+                    }
+                    if (piece != null && piece.GetCorpID() == -3 && piece.is_commander)
+                    {
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.green);
                     }
                 }
             }
@@ -1098,7 +1115,10 @@ public class BoardManager : MonoBehaviour
 
     public void HighlightAdjacentPieces(int[] knight)
     {
-        return;
+        if (!input_requested)
+        {
+            return;
+        }
         int zero = knight[0];
         int one = knight[1];
         knightx = zero;
@@ -1122,7 +1142,10 @@ public class BoardManager : MonoBehaviour
 
     public bool PiecesAdjacent(int[] knight)
     {
-        return false;
+        if (!input_requested)
+        {
+            return false;
+        }
         int zero = knight[0];
         int one = knight[1];
         if (zero == -1 && one == -1)
@@ -1172,11 +1195,11 @@ public class BoardManager : MonoBehaviour
         pieces[from[0], from[1]] = null;
 
         selected_piece = null;
-        input_requested = false;
+        //input_requested = false;
 
         char[] column_chars = new char[] { 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' };
 
-        if ((pieces[to[0], to[1]].GetPName() == "p1 knight" || pieces[to[0], to[1]].GetPName() == "p2 knight") /*&& PiecesAdjacent(to) */&& input_requested)
+        if ((pieces[to[0], to[1]].GetPName() == "p1 knight" || pieces[to[0], to[1]].GetPName() == "p2 knight") && input_requested)
         {
             if (PiecesAdjacent(to))
             {
