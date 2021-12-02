@@ -109,10 +109,18 @@ public class AI : Player
         {
             foreach (var to in attacks)
             {
+                int attacker = piece.piece_id;
+                int defender = vbm.vpieces[to[0], to[1]].piece_id;
+                int roll_needed = Chess.RollNeeded(attacker, defender);
+
+                float prob_success = (7f - roll_needed) / 6f;
+
                 int[] from = piece.position;
                 VirtualPiece captured_piece = vbm.VirtualAttackPiece(from, to);
 
                 float _val = SolveBoard(vbm, 1, 1);
+                _val *= prob_success;
+
                 if (_val > _best)
                 {
                     _best = _val;
@@ -176,13 +184,19 @@ public class AI : Player
         {
             foreach (var to in attacks)
             {
-                //float prob_success 
+                int attacker = piece.piece_id;
+                int defender = vbm.vpieces[to[0], to[1]].piece_id;
+                int roll_needed = Chess.RollNeeded(attacker, defender);
+
+                float prob_success = (7f - roll_needed) / 6f; 
 
                 int[] from = piece.position;
 
                 VirtualPiece captured_piece = vbm.VirtualAttackPiece(from, to);
 
                 float value_success = SolveBoard(vbm, min_max, depth + 1);
+
+                value_success *= prob_success; 
 
                 // Maximize.
                 if (min_max > 0) if (value_success > current_value) current_value = value_success;

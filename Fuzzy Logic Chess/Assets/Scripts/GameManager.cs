@@ -25,6 +25,8 @@ public class GameManager : MonoBehaviour
     public GameObject p2Turn;
     private bool turn = false;
 
+    public bool game_in_progress = false;
+
     public void StartGame()
     {
         InitializePlayer(LoadPlayer());
@@ -46,7 +48,8 @@ public class GameManager : MonoBehaviour
         // Create players with session data.
         CreatePlayer((int)Team.white);
         CreatePlayer((int)Team.black);
-        
+
+        game_in_progress = true;
 
         // Initiate the first move.
         CompleteGameState(0);
@@ -89,6 +92,8 @@ public class GameManager : MonoBehaviour
     // Called from the board manager after move has been made.
     public void CompleteGameState(int moves_used)
     {
+        if (!game_in_progress) return;
+
         moves_left -= moves_used;
         if (moves_left > 0)
         {

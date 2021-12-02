@@ -1309,6 +1309,7 @@ public class BoardManager : MonoBehaviour
                     GameOver.gameObject.SetActive(true);
                     gameOverText.text = "Player  One  Wins";
                     RunRigidbody();
+                    gm.game_in_progress = false;
                     return moves_used;
                 }
                 //else white
@@ -1319,6 +1320,7 @@ public class BoardManager : MonoBehaviour
                     GameOver.gameObject.SetActive(true);
                     gameOverText.text = "Player  Two  Wins";
                     RunRigidbody();
+                    gm.game_in_progress = false;
                     return moves_used;
                 }
                 // Insert Wilhelm Scream..
