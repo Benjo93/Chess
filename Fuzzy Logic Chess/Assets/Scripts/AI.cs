@@ -128,11 +128,11 @@ public class AI : Player
 
         if (_move)
         {
-            bm.DelayedMove(_piece.position, _to, Chess.turnSpeed + .25f);
+            bm.DelayedMove(_piece.position, _to, 1.0f - Chess.turnSpeed + .25f);
         }
         if (_attack)
         {
-            bm.DelayedAttack(_piece.position, _to, Chess.turnSpeed + .25f);
+            bm.DelayedAttack(_piece.position, _to, 1.0f - Chess.turnSpeed + .25f);
         }
 
         // No possible moves, end turn.
