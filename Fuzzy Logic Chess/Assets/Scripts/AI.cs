@@ -31,8 +31,6 @@ public class AI : Player
     int[,] risk_map_enemy = new int[8, 8];
     int[,] risk_map_friend = new int[8, 8];
 
-    float difficulty = 1.0f;
-
     public AI(string name, GameManager gm, BoardManager bm) : base(name, gm, bm)
     {
         // AI specific constructor.
@@ -86,7 +84,7 @@ public class AI : Player
         }
 
         // TODO make random move here depending on difficulty.
-        if (Random.Range(0f, 1f) > difficulty)
+        if (Random.Range(0f, 1f) > Chess.difficulty)
         {
             if (all_moves.Count > 0)
             {
@@ -344,7 +342,7 @@ public class AI : Player
 
         if (all_attacks.Count > 0)
         {
-            if (Random.Range(0f, 1f) > difficulty)
+            if (Random.Range(0f, 1f) > Chess.difficulty)
             {
                 // Select a random piece. 
                 int random_piece = Random.Range(0, all_attacks.Count);
@@ -362,7 +360,7 @@ public class AI : Player
         }
         else if (all_moves.Count > 0)
         {
-            if (Random.Range(0f, 1f) > difficulty)
+            if (Random.Range(0f, 1f) > Chess.difficulty)
             {
                 // Select a random piece. 
                 int random_piece = Random.Range(0, all_moves.Count);

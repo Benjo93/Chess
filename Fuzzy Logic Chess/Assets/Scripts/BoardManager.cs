@@ -446,7 +446,6 @@ public class BoardManager : MonoBehaviour
         Vector2 randDice = new Vector2(UnityEngine.Random.Range(0, 10.0f), UnityEngine.Random.Range(0, 10.0f));
         rbDice.AddForce(randDice, ForceMode2D.Impulse);
         yield return new WaitForSeconds(2.5f);
-        Debug.Log("Explosion Simulation done after 2.5 seconds passed.  Write additional tasks to do.");
     }
 
     /* 

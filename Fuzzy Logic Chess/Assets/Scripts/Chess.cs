@@ -49,6 +49,7 @@ public class Chess : MonoBehaviour
     public static int resolution;
     public static bool fullscreen;
     public static float difficulty;
+    public static float turnSpeed;
 
     // Array of integers that correspond to the die roll needed for the column row pair. 
     private static int[,] roll_needed = new int[,]
@@ -159,6 +160,7 @@ public class Chess : MonoBehaviour
             sw.WriteLine(resolution.ToString());
             sw.WriteLine(fullscreen ? "1" : "0");
             sw.WriteLine(player1Index + "," + player2Index + "," + block1Index + "," + block2Index);
+            sw.WriteLine(difficulty.ToString());
             sw.Close();
         }
     }
@@ -194,6 +196,7 @@ public class Chess : MonoBehaviour
                 player2Index = Convert.ToInt32(colorState[1]);
                 block1Index = Convert.ToInt32(colorState[2]);
                 block2Index = Convert.ToInt32(colorState[3]);
+                difficulty = (float)Convert.ToDecimal(sr.ReadLine());
                 sr.Close();
             }
         }
@@ -206,6 +209,7 @@ public class Chess : MonoBehaviour
             player2Index = 0;
             block1Index = 0;
             block2Index = 0;
+            difficulty = .25f;
             SaveSetting();
         }
     }
