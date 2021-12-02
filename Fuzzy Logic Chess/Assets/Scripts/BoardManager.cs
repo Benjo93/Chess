@@ -53,7 +53,11 @@ public class BoardManager : MonoBehaviour
     // Determines if revoke mode is enabled
     public bool revoke = false;
 
+    //Determines if knight is about to attack
     public bool knightMove = false;
+
+    //Determines if knight is waiting for attack or wait to be pressed
+    public bool knightReady = false;
 
     public int knightx = -1;
     public int knighty = -1;
@@ -1088,6 +1092,11 @@ public class BoardManager : MonoBehaviour
         //return;
         int zero = knight[0];
         int one = knight[1];
+        if (zero == -1 && one == -1)
+        {
+            Debug.Log("HighlightAdjacentPieces should not have been called");
+            return;
+        }
         knightx = zero;
         knighty = one;
         for(int i = zero - 1; i <= zero + 1; i++)
@@ -1190,7 +1199,7 @@ public class BoardManager : MonoBehaviour
         RevokeButton.gameObject.SetActive(false);
         EndTurnButton.gameObject.SetActive(false);
 
-        knightMove = true;
+        knightReady = true;
 
         Knight_Attack_Button.gameObject.SetActive(true);
         Knight_Wait_Button.gameObject.SetActive(true);
@@ -1204,6 +1213,9 @@ public class BoardManager : MonoBehaviour
         Knight_Attack_Button.gameObject.SetActive(false);
         Knight_Wait_Button.gameObject.SetActive(false);
 
+        knightMove = true;
+        knightReady = false;
+
         DelegationButton.gameObject.SetActive(true);
         RevokeButton.gameObject.SetActive(true);
         EndTurnButton.gameObject.SetActive(true);
@@ -1216,6 +1228,9 @@ public class BoardManager : MonoBehaviour
         Knight_Wait_Button.gameObject.SetActive(false);
 
         knightMove = false;
+        knightReady = false;
+        knightx = -1;
+        knighty = -1;
         RefreshBlocks();
 
         DelegationButton.gameObject.SetActive(true);
