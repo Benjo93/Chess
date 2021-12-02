@@ -170,7 +170,8 @@ public class VirtualBoard
         List<int[]> newList = new List<int[]>();
         bool isWhitePiece = vpieces[row, col].team.Equals("white");
         int range = 1;
-        if (vpieces[row, col].p_name.Equals("w_rook") || vpieces[row, col].p_name.Equals("b_rook"))
+        if (vpieces[row, col].p_name.Equals("w_rook") || vpieces[row, col].p_name.Equals("b_rook")
+            || vpieces[row, col].p_name.Equals("w_knight") || vpieces[row, col].p_name.Equals("b_knight"))
             range = vpieces[row, col].n_moves;
 
         int north = Math.Max(0, row - range);

@@ -25,13 +25,13 @@ public class AI : Player
 
     public int moves_examined = 0;
 
-    float[] material_values = new float[] { 1, 5, 6, 8, 10, 100 };
+    float[] material_values = new float[] { 1, 5, 6, 8, 10, 20 };
 
     float[,] dist_map = new float[8, 8];
     int[,] risk_map_enemy = new int[8, 8];
     int[,] risk_map_friend = new int[8, 8];
 
-    float difficulty = 0.25f;
+    float difficulty = 1.0f;
 
     public AI(string name, GameManager gm, BoardManager bm) : base(name, gm, bm)
     {
@@ -50,6 +50,7 @@ public class AI : Player
         BuildDistMap(vbm);
         BuildRiskMap(vbm);
         
+        /*
         string result = "";
 
         for (int p=0; p<8; p++)
@@ -60,6 +61,7 @@ public class AI : Player
             }
             result += " \n";
         }
+        */
    
         //Debug.Log(result);
 
@@ -170,21 +172,21 @@ public class AI : Player
             }
         }
 
-        Debug.Log("final: " + _best);
+        //Debug.Log("final: " + _best);
 
         if (_move)
         {
             //Debug.Log("Move");
-            bm.DelayedMove(_piece.position, _to, 0.25f);
+            bm.DelayedMove(_piece.position, _to, 1.0f);
         }
         if (_attack)
         {
             //Debug.Log("Attack");
-            bm.DelayedAttack(_piece.position, _to, 0.25f);
+            bm.DelayedAttack(_piece.position, _to, 1.0f);
         }
 
         // No possible moves, end turn.
-        //if (!_move && !_attack) gm.CompleteGameState(6);
+        if (!_move && !_attack) gm.CompleteGameState(6);
 
         //Debug.Log("Done");
     }
@@ -192,10 +194,10 @@ public class AI : Player
     private float SolveBoard(VirtualBoard vbm, int min_max, int depth)
     {
         // Ending Condition.
-        if (depth >= 2)
+        if (depth >= 3)
         {
             float eval = EvaluateBoard(vbm);
-            Debug.Log("E: " + eval);
+            //Debug.Log("E: " + eval);
             return eval;
         }
 
@@ -295,22 +297,15 @@ public class AI : Player
                 dist_sum += dist_map[piece.position[0], piece.position[1]];
 
                 int r = risk_map_enemy[piece.position[0], piece.position[1]];
-
-                if (r == 0) risk_value = 0f;
-                else risk_value -= (7f - Chess.RollNeeded(r, piece.piece_id)) / 6f * material_values[Mathf.Abs(piece.piece_id) - 1];
-
-                //Debug.Log("name: " + piece.p_name);
-                //Debug.Log("r: " + r + "rv: " + risk_value);
-
+                if (r != 0) risk_value -= (7f - Chess.RollNeeded(r, piece.piece_id)) / 6f * material_values[Mathf.Abs(piece.piece_id) - 1];
             }
+
             if (piece.team < 0)
             {
                 eval -= material_values[Mathf.Abs(piece.piece_id) - 1];
 
                 int r = risk_map_friend[piece.position[0], piece.position[1]];
-
-                if (r == 0) risk_value = 0f;
-                else risk_value += (7f - Chess.RollNeeded(r, piece.piece_id)) / 6f * material_values[Mathf.Abs(piece.piece_id) - 1];
+                if (r != 0) risk_value += (7f - Chess.RollNeeded(r, piece.piece_id)) / 6f * material_values[Mathf.Abs(piece.piece_id) - 1];
             }
         }
 
