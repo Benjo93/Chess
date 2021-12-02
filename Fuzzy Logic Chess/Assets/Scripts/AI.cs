@@ -32,6 +32,7 @@ public class AI : Player
     int[,] risk_map_friend = new int[8, 8];
 
     float difficulty = 1.0f;
+    float ai_wait = 0.5f;
 
     public AI(string name, GameManager gm, BoardManager bm) : base(name, gm, bm)
     {
@@ -41,29 +42,12 @@ public class AI : Player
 
     public override void BeginMove()
     {
-        //Debug.Log("Begin AI Move");
         bm.input_requested = false;
 
         VirtualBoard vbm = new VirtualBoard(bm.GetPieces(), gm.GetTeam());
-        //Debug.Log(vrt_board.ShowVirtualBoard());
 
         BuildDistMap(vbm);
         BuildRiskMap(vbm);
-        
-        /*
-        string result = "";
-
-        for (int p=0; p<8; p++)
-        {
-            for (int q=0; q<8; q++)
-            {
-                result += risk_map_enemy[p, q] + ", ";
-            }
-            result += " \n";
-        }
-        */
-   
-        //Debug.Log(result);
 
         // Create a list of tuples that contain the piece and all of its moves/attacks.
         List<(VirtualPiece piece, List<int[]> attacks)> all_attacks = new List<(VirtualPiece, List<int[]>)>();
@@ -85,7 +69,6 @@ public class AI : Player
             vbm.VirtualRefreshBlocks();
         }
 
-        // TODO make random move here depending on difficulty.
         if (Random.Range(0f, 1f) > difficulty)
         {
             if (all_moves.Count > 0)
@@ -96,41 +79,17 @@ public class AI : Player
                 bm.DelayedMove(r_piece.position, r_to, 0.25f);
                 return;
             }
-
-            /*
-            if (Random.Range(0f, 1f) > 0.5)
-            {
-                int pa = Random.Range(0, all_attacks.Count);
-                VirtualPiece r_piece = all_attacks[pa].piece;
-                int[] r_to = all_attacks[pa].attacks[Random.Range(0, all_attacks[pa].attacks.Count)];
-                bm.DelayedAttack(r_piece.position, r_to, 0.25f);
-            }
-            else
-            {
-                int pm = Random.Range(0, all_moves.Count);
-                VirtualPiece r_piece = all_moves[pm].piece;
-                int[] r_to = all_moves[pm].moves[Random.Range(0, all_moves[pm].moves.Count)];
-                bm.DelayedAttack(r_piece.position, r_to, 0.25f);
-            }
-            */
         }
-
-        //Debug.Log("Attacks: " + all_attacks.Count);
-        //Debug.Log("Moves: " + all_moves.Count);
 
         bool _attack = false;
         bool _move = false;
         float _best = EvaluateBoard(vbm);
-
-        //Debug.Log("initial: " + _best);
 
         Piece _piece = null;
         int[] _to = new int[] { -1, -1 };
 
         foreach (var (piece, moves) in all_moves)
         {
-            //Debug.Log("Move: " + piece.p_name);
-
             foreach (var to in moves)
             {
                 int[] from = piece.position;
@@ -153,8 +112,6 @@ public class AI : Player
         {
             foreach (var to in attacks)
             {
-                //Debug.Log("Attack: " + piece.p_name + " >> " + vbm.vpieces[to[0], to[1]].p_name);
-
                 int[] from = piece.position;
                 VirtualPiece captured_piece = vbm.VirtualAttackPiece(from, to);
 
@@ -172,23 +129,18 @@ public class AI : Player
             }
         }
 
-        //Debug.Log("final: " + _best);
-
         if (_move)
         {
-            //Debug.Log("Move");
-            bm.DelayedMove(_piece.position, _to, 1.0f);
+            bm.DelayedMove(_piece.position, _to, ai_wait);
         }
         if (_attack)
         {
-            //Debug.Log("Attack");
-            bm.DelayedAttack(_piece.position, _to, 1.0f);
+            bm.DelayedAttack(_piece.position, _to, ai_wait);
         }
 
         // No possible moves, end turn.
         if (!_move && !_attack) gm.CompleteGameState(6);
 
-        //Debug.Log("Done");
     }
 
     private float SolveBoard(VirtualBoard vbm, int min_max, int depth)
@@ -197,7 +149,6 @@ public class AI : Player
         if (depth >= 3)
         {
             float eval = EvaluateBoard(vbm);
-            //Debug.Log("E: " + eval);
             return eval;
         }
 
@@ -229,9 +180,9 @@ public class AI : Player
         {
             foreach (var to in attacks)
             {
-                int[] from = piece.position;
+                //float prob_success 
 
-                //int value_failure = AISolve(vrt_board, min_max, moves_solved + 1);
+                int[] from = piece.position;
 
                 VirtualPiece captured_piece = vbm.VirtualAttackPiece(from, to);
 
@@ -315,269 +266,6 @@ public class AI : Player
         eval += risk_value;
 
         return eval;
-    }
-
-    public void BeginMoveOld()
-    {
-        bm.input_requested = false;
-
-        Piece[,] pieces = bm.GetPieces();
-        int[,] board_state = bm.GetBoardState();
-
-        // Create a list of tuples that contain the piece and all of its moves.
-        List<(Piece piece, List<int[]> attacks)> all_attacks = new List<(Piece, List<int[]>)>();
-        List<(Piece piece, List<int[]> moves)> all_moves = new List<(Piece, List<int[]>)>();
-
-        // Get all possible moves and attacks.
-        foreach (Piece piece in pieces)
-        {
-            if (!piece) continue;
-            if (piece.has_moved) continue;
-            if (piece.GetTeam() != gm.GetTeam()) continue;
-
-            List<int[]> a = bm.GetAttackableList(piece.position[0], piece.position[1]);
-            if (a.Count > 0) all_attacks.Add((piece, a));
-
-            List<int[]> m = bm.GetMovesList(piece.position[0], piece.position[1], piece.GetNumberOfMoves());
-            if (m.Count > 0) all_moves.Add((piece, m));
-        }
-
-        if (all_attacks.Count > 0)
-        {
-            if (Random.Range(0f, 1f) > difficulty)
-            {
-                // Select a random piece. 
-                int random_piece = Random.Range(0, all_attacks.Count);
-                Piece the_piece = all_attacks[random_piece].piece;
-
-                // Select a random attack.
-                int random_attack = Random.Range(0, all_attacks[random_piece].attacks.Count);
-                int[] the_attack = all_attacks[random_piece].attacks[random_attack];
-
-                // Attack.
-                bm.DelayedAttack(the_piece.position, the_attack, 0.5f);
-
-                return;
-            }
-        }
-        else if (all_moves.Count > 0)
-        {
-            if (Random.Range(0f, 1f) > difficulty)
-            {
-                // Select a random piece. 
-                int random_piece = Random.Range(0, all_moves.Count);
-                Piece the_piece = all_moves[random_piece].piece;
-
-                // Select a random move.
-                int random_move = Random.Range(0, all_moves[random_piece].moves.Count);
-                int[] the_move = all_moves[random_piece].moves[random_move];
-
-                // Move.
-                bm.DelayedMove(the_piece.position, the_move, 0.5f);
-
-                return;
-            }
-        }
-
-        // RISK MAP.
-        // Create a risk map to calculate the risk of making a move or attack. (What are the chances of being captured the next round?) 
-        // Essentially, an int[8, 8] that tracks the highest piece_id that can attack the desired move/attack position.
-        // Add this value to the expected value function. 
-        // [prob (success) * value of success - prob (failure) * cost of failure]
-
-        risk_map_enemy = new int[8, 8];
-
-        foreach (Piece piece in pieces)
-        {
-            if (!piece) continue;
-
-            // Look through enemy pieces.
-            if (piece.GetTeam() != gm.GetTeam())
-            {
-                // Get all enemy attacks.
-                List<int[]> enemy_attacks = bm.GetAttackableRange(piece.position[0], piece.position[1]);
-
-                foreach (int[] attack in enemy_attacks)
-                {
-                    // Check if the piece_id is greater than the current risk value.
-                    if (Mathf.Abs(piece.piece_id) > risk_map_enemy[attack[0], attack[1]])
-                    {
-                        risk_map_enemy[attack[0], attack[1]] = Mathf.Abs(piece.piece_id);
-                    }
-                }
-            }
-        }
-
-        /* 
-        string risk_result = "";
-        for (int p = 0; p < 8; p++)
-        {
-            for (int q = 0; q < 8; q++)
-            {
-                risk_result += risk_map[p, q] + ", ";
-            }
-            risk_result += "\n";
-        }
-
-        Debug.Log(risk_result);
-        */
-
-        // DISTANCE MAP.
-        // Create a distance map to store the distance from each empty position to the king.
-        // Use this map to calculate the value of each move.
-
-        // Find the position of the king.
-        int[] king_position = FindKing();
-
-        // Scan the board for possible moves.
-        for (int p = 0; p < 8; p++)
-        {
-            for (int q = 0; q < 8; q++)
-            {
-                // Check if the position is empty. 
-                if (!pieces[p, q])
-                {
-                    // Calculate the difference between the king position and the empty position. 
-                    float[] difference = new float[] { king_position[0] - p, king_position[1] - q };
-                    // Calculate the magnitude of the difference to get the distance. 
-                    float distance = Mathf.Sqrt(difference[0] * difference[0] + difference[1] * difference[1]);
-                    // Normalize the distance value. distance_value is inversely proportional to the distance. 
-                    float distance_value = 1f / distance;
-                    // Add the distance value to the dist map.
-                    float scalar = 0.25f;
-                    dist_map[p, q] = distance_value * scalar;
-                }
-            }
-        }
-
-        /*
-        string dist_result = "";
-        for (int p = 0; p < 8; p++)
-        {
-            for (int q = 0; q < 8; q++)
-            {
-                dist_result += string.Format("{0:0.00}", dist_map[p, q]) + ", ";
-            }
-            dist_result += "\n";
-        }
-
-        Debug.Log(dist_result);
-        */
-
-        List<int[]> attacks = new List<int[]>();
-
-        float attack_value = 0f;
-        bool attack_found = false;
-
-        // Attack from and to.
-        int[] a_from = new int[] { -1, -1 };
-        int[] a_to = new int[] { -1, -1 };
-
-        foreach (Piece piece in pieces)
-        {
-            if (!piece) continue;
-            if (piece.has_moved) continue;
-
-            if (piece.GetTeam() == gm.GetTeam())
-            {
-                attacks = bm.GetAttackableList(piece.position[0], piece.position[1]);
-
-                foreach (int[] attack in attacks)
-                {
-                    float expected_value = 0f;
-
-                    // Calculate the value of a successful attack.
-                    int defender = pieces[attack[0], attack[1]].piece_id;
-                    int attacker = piece.piece_id;
-                    float prob_success = (7f - Chess.RollNeeded(attacker, defender)) / 6f;
-
-                    float success_value = prob_success * material_values[Mathf.Abs(defender) - 1];
-
-                    // Calculate the risk value. (Risk aquired from moving position after the attack is successful)
-                    int this_piece = piece.piece_id;
-                    int highest_risk = risk_map_enemy[attack[0], attack[1]];
-                    float prob_failure = (7f - Chess.RollNeeded(highest_risk, this_piece)) / 6f;
-
-                    float failure_value = prob_failure * material_values[Mathf.Abs(this_piece) - 1];
-
-                    expected_value = success_value - failure_value;
-
-                    //Debug.Log("Risk Evaluation");
-                    //Debug.Log(piece.piece_id + " | " + board_state[attack[0], attack[1]] + ": ");
-                    //Debug.Log(prob_success + ", " + material_values[Math.Abs(defender) - 1] + ": " + success_value);
-                    //Debug.Log(prob_failure + ", " + material_values[Math.Abs(this_piece) - 1] + ": " + failure_value);
-
-                    if (expected_value > attack_value)
-                    {
-                        attack_found = true;
-                        attack_value = expected_value;
-
-                        a_from = piece.position;
-                        a_to = attack;
-                    }
-                }
-            }
-        }
-
-        // Loop through all moves and compare move with the dist_map values.
-        List<int[]> moves = new List<int[]>();
-
-        float move_value = 0f;
-        bool move_found = false;
-
-        // Move from and to.
-        int[] m_from = new int[] { -1, -1 };
-        int[] m_to = new int[] { -1, -1 };
-
-        foreach (Piece piece in pieces)
-        {
-            if (!piece) continue;
-            if (piece.has_moved) continue;
-
-            if (piece.GetTeam() == gm.GetTeam())
-            {
-                //moves = bm.GetMovesList(piece.position[0], piece.position[1], piece.GetNumberOfMoves());
-
-                foreach (int[] move in moves)
-                {
-                    float expected_value = 0f;
-                    float current_value = dist_map[move[0], move[1]];
-
-                    // Incorporate risk value. (Risk after move is made and position has changed of being captured)
-                    int this_piece = piece.piece_id;
-                    int highest_risk = risk_map_enemy[move[0], move[1]];
-
-                    float prob_captured = (highest_risk == 0) ? 0 : (7f - Chess.RollNeeded(highest_risk, this_piece)) / 6f;
-
-                    // Calculate the cost of being captued. 
-                    float risk_value = prob_captured * material_values[Mathf.Abs(this_piece) - 1];
-
-                    expected_value = current_value - risk_value;
-
-                    if (current_value > move_value)
-                    {
-                        move_value = current_value;
-                        move_found = true;
-
-                        m_from = piece.position;
-                        m_to = move;
-                    }
-                }
-            }
-        }
-
-        if (move_found && move_value > attack_value)
-        {
-            bm.DelayedMove(m_from, m_to, 0.5f);
-        }
-        else if (attack_found)
-        {
-            bm.DelayedAttack(a_from, a_to, 0.5f);
-        }
-        else
-        {
-            gm.EndTurn();
-        }
     }
 
     public int[] FindKing()
