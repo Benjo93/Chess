@@ -280,6 +280,7 @@ public class BoardManager : MonoBehaviour
                         selected_piece.IncrementTempID();
                         if (selected_piece.GetTempID() == 0)
                         {
+                            selectedBlock.ChangeColor(Color.red);
                             selectedBlock.DullColor();
                         }
                         // represents left bishop corps
@@ -694,7 +695,15 @@ public class BoardManager : MonoBehaviour
                 {
                     if (piece != null && piece.GetCorpID() == 1 && !piece.is_commander)
                     {
-                        blocks[piece.position[0], piece.position[1]].HoverColor();
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.red);
+                    }
+                    if (piece!=null && piece.GetCorpID() == 2 && piece.is_commander)
+                    {
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.blue);
+                    }
+                    if(piece != null && piece.GetCorpID() == 3 && piece.is_commander)
+                    {
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.green);
                     }
                 }
             }
@@ -704,7 +713,15 @@ public class BoardManager : MonoBehaviour
                 {
                     if (piece != null && piece.GetCorpID() == -1 && !piece.is_commander)
                     {
-                        blocks[piece.position[0], piece.position[1]].HoverColor();
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.red);
+                    }
+                    if (piece != null && piece.GetCorpID() == -2 && piece.is_commander)
+                    {
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.blue);
+                    }
+                    if (piece != null && piece.GetCorpID() == -3 && piece.is_commander)
+                    {
+                        blocks[piece.position[0], piece.position[1]].ChangeColor(Color.green);
                     }
                 }
             }
