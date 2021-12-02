@@ -17,6 +17,10 @@ public class MenuSelect : MonoBehaviour
     {
         SceneManager.LoadScene("Start Menu 2");
     }
+    public void Credits()
+    {
+        SceneManager.LoadScene("Credits");
+    }
     public void Quit()
     {
         Application.Quit();

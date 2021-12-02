@@ -1,4 +1,4 @@
-    using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -44,6 +44,8 @@ public class BoardManager : MonoBehaviour
     public GameObject CancelRevokeButton;
     public GameObject Knight_Attack_Button;
     public GameObject Knight_Wait_Button;
+    public GameObject GameOver;
+    public Text gameOverText;
 
     private int GlobalDelegationID = 1;
 
@@ -54,6 +56,9 @@ public class BoardManager : MonoBehaviour
     public bool revoke = false;
 
     public bool knightMove = false;
+
+    //Determines if knight is waiting for attack or wait to be pressed
+    public bool knightReady = false;
 
     public int knightx = -1;
     public int knighty = -1;
@@ -83,7 +88,7 @@ public class BoardManager : MonoBehaviour
     public bool input_requested;
 
     // Boolean to keep track of game setup. Called from the Game Manager.
-    public bool setup_complete; 
+    public bool setup_complete;
 
     // Used when initializing the board before a game.
     private int[,] board_init = new int[,]
@@ -100,6 +105,9 @@ public class BoardManager : MonoBehaviour
 
     private void Start()
     {
+        DelegationButton.gameObject.SetActive(false);
+        EndTurnButton.gameObject.SetActive(false);
+        RevokeButton.gameObject.SetActive(false);
         RepositionBoard();
         PrintBoardSquares();
         BuildTable();
@@ -122,7 +130,7 @@ public class BoardManager : MonoBehaviour
         if (!setup_complete) return;
 
         // Check if the player is making a move.
-        if (!input_requested) return;
+        if (!input_requested || knightReady) return;
 
         // Cast a line in to where the mouse is on the screen.
         RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
@@ -200,7 +208,7 @@ public class BoardManager : MonoBehaviour
                     }
                 }
                 // If Revoke Mode is enabled
-                else if (revoke == true)
+                else if (revoke)
                 {
                     Block selectedBlock = blocks[index[0], index[1]];
                     Piece selected_piece = pieces[index[0], index[1]];
@@ -230,7 +238,7 @@ public class BoardManager : MonoBehaviour
                         }
                     }
                 }
-                else if(knightMove == true)
+                else if (knightMove == true)
                 {
                     Piece selected_piece = pieces[index[0], index[1]];
                     if (Input.GetMouseButtonDown(0))
@@ -242,25 +250,31 @@ public class BoardManager : MonoBehaviour
                                 int[] knightPosition = { knightx, knighty };
                                 Attack(knightPosition, index);
                                 knightMove = false;
-                                foreach(Piece piece in pieces)
+                                foreach (Piece piece in pieces)
                                 {
                                     if (piece != null)
                                     {
                                         piece.SetTempID(0);
                                     }
                                 }
-                            }                       
+                                knightx = -1;
+                                knighty = -1;
+                            }
                         }
-                    }   
+                    }
+                }
+                else if (knightReady == true)
+                {
+                    //This isn't needed, but I have it here for debug purposes and I may need it again one day.
                 }
                 // If delegation mode is enabled
                 else
                 {
                     Block selectedBlock = blocks[index[0], index[1]];
                     Piece selected_piece = pieces[index[0], index[1]];
-                    
+
                     //whenever a piece in king corp is clicked, it changes colors
-                    if (Input.GetMouseButtonDown(0) && (selected_piece.GetTeam() == gm.GetTeam()) && selected_piece != null)
+                    if (Input.GetMouseButtonDown(0) && (selected_piece.GetTeam() == gm.GetTeam()) && selected_piece != null && !selected_piece.GetIsCommander() && (selected_piece.GetCorpID() == 1 || selected_piece.GetCorpID() == -1))
                     {
                         int corpID = selected_piece.GetCorpID();
                         selected_piece.IncrementTempID();
@@ -316,64 +330,64 @@ public class BoardManager : MonoBehaviour
         {
             case 1: // Pawn
                 newPiece = Instantiate(Chess.PIECES["pixel_pawn"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("w_pawn", 1, "white", 1, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                .InitializePiece("p1 pawn", 1, "white", 1, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
 
             case 2: // Rook
                 //Debug.Log(Chess.PIECES.Count);
                 //Debug.Log(Chess.PLAYER_TWO_REF.Count);
                 newPiece = Instantiate(Chess.PIECES["pixel_rook"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("w_rook", 2, "white", 2, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                .InitializePiece("p1 rook", 2, "white", 2, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
 
             case 3: // Bishop
                 newPiece = Instantiate(Chess.PIECES["pixel_bishop"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("w_bishop", 3, "white", 2, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                .InitializePiece("p1 bishop", 3, "white", 2, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
 
             case 4: // Knight
                 newPiece = Instantiate(Chess.PIECES["pixel_knight"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("w_knight", 4, "white", 4, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                .InitializePiece("p1 knight", 4, "white", 4, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
 
             case 5: // Queen
                 newPiece = Instantiate(Chess.PIECES["pixel_queen"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("w_queen", 5, "white", 3, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                .InitializePiece("p1 queen", 5, "white", 3, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
 
             case 6: // King
                 newPiece = Instantiate(Chess.PIECES["pixel_king"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("w_king", 6, "white", 3, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
+                .InitializePiece("p1 king", 6, "white", 3, new int[] { row, col }, Chess.Colors.PLAYER_ONE) as Piece;
                 break;
 
             case -1: // Pawn
                 newPiece = Instantiate(Chess.PIECES["pixel_pawn"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("b_pawn", -1, "black", 1, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                .InitializePiece("p2 pawn", -1, "black", 1, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
                 break;
 
             case -2: // Rook
                 newPiece = Instantiate(Chess.PIECES["pixel_rook"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("b_rook", -2, "black", 2, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                .InitializePiece("p2 rook", -2, "black", 2, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
                 break;
 
             case -3: // Bishop
                 newPiece = Instantiate(Chess.PIECES["pixel_bishop"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("b_bishop", -3, "black", 2, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                .InitializePiece("p2 bishop", -3, "black", 2, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
                 break;
 
             case -4: // Knight
                 newPiece = Instantiate(Chess.PIECES["pixel_knight"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("b_knight", -4, "black", 4, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                .InitializePiece("p2 knight", -4, "black", 4, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
                 break;
 
             case -5: // Queen
                 newPiece = Instantiate(Chess.PIECES["pixel_queen"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("b_queen", -5, "black", 3, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                .InitializePiece("p2 queen", -5, "black", 3, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
                 break;
 
             case -6: // King
                 newPiece = Instantiate(Chess.PIECES["pixel_king"], blocks[row, col].transform.position, Quaternion.identity).AddComponent<Piece>()
-                .InitializePiece("b_king", -6, "black", 3, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
+                .InitializePiece("p2 king", -6, "black", 3, new int[] { row, col }, Chess.Colors.PLAYER_TWO) as Piece;
                 break;
             default:
                 newPiece = Instantiate(new GameObject()).AddComponent<Piece>();
@@ -403,7 +417,7 @@ public class BoardManager : MonoBehaviour
                 Rigidbody2D rb = piece.gameObject.AddComponent<Rigidbody2D>();
                 Vector2 rand = new Vector2(UnityEngine.Random.Range(-10f, 10.0f), UnityEngine.Random.Range(0, 10.0f));
                 rb.AddForce(rand, ForceMode2D.Impulse);
-            } 
+            }
         }
         foreach (Piece piece in capturedWhite)
         {
@@ -430,7 +444,6 @@ public class BoardManager : MonoBehaviour
         Vector2 randDice = new Vector2(UnityEngine.Random.Range(0, 10.0f), UnityEngine.Random.Range(0, 10.0f));
         rbDice.AddForce(randDice, ForceMode2D.Impulse);
         yield return new WaitForSeconds(2.5f);
-        Debug.Log("Explosion Simulation done after 2.5 seconds passed.  Write additional tasks to do.");
     }
 
     /* 
@@ -483,7 +496,7 @@ public class BoardManager : MonoBehaviour
                 switch (command_state[row, col])
                 {
                     case 1:
-                        if (pieces[row, col].GetPName().Equals("w_king"))
+                        if (pieces[row, col].GetPName().Equals("p1 king"))
                         {
                             w_king_pos[0] = row;
                             w_king_pos[1] = col;
@@ -492,7 +505,7 @@ public class BoardManager : MonoBehaviour
                             w_king_memb.Add(pieces[row, col]);
                         break;
                     case 2:
-                        if (pieces[row, col].GetPName().Equals("w_bishop"))
+                        if (pieces[row, col].GetPName().Equals("p1 bishop"))
                         {
                             w_bishop_one_pos[0] = row;
                             w_bishop_one_pos[1] = col;
@@ -501,7 +514,7 @@ public class BoardManager : MonoBehaviour
                             w_bishop_one_memb.Add(pieces[row, col]);
                         break;
                     case 3:
-                        if (pieces[row, col].GetPName().Equals("w_bishop"))
+                        if (pieces[row, col].GetPName().Equals("p1 bishop"))
                         {
                             w_bishop_two_pos[0] = row;
                             w_bishop_two_pos[1] = col;
@@ -510,7 +523,7 @@ public class BoardManager : MonoBehaviour
                             w_bishop_two_memb.Add(pieces[row, col]);
                         break;
                     case -1:
-                        if (pieces[row, col].GetPName().Equals("b_king"))
+                        if (pieces[row, col].GetPName().Equals("p2 king"))
                         {
                             b_king_pos[0] = row;
                             b_king_pos[1] = col;
@@ -519,7 +532,7 @@ public class BoardManager : MonoBehaviour
                             b_king_memb.Add(pieces[row, col]);
                         break;
                     case -2:
-                        if (pieces[row, col].GetPName().Equals("b_bishop"))
+                        if (pieces[row, col].GetPName().Equals("p2 bishop"))
                         {
                             b_bishop_one_pos[0] = row;
                             b_bishop_one_pos[1] = col;
@@ -528,7 +541,7 @@ public class BoardManager : MonoBehaviour
                             b_bishop_one_memb.Add(pieces[row, col]);
                         break;
                     case -3:
-                        if (pieces[row, col].GetPName().Equals("b_bishop"))
+                        if (pieces[row, col].GetPName().Equals("p2 bishop"))
                         {
                             b_bishop_two_pos[0] = row;
                             b_bishop_two_pos[1] = col;
@@ -574,7 +587,7 @@ public class BoardManager : MonoBehaviour
             for (int j = 0; j < 2; j++)
             {
                 //whiteCaptureBox[i, j] = Instantiate(captureSquare, WhiteCapture_origin + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity,transform);
-                whiteCaptureBox[i, j] = Instantiate(blankBlock, WhiteCapture_origin + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity,transform);
+                whiteCaptureBox[i, j] = Instantiate(blankBlock, WhiteCapture_origin + new Vector3(j, whiteCaptureBox.GetLength(1) - i, 0f) * 0.6f, Quaternion.identity, transform);
                 whiteCaptureBox[i, j].transform.localScale = new Vector3(0.045f, 0.045f, 0.045f);
                 //whiteCaptureBox[i, j].GetComponent<SpriteRenderer>().material.color = Chess.Colors.BOARD_DARK;
             }
@@ -661,7 +674,7 @@ public class BoardManager : MonoBehaviour
 
     // Enables delegation mode
     public void EnableDelegationMode()
-    {                
+    {
         //Checking to make sure delegation can occur
         if (!gm.GetDidDelegate())
         {
@@ -758,11 +771,11 @@ public class BoardManager : MonoBehaviour
     public void HasCommanderMoved(Piece input, int newID)
     {
         int corpID = input.GetCorpID();
-        foreach(Piece piece in pieces)
+        foreach (Piece piece in pieces)
         {
-            if(piece != null)
+            if (piece != null)
             {
-                if(!piece.GetIsCommander() && newID == piece.GetCorpID())
+                if (!piece.GetIsCommander() && newID == piece.GetCorpID())
                 {
                     input.SetHasMoved(piece.GetHasMoved());
                 }
@@ -831,7 +844,7 @@ public class BoardManager : MonoBehaviour
                         }
                     }
                     piece.SetDelegationID(GlobalDelegationID);
-                    
+
                     //piece.SetHasMoved(true);
 
                     if (piece.GetHasMoved() == true)
@@ -911,7 +924,7 @@ public class BoardManager : MonoBehaviour
         {
             if (piece != null && piece.GetTempID() == 1)
             {
-                
+
                 Commander currentCommander = piece.GetCommander();
                 currentCommander.RemovePiece(piece);
                 currentCommander.GetKing().AddPiece(piece);
@@ -925,7 +938,7 @@ public class BoardManager : MonoBehaviour
                     piece.SetCorpID(-1);
                 }
 
-                
+
             }
         }
         gm.SetDidDelegate(true);
@@ -1061,22 +1074,24 @@ public class BoardManager : MonoBehaviour
 
     public void DelayedMove(int[] from, int[] to, float delay)
     {
-        StartCoroutine(crMove(from, to, delay));
+        int moves_used = MovePiece(from, to);
+        StartCoroutine(crMove(moves_used, delay));
     }
 
     public void DelayedAttack(int[] from, int[] to, float delay)
     {
-        StartCoroutine(crAttack(from, to, delay));
+        int moves_used = Attack(from, to).moves_used;
+        StartCoroutine(crAttack(moves_used, delay));
     }
 
-    private IEnumerator crMove(int[] from, int[] to, float delay)
+    private IEnumerator crMove(int moves_used, float delay)
     {
         int moves_used = MovePiece(from, to);
         yield return new WaitForSeconds(delay);
         EndTurn(moves_used);
     }
 
-    public IEnumerator crAttack(int[] from, int[] to, float delay)
+    public IEnumerator crAttack(int moves_used, float delay)
     {
         int moves_used = Attack(from, to);
         yield return new WaitForSeconds(delay);
@@ -1090,28 +1105,6 @@ public class BoardManager : MonoBehaviour
         int one = knight[1];
         knightx = zero;
         knighty = one;
-        for(int i = zero - 1; i <= zero + 1; i++)
-        {
-            for(int j = one - 1; j <= one + 1; j++)
-            {
-                if(i > -1 && j < 9 && i < 9 && j > -1)
-                {
-                    if (pieces[i, j] != null && !(zero == i && one == j) && gm.GetTeam() != pieces[i, j].GetTeam())
-                    {
-                        blocks[i, j].ChangeColor(Color.blue);
-                        pieces[i, j].SetTempID(1);
-                    }
-                }
-                    
-            }
-        }    
-    }
-
-    public bool PiecesAdjacent(int[] knight)
-    {
-        return false;
-        int zero = knight[0];
-        int one = knight[1];
         for (int i = zero - 1; i <= zero + 1; i++)
         {
             for (int j = one - 1; j <= one + 1; j++)
@@ -1119,6 +1112,32 @@ public class BoardManager : MonoBehaviour
                 if (i > -1 && j < 9 && i < 9 && j > -1)
                 {
                     if (pieces[i, j] != null && !(zero == i && one == j) && gm.GetTeam() != pieces[i, j].GetTeam())
+                    {
+                        blocks[i, j].ChangeColor(Color.blue);
+                        pieces[i, j].SetTempID(1);
+                    }
+                }
+
+            }
+        }
+    }
+
+    public bool PiecesAdjacent(int[] knight)
+    {
+        return false;
+        int zero = knight[0];
+        int one = knight[1];
+        if (zero == -1 && one == -1)
+        {
+            return false;
+        }
+        for (int i = zero - 1; i <= zero + 1; i++)
+        {
+            for (int j = one - 1; j <= one + 1; j++)
+            {
+                if (i > -1 && j < 9 && i < 9 && j > -1)
+                {
+                    if (pieces[i, j] && !(zero == i && one == j) && gm.GetTeam() != pieces[i, j].GetTeam())
                     {
                         return true;
                     }
@@ -1157,18 +1176,23 @@ public class BoardManager : MonoBehaviour
         selected_piece = null;
         input_requested = false;
 
+        char[] column_chars = new char[] { 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' };
 
-        if((pieces[to[0],to[1]].GetPName() == "w_knight" || pieces[to[0],to[1]].GetPName() == "b_knight") && PiecesAdjacent(to))
+        if ((pieces[to[0], to[1]].GetPName() == "p1 knight" || pieces[to[0], to[1]].GetPName() == "p2 knight") /*&& PiecesAdjacent(to) */&& input_requested)
         {
-            Enable_Knight_Options();
-            HighlightAdjacentPieces(to);
+            if (PiecesAdjacent(to))
+            {
+                Enable_Knight_Options();
+                HighlightAdjacentPieces(to);
+            }
         }
+        input_requested = false;
 
-        // Log move info.
-        game_log.text += hover_info.text + "\n";
-        //hover_info.text = "";
+        //Log move info
+        game_log.text += pieces[to[0], to[1]].GetPName() + " [" + column_chars[from[1]] + (from[0] + 1) + "]";
+        game_log.text += " >> [" + column_chars[to[1]] + (to[0] + 1) + "]\n";
 
-        return moves_used; 
+        return moves_used;
     }
 
     public void EndTurn(int moves_used)
@@ -1229,8 +1253,11 @@ public class BoardManager : MonoBehaviour
     {
         RefreshBlocks();
 
+        char[] column_chars = new char[] { 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' };
+        Block hovered_block = blocks[to[0], to[1]];
+
         int roll = diceInstance.RollDice();
-        if(knightMove == true)
+        if (knightMove == true)
         {
             roll++;
         }
@@ -1255,8 +1282,9 @@ public class BoardManager : MonoBehaviour
             selected_piece = null;
             input_requested = false;
 
-            // Log attack info.
-            game_log.text += hover_info.text + "  Failed " + "\n";
+            game_log.text += pieces[from[0], from[1]].GetPName() + " >>> " + pieces[to[0], to[1]].GetPName() + " Failed\n";
+            // Log attack info. Old method which could not track moves done by the AI
+            //game_log.text += hover_info.text + "  Failed " + "\n";           
             //hover_info.text = "";
 
             return moves_used;
@@ -1272,22 +1300,27 @@ public class BoardManager : MonoBehaviour
             // King has been captured, end the game.
             if (pieces[to[0], to[1]].is_commander && pieces[to[0], to[1]].commander.is_king)
             {
-                Debug.Log("Game Over");
                 //Debug.Log(pieces[to[0], to[1]].GetPName());
-                gm.EraseSave();
+                StopAllCoroutines();
 
                 //If Black
-                if (pieces[to[0], to[1]].GetPName() == "b_king")
+                if (pieces[to[0], to[1]].GetPName() == "p2 king")
                 {
                     //White win screen
-                    SceneManager.LoadScene("Player One Wins");
+                    //SceneManager.LoadScene("Player One Wins");
+                    GameOver.gameObject.SetActive(true);
+                    gameOverText.text = "Player  One  Wins";
+                    RunRigidbody();
                     return moves_used;
                 }
                 //else white
                 else
                 {
                     //Black win screen
-                    SceneManager.LoadScene("Player Two Wins");
+                    //SceneManager.LoadScene("Player Two Wins");
+                    GameOver.gameObject.SetActive(true);
+                    gameOverText.text = "Player  Two  Wins";
+                    RunRigidbody();
                     return moves_used;
                 }
                 // Insert Wilhelm Scream..
@@ -1324,11 +1357,17 @@ public class BoardManager : MonoBehaviour
             selected_piece = null;
             input_requested = false;
 
-            // Log attack info.
-            game_log.text += hover_info.text + "  Success " + "\n";
+            // Log attack info. New method that also tracks moves done by the AI
+            //This was placed in an if statement because an error kept coming up whenever a knight was moved and this fixed that. Make a message in Discord if you have a problem with this.
+            if (pieces[from[0], from[1]] != null && pieces[to[0], to[1]] != null)
+            {
+                game_log.text += pieces[from[0], from[1]].GetPName() + " >>> " + pieces[to[0], to[1]].GetPName() + " Success\n";
+            }
+
+            // Log attack info. Old method which does not track moves done by the AI
+            //game_log.text += hover_info.text + "  Success " + "\n";
             //hover_info.text = "";
 
-            // Notify function caller that the attack was successful.
             return moves_used;
         }
     }
@@ -1344,7 +1383,7 @@ public class BoardManager : MonoBehaviour
         List<int[]> newList = new List<int[]>();
         bool isWhitePiece = pieces[row, col].GetTeam().Equals("white");
         int range = 1;
-        if (pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook"))
+        if (pieces[row, col].GetPName().Equals("p1 rook") || pieces[row, col].GetPName().Equals("p2 rook"))
             range = pieces[row, col].GetNumberOfMoves();
 
         int north = Mathf.Max(0, row - range);
@@ -1352,9 +1391,9 @@ public class BoardManager : MonoBehaviour
         int west = Mathf.Max(0, col - range);
         int east = Mathf.Min(7, col + range);
 
-        if (pieces[row, col].GetPName().Equals("w_pawn"))
+        if (pieces[row, col].GetPName().Equals("p1 pawn"))
             north = row + range;
-        else if (pieces[row, col].GetPName().Equals("b_pawn"))
+        else if (pieces[row, col].GetPName().Equals("p2 pawn"))
             south = row - range;
 
         for (int i = north; i <= south; i++)
@@ -1380,7 +1419,7 @@ public class BoardManager : MonoBehaviour
     {
         List<int[]> newList = new List<int[]>();
         int range =
-        pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook") ?
+        pieces[row, col].GetPName().Equals("p1 rook") || pieces[row, col].GetPName().Equals("p2 rook") ?
         pieces[row, col].GetNumberOfMoves() : 1;
 
         int north = Mathf.Max(0, row - range);
@@ -1388,9 +1427,9 @@ public class BoardManager : MonoBehaviour
         int west = Mathf.Max(0, col - range);
         int east = Mathf.Min(7, col + range);
 
-        if (pieces[row, col].GetPName().Equals("w_pawn"))
+        if (pieces[row, col].GetPName().Equals("p1 pawn"))
             north = row + range;
-        else if (pieces[row, col].GetPName().Equals("b_pawn"))
+        else if (pieces[row, col].GetPName().Equals("p2 pawn"))
             south = row - range;
 
         for (int i = north; i <= south; i++)
@@ -1426,7 +1465,7 @@ public class BoardManager : MonoBehaviour
              * validated and passed to ProcessBlock() before any of them can be
              * dequeued.  Can't ProcessBlock() while Dequeueing.
              */
-            if (row < 7 && !selectedPiece.Equals("b_pawn"))
+            if (row < 7 && !selectedPiece.Equals("p2 pawn"))
             {
                 if (IsValidBlock(row + 1, col)) // Down
                 {
@@ -1444,7 +1483,7 @@ public class BoardManager : MonoBehaviour
                     buildQueue.Enqueue(new int[2] { row + 1, col - 1 });
                 }
             }
-            if (row > 0 && !selectedPiece.Equals("w_pawn"))
+            if (row > 0 && !selectedPiece.Equals("p1 pawn"))
             {
                 if (IsValidBlock(row - 1, col)) // Up
                 {
@@ -1462,7 +1501,7 @@ public class BoardManager : MonoBehaviour
                     buildQueue.Enqueue(new int[2] { row - 1, col - 1 });
                 }
             }
-            if (!selectedPiece.Equals("b_pawn") && !selectedPiece.Equals("w_pawn"))
+            if (!selectedPiece.Equals("p2 pawn") && !selectedPiece.Equals("p1 pawn"))
             {
                 if (col > 0 && IsValidBlock(row, col - 1)) // Left
                 {
@@ -1641,23 +1680,23 @@ public class BoardManager : MonoBehaviour
 
     public void DisplayHoverInfo(int[] h)
     {
-        char[] column_chars = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
+        char[] column_chars = new char[] { 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' };
         Block hovered_block = blocks[h[0], h[1]];
 
         if (selected_piece)
         {
-            hover_info.text = selected_piece.GetPName() + "[ " + column_chars[selected_piece.position[0]] + selected_piece.position[1] + " ]";
+            hover_info.text = selected_piece.GetPName() + "[" + column_chars[selected_piece.position[1]] + (selected_piece.position[0] + 1) + "]";
 
             if (hovered_block.IsMovable())
             {
-                hover_info.text += " >> [" + column_chars[h[1]] + h[0] + "] ";
+                hover_info.text += " >> [" + column_chars[h[1]] + (h[0] + 1) + "] ";
             }
 
             if (hovered_block.IsAttackable())
             {
                 int roll_needed = Chess.RollNeeded(selected_piece.piece_id, pieces[h[0], h[1]].piece_id);
 
-                hover_info.text += " >> " + pieces[h[0], h[1]].GetPName() + "[ " + column_chars[h[1]] + h[0] + " ]";
+                hover_info.text += " >> " + pieces[h[0], h[1]].GetPName() + "[ " + column_chars[h[1]] + (h[0] + 1) + " ]";
                 hover_info.text += "\n Roll Needed:  " + roll_needed;
                 //hover_info.text += Math.Round((7f - roll_needed) / 6f * 100f, 2) + "%";
             }
@@ -1675,14 +1714,14 @@ public class BoardManager : MonoBehaviour
                     ? Chess.Colors.BOARD_LIGHT : Chess.Colors.BOARD_DARK);
                 index++;
                 if (index % 8 != 0) flip = !flip;
-                if (pieces[row,col])
+                if (pieces[row, col])
                 {
-                    if (pieces[row,col].GetTeam().Equals("white"))
+                    if (pieces[row, col].GetTeam().Equals("white"))
                         pieces[row, col].color = Chess.Colors.PLAYER_ONE;
                     else
                         pieces[row, col].color = Chess.Colors.PLAYER_TWO;
                     pieces[row, col].GetComponent<SpriteRenderer>().material.color = pieces[row, col].color;
-                    if(pieces[row,col].GetHasMoved())
+                    if (pieces[row, col].GetHasMoved())
                         pieces[row, col].ColorDim();
                 }
             }
@@ -1715,24 +1754,5 @@ public class BoardManager : MonoBehaviour
     {
         diceInstance = Instantiate(dice, new Vector3(-1.12f, 5.3752f, -1), Quaternion.identity, transform) as Dice;
         diceInstance.transform.localScale = new Vector3(0.07376f, 0.07376f, 0.07376f);
-    }
-
-
-
-    // Print out board state for debugging.
-    private void ShowPositions()
-    {
-        string output = "";
-        int index = 0;
-        foreach (int position in board_init)
-        {
-            output += position + "   ";
-            if (index++ >= 7)
-            {
-                output += "\n";
-                index = 0;
-            }
-        }
-        Debug.Log(output);
     }
 }

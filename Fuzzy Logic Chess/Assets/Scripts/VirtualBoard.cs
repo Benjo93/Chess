@@ -228,7 +228,7 @@ public class VirtualBoard
             if (piece != null)
             {
                 piece.has_moved = false;
-                if(piece.is_commander)
+                if (piece.is_commander)
                 {
                     piece.n_moves = piece.default_moves;
                 }
@@ -293,26 +293,29 @@ public class VirtualBoard
     public VirtualPiece VirtualAttackPiece(int[] from, int[] to)
     {
         VirtualRefreshBlocks();
-
         VirtualPiece captured_piece = vpieces[to[0], to[1]];
 
-        vpieces[to[0], to[1]] = vpieces[from[0], from[1]];
-        vpieces[from[0], from[1]] = null;
-
-        vpieces[to[0], to[1]].has_moved = true;
-        vpieces[to[0], to[1]].position = to;
-
-        if (vpieces[to[0], to[1]].is_commander)
+        if (vpieces[to[0], to[1]] != null)
         {
-            foreach (VirtualPiece piece in vpieces)
+            vpieces[to[0], to[1]] = vpieces[from[0], from[1]];
+            vpieces[from[0], from[1]] = null;
+
+            vpieces[to[0], to[1]].has_moved = true;
+            vpieces[to[0], to[1]].position = to;
+
+            if (vpieces[to[0], to[1]].is_commander)
             {
-                if (piece == null) continue;
-                if (piece.corp_id == vpieces[to[0], to[1]].corp_id)
+                foreach (VirtualPiece piece in vpieces)
                 {
-                    piece.has_moved = true;
+                    if (piece == null) continue;
+                    if (piece.corp_id == vpieces[to[0], to[1]].corp_id)
+                    {
+                        piece.has_moved = true;
+                    }
                 }
             }
         }
+        
 
         return captured_piece; 
     }

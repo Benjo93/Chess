@@ -12,6 +12,8 @@ public class OptionMenu : MonoBehaviour
     [SerializeField] private Button player2;
     [SerializeField] private Button square1;
     [SerializeField] private Button square2;
+    [SerializeField] private Slider difficulty;
+    [SerializeField] private Slider turnSpeed;
     // Start is called before the first frame update
     void Start()
     {
@@ -21,6 +23,7 @@ public class OptionMenu : MonoBehaviour
     public void ToggleOptionsMenu()
     {
         gameObject.SetActive(true);
+        Time.timeScale = 0;
     }
 
     public void SetVolume()
@@ -65,6 +68,7 @@ public class OptionMenu : MonoBehaviour
     {
         Chess.SaveSetting();
         gameObject.SetActive(!gameObject.activeSelf);
+        Time.timeScale = 1;
     }
 
     public void RevertSettings()
@@ -72,11 +76,17 @@ public class OptionMenu : MonoBehaviour
         Chess.LoadSetting();
         LoadFromChess();
         gameObject.SetActive(!gameObject.activeSelf);
+        Time.timeScale = 1;
     }
 
-    public void RecolorTurnIndicator()
+    public void SetDifficulty()
     {
+        Chess.difficulty = difficulty.value;
+    }
 
+    public void SetTurnSpeed()
+    {
+        Chess.turnSpeed = turnSpeed.value;
     }
 
     private void LoadFromChess()
@@ -88,5 +98,7 @@ public class OptionMenu : MonoBehaviour
         player2.GetComponent<Image>().color = Chess.Colors.PLAYER_TWO;
         square1.GetComponent<Image>().color = Chess.Colors.BOARD_LIGHT;
         square2.GetComponent<Image>().color = Chess.Colors.BOARD_DARK;
+        difficulty.value = Chess.difficulty;
+        turnSpeed.value = Chess.turnSpeed;
     }
 }

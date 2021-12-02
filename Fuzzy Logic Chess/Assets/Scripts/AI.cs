@@ -31,9 +31,6 @@ public class AI : Player
     int[,] risk_map_enemy = new int[8, 8];
     int[,] risk_map_friend = new int[8, 8];
 
-    float difficulty = 0.8f;
-    float ai_wait = 0.25f;
-
     public AI(string name, GameManager gm, BoardManager bm) : base(name, gm, bm)
     {
         // AI specific constructor.
@@ -69,7 +66,7 @@ public class AI : Player
             vbm.VirtualRefreshBlocks();
         }
 
-        if (Random.Range(0f, 1f) > difficulty)
+        if (Random.Range(0f, 1f) > Chess.difficulty)
         {
             if (all_moves.Count > 0)
             {
@@ -131,16 +128,15 @@ public class AI : Player
 
         if (_move)
         {
-            bm.DelayedMove(_piece.position, _to, ai_wait);
+            bm.DelayedMove(_piece.position, _to, Chess.turnSpeed + .25f);
         }
         if (_attack)
         {
-            bm.DelayedAttack(_piece.position, _to, ai_wait);
+            bm.DelayedAttack(_piece.position, _to, Chess.turnSpeed + .25f);
         }
 
         // No possible moves, end turn.
         if (!_move && !_attack) gm.CompleteGameState(6);
-
     }
 
     private float SolveBoard(VirtualBoard vbm, int min_max, int depth)
@@ -239,8 +235,7 @@ public class AI : Player
 
         foreach (VirtualPiece piece in vrt_board.vpieces)
         {
-            if (piece == null) continue;
-
+            if (piece == null) continue;           
             if (piece.team > 0)
             {
                 eval += material_values[Mathf.Abs(piece.piece_id) - 1];
@@ -287,7 +282,7 @@ public class AI : Player
         return king_position;
     }
 
-    public void BuildDistMap(VirtualBoard vbm)
+    public void BuildDistMap(VirtualBoard vbm) 
     {
         // Find the position of the king.
         int[] king_position = FindVirtualKing(vbm);
@@ -297,9 +292,6 @@ public class AI : Player
         {
             for (int q = 0; q < 8; q++)
             {
-                // Check if the position is empty. 
-                //if (!pieces[p, q])
-                //{
                 // Calculate the difference between the king position and the empty position. 
                 float[] difference = new float[] { king_position[0] - p, king_position[1] - q };
                 // Calculate the magnitude of the difference to get the distance. 
@@ -309,7 +301,6 @@ public class AI : Player
                 // Add the distance value to the dist map.
                 float scalar = 1.0f;
                 dist_map[p, q] = distance_value * scalar;
-                //}
             }
         }
     }

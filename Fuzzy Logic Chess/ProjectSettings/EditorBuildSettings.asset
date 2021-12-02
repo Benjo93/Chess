@@ -26,4 +26,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Player Two Wins.unity
     guid: 408914333aeed1348b64fac4625346c3
+  - enabled: 1
+    path: Assets/Scenes/Credits.unity
+    guid: 1e7b46647bf1ea345ae137a7c452a504
   m_configObjects: {}
