@@ -91,10 +91,7 @@ public class Chess : MonoBehaviour
         Colors.MOVES_ONE = Colors.PLAYER_ONE * moveOverlay;
         Colors.MOVES_TWO = Colors.PLAYER_TWO * moveOverlay;
 
-        //Colors.W_SELECTED = Colors.PLAYER_ONE + (Color.cyan * highlightOverlay);
         Colors.W_ATTACK = Colors.PLAYER_ONE + (Color.red * highlightOverlay);
-
-        //Colors.B_SELECTED = Colors.PLAYER_TWO + (Color.cyan * highlightOverlay);
         Colors.B_ATTACK = Colors.PLAYER_TWO + (Color.red * highlightOverlay);
 
         AudioSourceOneshot = gameObject.AddComponent(typeof(AudioSource)) as AudioSource;
@@ -107,7 +104,6 @@ public class Chess : MonoBehaviour
         player1Index %= PLAYER_ONE_REF.Count;
         Colors.PLAYER_ONE = PLAYER_ONE_REF[player1Index];
         Colors.MOVES_ONE = Colors.PLAYER_ONE * moveOverlay;
-        //Colors.W_SELECTED = Colors.PLAYER_ONE + (Color.cyan * highlightOverlay);
         Colors.W_ATTACK = Colors.PLAYER_ONE + (Color.red * highlightOverlay);
     }
     public static void IncrementPlayer2Color()
@@ -116,7 +112,6 @@ public class Chess : MonoBehaviour
         player2Index %= PLAYER_TWO_REF.Count;
         Colors.PLAYER_TWO = PLAYER_TWO_REF[player2Index];
         Colors.MOVES_TWO = Colors.PLAYER_TWO * moveOverlay;
-        //Colors.B_SELECTED = Colors.PLAYER_TWO + (Color.cyan * highlightOverlay);
         Colors.B_ATTACK = Colors.PLAYER_TWO + (Color.red * highlightOverlay);
     }
     public static void IncrementBlock1Color()
@@ -161,6 +156,7 @@ public class Chess : MonoBehaviour
             sw.WriteLine(fullscreen ? "1" : "0");
             sw.WriteLine(player1Index + "," + player2Index + "," + block1Index + "," + block2Index);
             sw.WriteLine(difficulty.ToString());
+            sw.WriteLine(turnSpeed.ToString());
             sw.Close();
         }
     }
@@ -197,6 +193,7 @@ public class Chess : MonoBehaviour
                 block1Index = Convert.ToInt32(colorState[2]);
                 block2Index = Convert.ToInt32(colorState[3]);
                 difficulty = (float)Convert.ToDecimal(sr.ReadLine());
+                turnSpeed = (float)Convert.ToDecimal(sr.ReadLine());
                 sr.Close();
             }
         }
@@ -210,6 +207,7 @@ public class Chess : MonoBehaviour
             block1Index = 0;
             block2Index = 0;
             difficulty = .25f;
+            turnSpeed = .5f;
             SaveSetting();
         }
     }

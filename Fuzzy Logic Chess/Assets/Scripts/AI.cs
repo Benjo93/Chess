@@ -39,29 +39,12 @@ public class AI : Player
 
     public override void BeginMove()
     {
-        //Debug.Log("Begin AI Move");
         bm.input_requested = false;
 
         VirtualBoard vbm = new VirtualBoard(bm.GetPieces(), gm.GetTeam());
-        //Debug.Log(vrt_board.ShowVirtualBoard());
 
         BuildDistMap(vbm);
         BuildRiskMap(vbm);
-        
-        /*
-        string result = "";
-
-        for (int p=0; p<8; p++)
-        {
-            for (int q=0; q<8; q++)
-            {
-                result += risk_map_enemy[p, q] + ", ";
-            }
-            result += " \n";
-        }
-        */
-   
-        //Debug.Log(result);
 
         // Create a list of tuples that contain the piece and all of its moves/attacks.
         List<(VirtualPiece piece, List<int[]> attacks)> all_attacks = new List<(VirtualPiece, List<int[]>)>();
@@ -83,7 +66,6 @@ public class AI : Player
             vbm.VirtualRefreshBlocks();
         }
 
-        // TODO make random move here depending on difficulty.
         if (Random.Range(0f, 1f) > Chess.difficulty)
         {
             if (all_moves.Count > 0)
@@ -94,41 +76,17 @@ public class AI : Player
                 bm.DelayedMove(r_piece.position, r_to, 0.25f);
                 return;
             }
-
-            /*
-            if (Random.Range(0f, 1f) > 0.5)
-            {
-                int pa = Random.Range(0, all_attacks.Count);
-                VirtualPiece r_piece = all_attacks[pa].piece;
-                int[] r_to = all_attacks[pa].attacks[Random.Range(0, all_attacks[pa].attacks.Count)];
-                bm.DelayedAttack(r_piece.position, r_to, 0.25f);
-            }
-            else
-            {
-                int pm = Random.Range(0, all_moves.Count);
-                VirtualPiece r_piece = all_moves[pm].piece;
-                int[] r_to = all_moves[pm].moves[Random.Range(0, all_moves[pm].moves.Count)];
-                bm.DelayedAttack(r_piece.position, r_to, 0.25f);
-            }
-            */
         }
-
-        //Debug.Log("Attacks: " + all_attacks.Count);
-        //Debug.Log("Moves: " + all_moves.Count);
 
         bool _attack = false;
         bool _move = false;
         float _best = EvaluateBoard(vbm);
-
-        //Debug.Log("initial: " + _best);
 
         Piece _piece = null;
         int[] _to = new int[] { -1, -1 };
 
         foreach (var (piece, moves) in all_moves)
         {
-            //Debug.Log("Move: " + piece.p_name);
-
             foreach (var to in moves)
             {
                 int[] from = piece.position;
@@ -151,8 +109,6 @@ public class AI : Player
         {
             foreach (var to in attacks)
             {
-                //Debug.Log("Attack: " + piece.p_name + " >> " + vbm.vpieces[to[0], to[1]].p_name);
-
                 int[] from = piece.position;
                 VirtualPiece captured_piece = vbm.VirtualAttackPiece(from, to);
 
@@ -170,23 +126,17 @@ public class AI : Player
             }
         }
 
-        //Debug.Log("final: " + _best);
-
         if (_move)
         {
-            //Debug.Log("Move");
-            bm.DelayedMove(_piece.position, _to, 1.0f);
+            bm.DelayedMove(_piece.position, _to, Chess.turnSpeed);
         }
         if (_attack)
         {
-            //Debug.Log("Attack");
-            bm.DelayedAttack(_piece.position, _to, 1.0f);
+            bm.DelayedAttack(_piece.position, _to, Chess.turnSpeed);
         }
 
         // No possible moves, end turn.
         if (!_move && !_attack) gm.CompleteGameState(6);
-
-        //Debug.Log("Done");
     }
 
     private float SolveBoard(VirtualBoard vbm, int min_max, int depth)
