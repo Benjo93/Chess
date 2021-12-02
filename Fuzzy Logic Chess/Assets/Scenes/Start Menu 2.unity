@@ -160,8 +160,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.2}
   m_AnchorMax: {x: 0.5, y: 0.2}
-  m_AnchoredPosition: {x: -277.6198, y: -16}
-  m_SizeDelta: {x: 137.51, y: 32}
+  m_AnchoredPosition: {x: -2.27e-13, y: 48.089996}
+  m_SizeDelta: {x: 160, y: 38.8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &66522019
 MonoBehaviour:
@@ -414,12 +414,12 @@ RectTransform:
   m_Children:
   - {fileID: 1119703063}
   m_Father: {fileID: 1660866094}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.2}
   m_AnchorMax: {x: 0.5, y: 0.2}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 160, y: 64}
+  m_AnchoredPosition: {x: 0, y: 7.73999}
+  m_SizeDelta: {x: 160, y: 38.8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &571331841
 MonoBehaviour:
@@ -678,7 +678,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 90ec86c45c8ea7a4fba3df15437d9731, type: 3}
-    m_FontSize: 28
+    m_FontSize: 24
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 1
@@ -758,7 +758,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 90ec86c45c8ea7a4fba3df15437d9731, type: 3}
-    m_FontSize: 28
+    m_FontSize: 24
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 1
@@ -885,7 +885,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1660866094}
-  m_RootOrder: 3
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.75}
   m_AnchorMax: {x: 1, y: 0.75}
@@ -994,7 +994,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 90ec86c45c8ea7a4fba3df15437d9731, type: 3}
-    m_FontSize: 28
+    m_FontSize: 24
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 0
@@ -1127,10 +1127,10 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1268997926}
   - {fileID: 1719758031}
   - {fileID: 1818079230}
   - {fileID: 571331840}
-  - {fileID: 1268997926}
   - {fileID: 66522018}
   m_Father: {fileID: 617554068}
   m_RootOrder: 1
@@ -1185,12 +1185,12 @@ RectTransform:
   m_Children:
   - {fileID: 1879562558}
   m_Father: {fileID: 1660866094}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.55}
   m_AnchorMax: {x: 0.5, y: 0.55}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 160, y: 64}
+  m_AnchoredPosition: {x: 0, y: 0.040000916}
+  m_SizeDelta: {x: 160, y: 38.8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1719758032
 MonoBehaviour:
@@ -1319,12 +1319,12 @@ RectTransform:
   m_Children:
   - {fileID: 1348393916}
   m_Father: {fileID: 1660866094}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.375}
   m_AnchorMax: {x: 0.5, y: 0.375}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 160, y: 64}
+  m_AnchoredPosition: {x: 0, y: 24.300003}
+  m_SizeDelta: {x: 160, y: 38.8}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1818079231
 MonoBehaviour:
@@ -1480,7 +1480,7 @@ MonoBehaviour:
       m_Calls: []
   m_FontData:
     m_Font: {fileID: 12800000, guid: 90ec86c45c8ea7a4fba3df15437d9731, type: 3}
-    m_FontSize: 28
+    m_FontSize: 24
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 1
@@ -1507,6 +1507,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 617554068}
     m_Modifications:
+    - target: {fileID: 529921661524761270, guid: 7f761b6d902b7b54ea386100f6875249, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6572202479794617628, guid: 7f761b6d902b7b54ea386100f6875249, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1609,6 +1613,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6572202481022969538, guid: 7f761b6d902b7b54ea386100f6875249, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6636954097742022190, guid: 7f761b6d902b7b54ea386100f6875249, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8712470731288330963, guid: 7f761b6d902b7b54ea386100f6875249, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9164788325516265866, guid: 7f761b6d902b7b54ea386100f6875249, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []

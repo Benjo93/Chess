@@ -1080,20 +1080,18 @@ public class BoardManager : MonoBehaviour
 
     public void DelayedAttack(int[] from, int[] to, float delay)
     {
-        int moves_used = Attack(from, to).moves_used;
+        int moves_used = Attack(from, to);
         StartCoroutine(crAttack(moves_used, delay));
     }
 
     private IEnumerator crMove(int moves_used, float delay)
     {
-        int moves_used = MovePiece(from, to);
         yield return new WaitForSeconds(delay);
         EndTurn(moves_used);
     }
 
     public IEnumerator crAttack(int moves_used, float delay)
     {
-        int moves_used = Attack(from, to);
         yield return new WaitForSeconds(delay);
         EndTurn(moves_used);
     }

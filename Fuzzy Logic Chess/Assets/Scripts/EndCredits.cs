@@ -8,7 +8,7 @@ public class EndCredits : MonoBehaviour
 {
     public GameObject Scroller;
 
-    public float time = 4.5f;
+    public float time = 20f;
 
     // Update is called once per frame
     void Update()
@@ -26,5 +26,10 @@ public class EndCredits : MonoBehaviour
         time -= Time.deltaTime;
         if(time < 0)
             SceneManager.LoadScene("Start Menu 2");
+    }
+
+    public void Back()
+    {
+        SceneManager.LoadScene("Start Menu 2");
     }
 }
