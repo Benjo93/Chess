@@ -1,4 +1,4 @@
-    using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -191,14 +191,16 @@ public class BoardManager : MonoBehaviour
                         else if (selected_piece && blocks[index[0], index[1]].IsMovable())
                         {
                             RefreshBlocks();
-                            MovePiece(selected_index, index);
+                            int moves_used = MovePiece(selected_index, index);
+                            EndMove(moves_used);
                             //Autosave();
                         }
                         // Attacking 
                         else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
                         {
                             RefreshBlocks();
-                            Attack(selected_index, index);
+                            int moves_used = Attack(selected_index, index).moves_used;
+                            EndMove(moves_used);
                             //Autosave();
                         }
                         else
@@ -506,7 +508,7 @@ public class BoardManager : MonoBehaviour
                             w_king_memb.Add(pieces[row, col]);
                         break;
                     case 2:
-                        if (pieces[row, col].GetPName().Equals("w_bishop"))
+                        if (pieces[row, col].GetPName().Equals("p1 bishop"))
                         {
                             w_bishop_one_pos[0] = row;
                             w_bishop_one_pos[1] = col;
@@ -515,7 +517,7 @@ public class BoardManager : MonoBehaviour
                             w_bishop_one_memb.Add(pieces[row, col]);
                         break;
                     case 3:
-                        if (pieces[row, col].GetPName().Equals("w_bishop"))
+                        if (pieces[row, col].GetPName().Equals("p1 bishop"))
                         {
                             w_bishop_two_pos[0] = row;
                             w_bishop_two_pos[1] = col;
@@ -533,7 +535,7 @@ public class BoardManager : MonoBehaviour
                             b_king_memb.Add(pieces[row, col]);
                         break;
                     case -2:
-                        if (pieces[row, col].GetPName().Equals("b_bishop"))
+                        if (pieces[row, col].GetPName().Equals("p2 bishop"))
                         {
                             b_bishop_one_pos[0] = row;
                             b_bishop_one_pos[1] = col;
@@ -542,7 +544,7 @@ public class BoardManager : MonoBehaviour
                             b_bishop_one_memb.Add(pieces[row, col]);
                         break;
                     case -3:
-                        if (pieces[row, col].GetPName().Equals("b_bishop"))
+                        if (pieces[row, col].GetPName().Equals("p2 bishop"))
                         {
                             b_bishop_two_pos[0] = row;
                             b_bishop_two_pos[1] = col;
@@ -1075,31 +1077,34 @@ public class BoardManager : MonoBehaviour
 
     public void DelayedMove(int[] from, int[] to, float delay)
     {
-        StartCoroutine(crMove(from, to, delay));
+        int moves_used = MovePiece(from, to);
+        StartCoroutine(crMove(moves_used, delay));
     }
 
     public void DelayedAttack(int[] from, int[] to, float delay)
     {
-        StartCoroutine(crAttack(from, to, delay));
+        int moves_used = Attack(from, to).moves_used;
+        StartCoroutine(crAttack(moves_used, delay));
     }
 
-    private IEnumerator crMove(int[] from, int[] to, float delay)
+    private IEnumerator crMove(int moves_used, float delay)
     {
         yield return new WaitForSeconds(delay);
-        MovePiece(from, to);
+        EndMove(moves_used);
     }
 
-    public IEnumerator crAttack(int[] from, int[] to, float delay)
+    public IEnumerator crAttack(int moves_used, float delay)
     {
         yield return new WaitForSeconds(delay);
-        Attack(from, to);
+        EndMove(moves_used);
     }
 
     public void HighlightAdjacentPieces(int[] knight)
     {
+        //return;
         int zero = knight[0];
         int one = knight[1];
-        if(zero == -1 && one == -1)
+        if (zero == -1 && one == -1)
         {
             Debug.Log("HighlightAdjacentPieces should not have been called");
             return;
@@ -1125,6 +1130,7 @@ public class BoardManager : MonoBehaviour
 
     public bool PiecesAdjacent(int[] knight)
     {
+        //return false;
         int zero = knight[0];
         int one = knight[1];
         if(zero == -1 && one == -1)
@@ -1157,7 +1163,7 @@ public class BoardManager : MonoBehaviour
      * then notifies the game manager. 
      * 
      */
-    public void MovePiece(int[] from, int[] to)
+    public int MovePiece(int[] from, int[] to)
     {
         RefreshBlocks();
 
@@ -1173,13 +1179,13 @@ public class BoardManager : MonoBehaviour
         pieces[to[0], to[1]] = pieces[from[0], from[1]];
         pieces[from[0], from[1]] = null;
 
-        
-
-
         if((pieces[to[0],to[1]].GetPName() == "p1 knight" || pieces[to[0],to[1]].GetPName() == "p2 knight") && PiecesAdjacent(to) && input_requested)
         {
-            Enable_Knight_Options();
-            HighlightAdjacentPieces(to);
+            if (PiecesAdjacent(to))
+            {
+                Enable_Knight_Options();
+                HighlightAdjacentPieces(to);
+            }            
         }
 
         selected_piece = null;
@@ -1195,6 +1201,8 @@ public class BoardManager : MonoBehaviour
         //game_log.text += hover_info.text + "\n";
         //hover_info.text = "";
 
+    public void EndMove(int moves_used)
+    {
         // Notify the Game Manager of the moves used. 
         gm.CompleteGameState(moves_used);
     }
@@ -1253,7 +1261,7 @@ public class BoardManager : MonoBehaviour
      * Unsuccessful attacks -> Only update the number of turns used (Passed back to the game manager) and handle commander stuff.
      * 
      */
-    public bool Attack(int[] from, int[] to)
+    public (bool success, int moves_used) Attack(int[] from, int[] to)
     {
         RefreshBlocks();
 
@@ -1292,10 +1300,10 @@ public class BoardManager : MonoBehaviour
             //game_log.text += hover_info.text + "  Failed " + "\n";
             //hover_info.text = "";
 
-            gm.CompleteGameState(moves_used);
+            //gm.CompleteGameState(moves_used);
 
             // Notify function caller that the attack was unsuccessful.
-            return false;
+            return (false, moves_used);
         }
         else
         {
@@ -1379,10 +1387,10 @@ public class BoardManager : MonoBehaviour
             //hover_info.text = "";
 
             // Notify game manager. 
-            gm.CompleteGameState(moves_used);
+            //gm.CompleteGameState(moves_used);
 
             // Notify function caller that the attack was successful.
-            return true;
+            return (true, moves_used);
         }
     }
 
@@ -1397,7 +1405,7 @@ public class BoardManager : MonoBehaviour
         List<int[]> newList = new List<int[]>();
         bool isWhitePiece = pieces[row, col].GetTeam().Equals("white");
         int range = 1;
-        if (pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook"))
+        if (pieces[row, col].GetPName().Equals("p1 rook") || pieces[row, col].GetPName().Equals("p2 rook"))
             range = pieces[row, col].GetNumberOfMoves();
 
         int north = Mathf.Max(0, row - range);
@@ -1405,9 +1413,9 @@ public class BoardManager : MonoBehaviour
         int west = Mathf.Max(0, col - range);
         int east = Mathf.Min(7, col + range);
 
-        if (pieces[row, col].GetPName().Equals("w_pawn"))
+        if (pieces[row, col].GetPName().Equals("p1 pawn"))
             north = row + range;
-        else if (pieces[row, col].GetPName().Equals("b_pawn"))
+        else if (pieces[row, col].GetPName().Equals("p2 pawn"))
             south = row - range;
 
         for (int i = north; i <= south; i++)
@@ -1433,7 +1441,7 @@ public class BoardManager : MonoBehaviour
     {
         List<int[]> newList = new List<int[]>();
         int range =
-        pieces[row, col].GetPName().Equals("w_rook") || pieces[row, col].GetPName().Equals("b_rook") ?
+        pieces[row, col].GetPName().Equals("p1 rook") || pieces[row, col].GetPName().Equals("p2 rook") ?
         pieces[row, col].GetNumberOfMoves() : 1;
 
         int north = Mathf.Max(0, row - range);
@@ -1441,9 +1449,9 @@ public class BoardManager : MonoBehaviour
         int west = Mathf.Max(0, col - range);
         int east = Mathf.Min(7, col + range);
 
-        if (pieces[row, col].GetPName().Equals("w_pawn"))
+        if (pieces[row, col].GetPName().Equals("p1 pawn"))
             north = row + range;
-        else if (pieces[row, col].GetPName().Equals("b_pawn"))
+        else if (pieces[row, col].GetPName().Equals("p2 pawn"))
             south = row - range;
 
         for (int i = north; i <= south; i++)
@@ -1479,7 +1487,7 @@ public class BoardManager : MonoBehaviour
              * validated and passed to ProcessBlock() before any of them can be
              * dequeued.  Can't ProcessBlock() while Dequeueing.
              */
-            if (row < 7 && !selectedPiece.Equals("b_pawn"))
+            if (row < 7 && !selectedPiece.Equals("p2 pawn"))
             {
                 if (IsValidBlock(row + 1, col)) // Down
                 {
@@ -1497,7 +1505,7 @@ public class BoardManager : MonoBehaviour
                     buildQueue.Enqueue(new int[2] { row + 1, col - 1 });
                 }
             }
-            if (row > 0 && !selectedPiece.Equals("w_pawn"))
+            if (row > 0 && !selectedPiece.Equals("p1 pawn"))
             {
                 if (IsValidBlock(row - 1, col)) // Up
                 {
@@ -1515,7 +1523,7 @@ public class BoardManager : MonoBehaviour
                     buildQueue.Enqueue(new int[2] { row - 1, col - 1 });
                 }
             }
-            if (!selectedPiece.Equals("b_pawn") && !selectedPiece.Equals("w_pawn"))
+            if (!selectedPiece.Equals("p2 pawn") && !selectedPiece.Equals("p1 pawn"))
             {
                 if (col > 0 && IsValidBlock(row, col - 1)) // Left
                 {
