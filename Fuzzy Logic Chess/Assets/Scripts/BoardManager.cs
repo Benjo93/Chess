@@ -1085,7 +1085,7 @@ public class BoardManager : MonoBehaviour
 
     public void HighlightAdjacentPieces(int[] knight)
     {
-        return;
+        //return;
         int zero = knight[0];
         int one = knight[1];
         knightx = zero;
@@ -1109,7 +1109,7 @@ public class BoardManager : MonoBehaviour
 
     public bool PiecesAdjacent(int[] knight)
     {
-        return false;
+        //return false;
         int zero = knight[0];
         int one = knight[1];
         for (int i = zero - 1; i <= zero + 1; i++)
@@ -1155,14 +1155,20 @@ public class BoardManager : MonoBehaviour
         pieces[from[0], from[1]] = null;
 
         selected_piece = null;
+
+
+        if ((pieces[to[0], to[1]].GetPName() == "w_knight" || pieces[to[0], to[1]].GetPName() == "b_knight") && input_requested)
+        {
+            if (PiecesAdjacent(to))
+            {
+                Enable_Knight_Options();
+                HighlightAdjacentPieces(to);
+            }            
+        }
         input_requested = false;
 
 
-        if((pieces[to[0],to[1]].GetPName() == "w_knight" || pieces[to[0],to[1]].GetPName() == "b_knight") && PiecesAdjacent(to))
-        {
-            Enable_Knight_Options();
-            HighlightAdjacentPieces(to);
-        }
+        
 
         // Log move info.
         game_log.text += hover_info.text + "\n";
