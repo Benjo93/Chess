@@ -1189,9 +1189,18 @@ public class BoardManager : MonoBehaviour
         }
 
         selected_piece = null;
-        input_requested = false;
 
         char[] column_chars = new char[] { 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A' };
+
+        if ((pieces[to[0], to[1]].GetPName() == "w_knight" || pieces[to[0], to[1]].GetPName() == "b_knight") && input_requested)
+        {
+            if (PiecesAdjacent(to))
+            {
+                Enable_Knight_Options();
+                HighlightAdjacentPieces(to);
+            }            
+        }
+        input_requested = false;
 
         //Log move info
         game_log.text += pieces[to[0], to[1]].GetPName() + " [" + column_chars[from[1]] + (from[0] + 1) + "]";
@@ -1200,6 +1209,12 @@ public class BoardManager : MonoBehaviour
         // Old method for loggin move info. Replaced because it didn't track the moves done by the AI
         //game_log.text += hover_info.text + "\n";
         //hover_info.text = "";
+
+        // Notify the Game Manager of the moves used.
+        gm.CompleteGameState(moves_used);
+
+        return moves_used; 
+    }
 
     public void EndMove(int moves_used)
     {
@@ -1328,7 +1343,7 @@ public class BoardManager : MonoBehaviour
                     GameOver.gameObject.SetActive(true);
                     gameOverText.text = "Player  One  Wins";
                     RunRigidbody();
-                    return true;
+                    return (true, moves_used);
                 }
                 //else white
                 else
@@ -1338,7 +1353,7 @@ public class BoardManager : MonoBehaviour
                     GameOver.gameObject.SetActive(true);
                     gameOverText.text = "Player  Two  Wins";
                     RunRigidbody();
-                    return true;
+                    return (true, moves_used);
                 }
                 // Insert Wilhelm Scream..
             }
