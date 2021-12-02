@@ -138,7 +138,8 @@ public class VirtualBoard
         List<int[]> newList = new List<int[]>();
         bool isWhitePiece = vpieces[row, col].team.Equals("white");
         int range = 1;
-        if (vpieces[row, col].p_name.Equals("w_rook") || vpieces[row, col].p_name.Equals("b_rook"))
+        if (vpieces[row, col].p_name.Equals("w_rook") || vpieces[row, col].p_name.Equals("b_rook") ||
+            vpieces[row, col].p_name.Equals("w_knight") || vpieces[row, col].p_name.Equals("b_knight"))
             range = vpieces[row, col].n_moves;
 
         int north = Math.Max(0, row - range);
@@ -160,6 +161,35 @@ public class VirtualBoard
                     if (vpieces[i, j].team == -1)
                         newList.Add(new int[] { i, j });
                 }
+            }
+        }
+        return newList;
+    }
+
+    public List<int[]> VirtualGetAttackableRange(int row, int col)
+    {
+        List<int[]> newList = new List<int[]>();
+        bool isWhitePiece = vpieces[row, col].team.Equals("white");
+        int range = 1;
+        if (vpieces[row, col].p_name.Equals("w_rook") || vpieces[row, col].p_name.Equals("b_rook") ||
+            vpieces[row, col].p_name.Equals("w_knight") || vpieces[row, col].p_name.Equals("b_knight"))
+            range = vpieces[row, col].n_moves;
+
+        int north = Math.Max(0, row - range);
+        int south = Math.Min(7, row + range);
+        int west = Math.Max(0, col - range);
+        int east = Math.Min(7, col + range);
+
+        if (vpieces[row, col].p_name.Equals("w_pawn"))
+            north = row + range;
+        else if (vpieces[row, col].p_name.Equals("b_pawn"))
+            south = row - range;
+
+        for (int i = north; i <= south; i++)
+        {
+            for (int j = west; j <= east; j++)
+            {
+                newList.Add(new int[] { i, j });              
             }
         }
         return newList;
