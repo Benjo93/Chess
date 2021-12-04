@@ -25,7 +25,7 @@ public class AI : Player
 
     public int moves_examined = 0;
 
-    float[] material_values = new float[] { 1, 5, 6, 8, 10, 20 };
+    float[] material_values = new float[] { 1, 4, 8, 8, 10, 20 };
 
     float[,] dist_map = new float[8, 8];
     int[,] risk_map_enemy = new int[8, 8];
@@ -255,7 +255,7 @@ public class AI : Player
             if (piece == null) continue;           
             if (piece.team > 0)
             {
-                //eval += material_values[Mathf.Abs(piece.piece_id) - 1];
+                eval += material_values[Mathf.Abs(piece.piece_id) - 1];
 
                 // Evaluate Distance.
                 dist_sum += dist_map[piece.position[0], piece.position[1]];
@@ -275,7 +275,7 @@ public class AI : Player
 
             if (piece.team < 0)
             {
-                //eval -= material_values[Mathf.Abs(piece.piece_id) - 1];
+                eval -= material_values[Mathf.Abs(piece.piece_id) - 1];
 
                 // Evaluate Risk. 
                 int r = risk_map_friend[piece.position[0], piece.position[1]];
