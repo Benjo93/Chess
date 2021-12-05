@@ -188,7 +188,7 @@ public class Piece : MonoBehaviour
 
     public void ColorDim()
     {
-        GetComponent<SpriteRenderer>().material.color = new Color(color.r, color.g, color.b, 0.5f);
+        GetComponent<SpriteRenderer>().material.color = new Color(color.r - 0.2f, color.g - 0.2f, color.b - 0.2f, 1.0f);
     }
 
     public void ColorFull()

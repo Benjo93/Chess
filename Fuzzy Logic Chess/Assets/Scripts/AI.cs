@@ -55,42 +55,37 @@ public class AI : Player
         //Debug.Log("Friend:");
         //PrintMap(dist_map_friend);
 
-        //for (int corp = 1; corp <= 3; corp++)
-        //{
+        // Create a list of tuples that contain the piece and all of its moves/attacks.
+        List<(VirtualPiece piece, List<int[]> attacks)> all_attacks = new List<(VirtualPiece, List<int[]>)>();
+        List<(VirtualPiece piece, List<int[]> moves)> all_moves = new List<(VirtualPiece, List<int[]>)>();
 
-            // Create a list of tuples that contain the piece and all of its moves/attacks.
-            List<(VirtualPiece piece, List<int[]> attacks)> all_attacks = new List<(VirtualPiece, List<int[]>)>();
-            List<(VirtualPiece piece, List<int[]> moves)> all_moves = new List<(VirtualPiece, List<int[]>)>();
+        // Populate all attacks and moves.
+        foreach (VirtualPiece piece in vbm.vpieces)
+        {
+            if (piece == null) continue;
+            if (piece.has_moved) continue;
+            if (piece.team != 1) continue;
 
-            // Populate all attacks and moves.
-            foreach (VirtualPiece piece in vbm.vpieces)
+            List<int[]> a = vbm.VirtualGetAttackableList(piece.position[0], piece.position[1]);
+            if (a.Count > 0) all_attacks.Add((piece, a));
+            vbm.VirtualRefreshBlocks();
+
+            List<int[]> m = vbm.VirtualGetMovesList(piece.position[0], piece.position[1], piece.n_moves);
+            if (m.Count > 0) all_moves.Add((piece, m));
+            vbm.VirtualRefreshBlocks();
+        }
+
+        if (Random.Range(0f, 1f) > Chess.difficulty)
+        {
+            if (all_moves.Count > 0)
             {
-                if (piece == null) continue;
-                if (piece.has_moved) continue;
-                if (piece.team != 1) continue;
-                //if (piece.corp_id != current_corp) continue;
-
-                List<int[]> a = vbm.VirtualGetAttackableList(piece.position[0], piece.position[1]);
-                if (a.Count > 0) all_attacks.Add((piece, a));
-                vbm.VirtualRefreshBlocks();
-
-                List<int[]> m = vbm.VirtualGetMovesList(piece.position[0], piece.position[1], piece.n_moves);
-                if (m.Count > 0) all_moves.Add((piece, m));
-                vbm.VirtualRefreshBlocks();
+                int pm = Random.Range(0, all_moves.Count - 1);
+                VirtualPiece r_piece = all_moves[pm].piece;
+                int[] r_to = all_moves[pm].moves[Random.Range(0, all_moves[pm].moves.Count - 1)];
+                bm.DelayedMove(r_piece.position, r_to, 0.25f);
+                return;
             }
-
-            if (Random.Range(0f, 1f) > Chess.difficulty)
-            {
-                if (all_moves.Count > 0)
-                {
-                    int pm = Random.Range(0, all_moves.Count - 1);
-                    VirtualPiece r_piece = all_moves[pm].piece;
-                    int[] r_to = all_moves[pm].moves[Random.Range(0, all_moves[pm].moves.Count - 1)];
-                    bm.DelayedMove(r_piece.position, r_to, 0.25f);
-                    return;
-                }
-            }
-        //}
+        }
 
         bool _attack = false;
         bool _move = false;
@@ -148,7 +143,7 @@ public class AI : Player
             }
         }
 
-        Debug.Log("Best: " + _best);
+        //Debug.Log("Best: " + _best);
 
         if (_move)
         {
@@ -285,8 +280,8 @@ public class AI : Player
                 int rsk = r_map_enemy[piece.position[0], piece.position[1]];
                 if (rsk != 0) risk_value -= (7f - Chess.RollNeeded(rsk, piece.piece_id)) / 6f * material_values[Mathf.Abs(piece.piece_id) - 1];
 
-                //int rwd = r_map_enemy[piece.position[0], piece.position[1]];
-                //if (rwd != 0) reward_value += (7f - Chess.RollNeeded(piece.piece_id, rwd)) / 6f * material_values[rwd - 1];
+                int rwd = r_map_enemy[piece.position[0], piece.position[1]];
+                if (rwd != 0) reward_value += (7f - Chess.RollNeeded(piece.piece_id, rwd)) / 6f * material_values[rwd - 1];
             }
 
             if (piece.team < 0)
@@ -301,8 +296,8 @@ public class AI : Player
                 int rsk = r_map_friend[piece.position[0], piece.position[1]];
                 if (rsk != 0) risk_value += (7f - Chess.RollNeeded(rsk, piece.piece_id)) / 6f * material_values[Mathf.Abs(piece.piece_id) - 1];           
 
-                //int rwd = r_map_friend[piece.position[0], piece.position[1]];
-                //if (rwd != 0) reward_value -= (7f - Chess.RollNeeded(piece.piece_id, rwd)) / 6f * material_values[rwd - 1];
+                int rwd = r_map_friend[piece.position[0], piece.position[1]];
+                if (rwd != 0) reward_value -= (7f - Chess.RollNeeded(piece.piece_id, rwd)) / 6f * material_values[rwd - 1];
             }
         }
 
