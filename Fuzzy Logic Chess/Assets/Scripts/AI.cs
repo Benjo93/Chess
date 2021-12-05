@@ -27,11 +27,13 @@ public class AI : Player
 
     float[] material_values = new float[] { 1, 4, 8, 8, 10, 20 };
 
-    float[,] dist_map = new float[8, 8];
-    int[,] risk_map_enemy = new int[8, 8];
-    int[,] risk_map_friend = new int[8, 8];
-    int[,] reward_map_enemy = new int[8, 8];
-    int[,] reward_map_friend = new int[8, 8];
+    // Distance to king. 
+    float[,] dist_map_friend = new float[8, 8];
+    float[,] dist_map_enemy = new float[8, 8];
+
+    // Risk and Reward Maps.
+    int[,] r_map_friend = new int[8, 8];
+    int[,] r_map_enemy = new int[8, 8];
 
     public AI(string name, GameManager gm, BoardManager bm) : base(name, gm, bm)
     {
@@ -45,8 +47,13 @@ public class AI : Player
 
         VirtualBoard vbm = new VirtualBoard(bm.GetPieces(), gm.GetTeam());
 
-        BuildDistMap(vbm);
-        BuildRiskMaps(vbm);
+        UpdateDistMaps(vbm);
+        BuildRMaps(vbm);
+
+        //Debug.Log("Enemy:");
+        //PrintMap(dist_map_enemy);
+        //Debug.Log("Friend:");
+        //PrintMap(dist_map_friend);
 
         // Create a list of tuples that contain the piece and all of its moves/attacks.
         List<(VirtualPiece piece, List<int[]> attacks)> all_attacks = new List<(VirtualPiece, List<int[]>)>();
@@ -111,17 +118,17 @@ public class AI : Player
         {
             foreach (var to in attacks)
             {
-                int attacker = piece.piece_id;
-                int defender = vbm.vpieces[to[0], to[1]].piece_id;
-                int roll_needed = Chess.RollNeeded(attacker, defender);
+                //int attacker = piece.piece_id;
+                //int defender = vbm.vpieces[to[0], to[1]].piece_id;
+                //int roll_needed = Chess.RollNeeded(attacker, defender);
 
-                float prob_success = (7f - roll_needed) / 6f;
+                //float prob_success = (7f - roll_needed) / 6f;
 
                 int[] from = piece.position;
                 VirtualPiece captured_piece = vbm.VirtualAttackPiece(from, to);
 
                 float _val = SolveBoard(vbm, 1, 1);
-                _val *= prob_success;
+                //_val *= prob_success;
 
                 if (_val > _best)
                 {
@@ -135,6 +142,8 @@ public class AI : Player
                 vbm.VirtualUndoAttackPiece(from, to, captured_piece);
             }
         }
+
+        Debug.Log("Best: " + _best);
 
         if (_move)
         {
@@ -186,11 +195,11 @@ public class AI : Player
         {
             foreach (var to in attacks)
             {
-                int attacker = piece.piece_id;
-                int defender = vbm.vpieces[to[0], to[1]].piece_id;
-                int roll_needed = Chess.RollNeeded(attacker, defender);
+                //int attacker = piece.piece_id;
+                //int defender = vbm.vpieces[to[0], to[1]].piece_id;
+                //int roll_needed = Chess.RollNeeded(attacker, defender);
 
-                float prob_success = (7f - roll_needed) / 6f; 
+                //float prob_success = (7f - roll_needed) / 6f; 
 
                 int[] from = piece.position;
 
@@ -198,7 +207,7 @@ public class AI : Player
 
                 float value_success = SolveBoard(vbm, min_max, depth + 1);
 
-                value_success *= prob_success; 
+                //value_success *= prob_success; 
 
                 // Maximize.
                 if (min_max > 0) if (value_success > current_value) current_value = value_success;
@@ -243,12 +252,18 @@ public class AI : Player
 
     private float EvaluateBoard(VirtualBoard vrt_board)
     {
-        float eval = 0;
-        float dist_sum = 0f;
-        float dist_count = 0;
+        UpdateDistMaps(vrt_board);
 
-        float risk_value = 0;
-        float reward_value = 0;
+        float eval = 0f;
+
+        float f_dist_sum = 0f;
+        float e_dist_sum = 0f;
+
+        float f_dist_count = 0f;
+        float e_dist_count = 0f;
+
+        float risk_value = 0f;
+        float reward_value = 0f;
 
         foreach (VirtualPiece piece in vrt_board.vpieces)
         {
@@ -257,59 +272,50 @@ public class AI : Player
             {
                 eval += material_values[Mathf.Abs(piece.piece_id) - 1];
 
-                // Evaluate Distance.
-                dist_sum += dist_map[piece.position[0], piece.position[1]];
-                dist_count++;
+                // Evaluate Distance from enemy king to pieces.
+                f_dist_sum += dist_map_friend[piece.position[0], piece.position[1]];
+                f_dist_count++;
 
-                // Evaluate Risk. 
-                int rsk = risk_map_enemy[piece.position[0], piece.position[1]];
+                // Evaluate Risk and Reward. 
+                int rsk = r_map_enemy[piece.position[0], piece.position[1]];
                 if (rsk != 0) risk_value -= (7f - Chess.RollNeeded(rsk, piece.piece_id)) / 6f * material_values[Mathf.Abs(piece.piece_id) - 1];
 
-                // Evaluate Reward.
-                //int rwd = reward_map_friend[piece.position[0], piece.position[1]];
-                //if (rwd != 0) reward_value += (7f - Chess.RollNeeded(rwd, piece.piece_id)) / 6f * material_values[rwd];
-
-                int rwd = risk_map_enemy[piece.position[0], piece.position[1]];
-                if (rwd != 0) reward_value += (7f - Chess.RollNeeded(piece.piece_id, rwd)) / 6f * material_values[rwd - 1];
+                //int rwd = r_map_enemy[piece.position[0], piece.position[1]];
+                //if (rwd != 0) reward_value += (7f - Chess.RollNeeded(piece.piece_id, rwd)) / 6f * material_values[rwd - 1];
             }
 
             if (piece.team < 0)
             {
                 eval -= material_values[Mathf.Abs(piece.piece_id) - 1];
 
-                // Evaluate Risk. 
-                int r = risk_map_friend[piece.position[0], piece.position[1]];
-                if (r != 0) risk_value += (7f - Chess.RollNeeded(r, piece.piece_id)) / 6f * material_values[Mathf.Abs(piece.piece_id) - 1];
-                
-                // Evaluate Reward.
-                //int rwd = reward_map_enemy[piece.position[0], piece.position[1]];
-                //if (rwd != 0) reward_value -= (7f - Chess.RollNeeded(rwd, piece.piece_id)) / 6f * material_values[rwd];
+                // Evaluate Distance from enemy pieces to king.
+                e_dist_sum += dist_map_enemy[piece.position[0], piece.position[1]];
+                e_dist_count++;
 
-                int rwd = risk_map_friend[piece.position[0], piece.position[1]];
-                if (rwd != 0) reward_value -= (7f - Chess.RollNeeded(piece.piece_id, rwd)) / 6f * material_values[rwd - 1];
+                // Evaluate Risk and Reward. 
+                int rsk = r_map_friend[piece.position[0], piece.position[1]];
+                if (rsk != 0) risk_value += (7f - Chess.RollNeeded(rsk, piece.piece_id)) / 6f * material_values[Mathf.Abs(piece.piece_id) - 1];           
+
+                //int rwd = r_map_friend[piece.position[0], piece.position[1]];
+                //if (rwd != 0) reward_value -= (7f - Chess.RollNeeded(piece.piece_id, rwd)) / 6f * material_values[rwd - 1];
             }
         }
 
-        float avg_dist = dist_sum / dist_count;
+        float f_avg_dist = f_dist_sum / f_dist_count;
+        float e_avg_dist = e_dist_sum / e_dist_count;
 
-        eval += avg_dist;
+        //Debug.Log("f: " + f_avg_dist + ", e: " + e_avg_dist);
+
+        eval += f_avg_dist;
+        eval -= e_avg_dist;
+
         eval += risk_value;
         eval += reward_value;
 
         return eval;
     }
 
-    public int[] FindKing()
-    {
-        int[] king_position = new int[2];
-        foreach (Piece piece in bm.GetPieces())
-            if (piece && piece.GetTeam() != gm.GetTeam() && piece.commander.king_piece)
-                king_position = piece.commander.king_piece.position;
-        //Debug.Log("King Pos: " + king_position[0] + ", " + king_position[1]);
-        return king_position;
-    }
-
-    public int[] FindVirtualKing(VirtualBoard vbm)
+    public int[] FindFriendlyKing(VirtualBoard vbm)
     {
         int[] king_position = new int[2];
         foreach (VirtualPiece piece in vbm.vpieces)
@@ -318,10 +324,20 @@ public class AI : Player
         return king_position;
     }
 
-    public void BuildDistMap(VirtualBoard vbm) 
+    public int[] FindEnemyKing(VirtualBoard vbm)
+    {
+        int[] king_position = new int[2];
+        foreach (VirtualPiece piece in vbm.vpieces)
+            if (piece != null && piece.team == 1 && Mathf.Abs(piece.piece_id) == 6)
+                king_position = piece.position;
+        return king_position;
+    }
+
+    public void UpdateDistMaps(VirtualBoard vbm) 
     {
         // Find the position of the king.
-        int[] king_position = FindVirtualKing(vbm);
+        int[] friend_king = FindFriendlyKing(vbm);
+        int[] enemy_king = FindEnemyKing(vbm);
 
         // Scan the board for possible moves.
         for (int p = 0; p < 8; p++)
@@ -329,21 +345,29 @@ public class AI : Player
             for (int q = 0; q < 8; q++)
             {
                 // Calculate the difference between the king position and the empty position. 
-                float[] difference = new float[] { king_position[0] - p, king_position[1] - q };
+                float[] f_diff = new float[] { friend_king[0] - p, friend_king[1] - q };
+                float[] e_diff = new float[] { enemy_king[0] - p, enemy_king[1] - q };
+
                 // Calculate the magnitude of the difference to get the distance. 
-                float distance = Mathf.Sqrt(difference[0] * difference[0] + difference[1] * difference[1]);
+                float f_dist = Mathf.Sqrt(f_diff[0] * f_diff[0] + f_diff[1] * f_diff[1]);
+                float e_dist = Mathf.Sqrt(e_diff[0] * e_diff[0] + e_diff[1] * e_diff[1]);
+
                 // Normalize the distance value. distance_value is inversely proportional to the distance. 
-                float distance_value = 1f / distance;
-                // Add the distance value to the dist map.
-                float scalar = 1.0f;
-                dist_map[p, q] = distance_value * scalar;
+                float f_dist_val = 1f / f_dist;
+                float e_dist_val = 1f / e_dist;
+
+                float scalar = 10.0f;
+
+                // Add the distance value to the dist maps.
+                dist_map_friend[p, q] = f_dist_val * scalar;
+                dist_map_enemy[p, q] = e_dist_val * scalar;
             }
         }
     }
 
-    public void BuildRiskMaps(VirtualBoard vbm)
+    public void BuildRMaps(VirtualBoard vbm)
     {
-        risk_map_enemy = new int[8, 8];
+        r_map_enemy = new int[8, 8];
 
         foreach (VirtualPiece piece in vbm.vpieces)
         {
@@ -358,15 +382,15 @@ public class AI : Player
                 foreach (int[] attack in enemy_attacks)
                 {
                     // Check if the piece_id is greater than the current risk value.
-                    if (Mathf.Abs(piece.piece_id) > risk_map_enemy[attack[0], attack[1]])
+                    if (Mathf.Abs(piece.piece_id) > r_map_enemy[attack[0], attack[1]])
                     {
-                        risk_map_enemy[attack[0], attack[1]] = Mathf.Abs(piece.piece_id);
+                        r_map_enemy[attack[0], attack[1]] = Mathf.Abs(piece.piece_id);
                     }
                 }
             }
         }
 
-        risk_map_friend = new int[8, 8];
+        r_map_friend = new int[8, 8];
 
         foreach (VirtualPiece piece in vbm.vpieces)
         {
@@ -381,61 +405,26 @@ public class AI : Player
                 foreach (int[] attack in enemy_attacks)
                 {
                     // Check if the piece_id is greater than the current risk value.
-                    if (Mathf.Abs(piece.piece_id) > risk_map_enemy[attack[0], attack[1]])
+                    if (Mathf.Abs(piece.piece_id) > r_map_enemy[attack[0], attack[1]])
                     {
-                        risk_map_friend[attack[0], attack[1]] = Mathf.Abs(piece.piece_id);
+                        r_map_friend[attack[0], attack[1]] = Mathf.Abs(piece.piece_id);
                     }
                 }
             }
         }
     }
 
-    public void BuildRewardMaps(VirtualBoard vbm)
+    public void PrintMap(float[,] map)
     {
-        reward_map_friend = new int[8, 8];
-
-        foreach (VirtualPiece piece in vbm.vpieces)
+        string result = "";
+        for (int p = 0; p < 8; p++)
         {
-            if (piece == null) continue;
-
-            // Look through friendly pieces.
-            if (piece.team == 1)
+            for (int q = 0; q < 8; q++)
             {
-                // Get all possible attacks.
-                List<int[]> friendly_attacks = vbm.VirtualGetAttackableRange(piece.position[0], piece.position[1]);
-
-                foreach (int[] attack in friendly_attacks)
-                {
-                    // Check if the piece_id is greater than the current risk value.
-                    if (Mathf.Abs(piece.piece_id) > reward_map_friend[attack[0], attack[1]])
-                    {
-                        reward_map_friend[attack[0], attack[1]] = Mathf.Abs(piece.piece_id);
-                    }
-                }
+                result += map[p, q] + " ";
             }
+            result += " \n";
         }
-
-        reward_map_enemy = new int[8, 8];
-
-        foreach (VirtualPiece piece in vbm.vpieces)
-        {
-            if (piece == null) continue;
-
-            // Look through friendly pieces.
-            if (piece.team == -1)
-            {
-                // Get all possible attacks.
-                List<int[]> enemy_attacks = vbm.VirtualGetAttackableRange(piece.position[0], piece.position[1]);
-
-                foreach (int[] attack in enemy_attacks)
-                {
-                    // Check if the piece_id is greater than the current risk value.
-                    if (Mathf.Abs(piece.piece_id) > reward_map_enemy[attack[0], attack[1]])
-                    {
-                        reward_map_enemy[attack[0], attack[1]] = Mathf.Abs(piece.piece_id);
-                    }
-                }
-            }
-        }
+        Debug.Log(result);
     }
 }
