@@ -248,7 +248,8 @@ public class BoardManager : MonoBehaviour
                             if (selected_piece.GetTempID() == 1)
                             {
                                 int[] knightPosition = { knightx, knighty };
-                                Attack(knightPosition, index);
+                                int moves_used = Attack(knightPosition, index);
+                                EndTurn(moves_used);
                                 knightMove = false;
                                 foreach (Piece piece in pieces)
                                 {
