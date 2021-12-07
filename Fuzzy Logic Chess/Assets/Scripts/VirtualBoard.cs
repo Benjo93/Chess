@@ -133,7 +133,7 @@ public class VirtualBoard
         return list;
     }
 
-    public List<int[]> VirtualGetAttackableList(int row, int col)
+    public List<int[]> VirtualGetAttackableList(int row, int col, int min_max)
     {
         List<int[]> newList = new List<int[]>();
         bool isWhitePiece = vpieces[row, col].team.Equals("white");
@@ -158,7 +158,7 @@ public class VirtualBoard
             {
                 if (vpieces[i, j] != null)
                 {
-                    if (vpieces[i, j].team == -1)
+                    if (vpieces[i, j].team != min_max)
                         newList.Add(new int[] { i, j });
                 }
             }
@@ -169,7 +169,6 @@ public class VirtualBoard
     public List<int[]> VirtualGetAttackableRange(int row, int col)
     {
         List<int[]> newList = new List<int[]>();
-        bool isWhitePiece = vpieces[row, col].team.Equals("white");
         int range = 1;
         if (vpieces[row, col].p_name.Equals("w_rook") || vpieces[row, col].p_name.Equals("b_rook") ||
             vpieces[row, col].p_name.Equals("w_knight") || vpieces[row, col].p_name.Equals("b_knight"))
