@@ -35,6 +35,8 @@ public class AI : Player
     int[,] r_map_friend = new int[8, 8];
     int[,] r_map_enemy = new int[8, 8];
 
+    bool distributed_ai = true;
+
     public AI(string name, GameManager gm, BoardManager bm) : base(name, gm, bm)
     {
         // AI specific constructor.
@@ -47,45 +49,14 @@ public class AI : Player
 
         VirtualBoard vbm = new VirtualBoard(bm.GetPieces(), gm.GetTeam());
 
+        //Debug.Log(vbm.ShowVirtualBoard());
+
         UpdateDistMaps(vbm);
         BuildRMaps(vbm);
-
-        //Debug.Log("Enemy:");
-        //PrintMap(dist_map_enemy);
-        //Debug.Log("Friend:");
-        //PrintMap(dist_map_friend);
 
         // Create a list of tuples that contain the piece and all of its moves/attacks.
         List<(VirtualPiece piece, List<int[]> attacks)> all_attacks = new List<(VirtualPiece, List<int[]>)>();
         List<(VirtualPiece piece, List<int[]> moves)> all_moves = new List<(VirtualPiece, List<int[]>)>();
-
-        // Populate all attacks and moves.
-        foreach (VirtualPiece piece in vbm.vpieces)
-        {
-            if (piece == null) continue;
-            if (piece.has_moved) continue;
-            if (piece.team != 1) continue;
-
-            List<int[]> a = vbm.VirtualGetAttackableList(piece.position[0], piece.position[1]);
-            if (a.Count > 0) all_attacks.Add((piece, a));
-            vbm.VirtualRefreshBlocks();
-
-            List<int[]> m = vbm.VirtualGetMovesList(piece.position[0], piece.position[1], piece.n_moves);
-            if (m.Count > 0) all_moves.Add((piece, m));
-            vbm.VirtualRefreshBlocks();
-        }
-
-        if (Random.Range(0f, 1f) > Chess.difficulty)
-        {
-            if (all_moves.Count > 0)
-            {
-                int pm = Random.Range(0, all_moves.Count - 1);
-                VirtualPiece r_piece = all_moves[pm].piece;
-                int[] r_to = all_moves[pm].moves[Random.Range(0, all_moves[pm].moves.Count - 1)];
-                bm.DelayedMove(r_piece.position, r_to, 0.25f);
-                return;
-            }
-        }
 
         bool _attack = false;
         bool _move = false;
@@ -94,52 +65,85 @@ public class AI : Player
         Piece _piece = null;
         int[] _to = new int[] { -1, -1 };
 
-        foreach (var (piece, moves) in all_moves)
+        for (int corp = distributed_ai ? 1 : 0; corp <= (distributed_ai ? 3 : 0); corp++)
         {
-            foreach (var to in moves)
+            // Populate all attacks and moves.
+            foreach (VirtualPiece piece in vbm.vpieces)
             {
-                int[] from = piece.position;
-                vbm.VirtualMovePiece(from, to);
+                if (piece == null) continue;
+                if (piece.has_moved) continue;
+                if (piece.team != 1) continue;
+                if (corp != 0 && Mathf.Abs(piece.corp_id) != corp) continue;
 
-                float _val = SolveBoard(vbm, 1, 1);
-                if (_val > _best)
-                {
-                    _best = _val;
-                    _piece = piece.self;
-                    _to = to;
-                    _move = true;
-                }
+                List<int[]> a = vbm.VirtualGetAttackableList(piece.position[0], piece.position[1], 1);
+                if (a.Count > 0) all_attacks.Add((piece, a));
+                vbm.VirtualRefreshBlocks();
 
-                vbm.VirtualUndoMovePiece(from, to);
+                List<int[]> m = vbm.VirtualGetMovesList(piece.position[0], piece.position[1], piece.n_moves);
+                if (m.Count > 0) all_moves.Add((piece, m));
+                vbm.VirtualRefreshBlocks();
             }
-        }
 
-        foreach (var (piece, attacks) in all_attacks)
-        {
-            foreach (var to in attacks)
+            // Implement random move. 
+            if (Random.Range(0f, 1f) > Chess.difficulty)
             {
-                //int attacker = piece.piece_id;
-                //int defender = vbm.vpieces[to[0], to[1]].piece_id;
-                //int roll_needed = Chess.RollNeeded(attacker, defender);
-
-                //float prob_success = (7f - roll_needed) / 6f;
-
-                int[] from = piece.position;
-                VirtualPiece captured_piece = vbm.VirtualAttackPiece(from, to);
-
-                float _val = SolveBoard(vbm, 1, 1);
-                //_val *= prob_success;
-
-                if (_val > _best)
+                if (all_moves.Count > 0)
                 {
-                    _best = _val;
-                    _piece = piece.self;
-                    _to = to;
-                    _attack = true;
-                    _move = false;
+                    int pm = Random.Range(0, all_moves.Count - 1);
+                    VirtualPiece r_piece = all_moves[pm].piece;
+                    int[] r_to = all_moves[pm].moves[Random.Range(0, all_moves[pm].moves.Count - 1)];
+                    bm.DelayedMove(r_piece.position, r_to, 0.25f);
+                    return;
                 }
+            }
 
-                vbm.VirtualUndoAttackPiece(from, to, captured_piece);
+            foreach (var (piece, moves) in all_moves)
+            {
+                foreach (var to in moves)
+                {
+                    int[] from = piece.position;
+                    vbm.VirtualMovePiece(from, to);
+
+                    float _val = SolveBoard(vbm, 1, 1, corp);
+                    if (_val > _best)
+                    {
+                        _best = _val;
+                        _piece = piece.self;
+                        _to = to;
+                        _move = true;
+                    }
+
+                    vbm.VirtualUndoMovePiece(from, to);
+                }
+            }
+
+            foreach (var (piece, attacks) in all_attacks)
+            {
+                foreach (var to in attacks)
+                {
+                    //int attacker = piece.piece_id;
+                    //int defender = vbm.vpieces[to[0], to[1]].piece_id;
+                    //int roll_needed = Chess.RollNeeded(attacker, defender);
+
+                    //float prob_success = (7f - roll_needed) / 6f;
+
+                    int[] from = piece.position;
+                    VirtualPiece captured_piece = vbm.VirtualAttackPiece(from, to);
+
+                    float _val = SolveBoard(vbm, 1, 1, corp);
+                    //_val *= prob_success;
+
+                    if (_val > _best)
+                    {
+                        _best = _val;
+                        _piece = piece.self;
+                        _to = to;
+                        _attack = true;
+                        _move = false;
+                    }
+
+                    vbm.VirtualUndoAttackPiece(from, to, captured_piece);
+                }
             }
         }
 
@@ -158,10 +162,10 @@ public class AI : Player
         if (!_move && !_attack) gm.CompleteGameState(6);
     }
 
-    private float SolveBoard(VirtualBoard vbm, int min_max, int depth)
+    private float SolveBoard(VirtualBoard vbm, int min_max, int depth, int corp)
     {
         // Ending Condition.
-        if (depth >= 3)
+        if (depth >= (distributed_ai ? 4 : 3))
         {
             float eval = EvaluateBoard(vbm);
             return eval;
@@ -177,9 +181,10 @@ public class AI : Player
             if (piece == null) continue;
             if (piece.has_moved) continue;
             if (piece.team != min_max) continue;
+            if (corp != 0 && Mathf.Abs(piece.corp_id) != corp) continue;
 
             // Add each attack to all_attacks.
-            List<int[]> a = vbm.VirtualGetAttackableList(piece.position[0], piece.position[1]);
+            List<int[]> a = vbm.VirtualGetAttackableList(piece.position[0], piece.position[1], min_max);
             if (a.Count > 0) all_attacks.Add((piece, a));
 
             // Add each move to all_moves.
@@ -203,9 +208,11 @@ public class AI : Player
 
                 int[] from = piece.position;
 
+                //Debug.Log("from: " + from[0] + ", " + from[1] + ", to: " + to[0] + ", " + to[1]);
+
                 VirtualPiece captured_piece = vbm.VirtualAttackPiece(from, to);
 
-                float value_success = SolveBoard(vbm, min_max, depth + 1);
+                float value_success = SolveBoard(vbm, min_max, depth + 1, corp);
 
                 //value_success *= prob_success; 
 
@@ -229,7 +236,7 @@ public class AI : Player
                 vbm.VirtualMovePiece(from, to);
 
                 // Branch Move.
-                float value_below = SolveBoard(vbm, min_max, depth + 1);
+                float value_below = SolveBoard(vbm, min_max, depth + 1, corp);
 
                 // Maximize.
                 if (min_max > 0) if (value_below > current_value) current_value = value_below;
@@ -244,7 +251,8 @@ public class AI : Player
         // No moves left in this branch.
         if (all_attacks.Count == 0 && all_moves.Count == 0)
         {
-            return SolveBoard(vbm, min_max, depth + 1);
+            if (distributed_ai) return SolveBoard(vbm, -min_max, depth + 1, 0);
+            else return SolveBoard(vbm, min_max, depth + 1, 0);          
         }
 
         return current_value;
