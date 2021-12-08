@@ -20,6 +20,11 @@ public class GameManager : MonoBehaviour
     private bool DidDelegate = false;
     private int moves_left = 6;
 
+    // game objects representing guide panel
+    public GameObject Guide;
+    public GameObject CloseGuide;
+    public GameObject OpenGuide;
+
     // Text boxes for turn indicator
     public GameObject p1Turn;
     public GameObject p2Turn;
@@ -764,5 +769,19 @@ public class GameManager : MonoBehaviour
             captured_black_init = new int[0];
         }
         return captured_black_init;
+    }
+
+    public void GuidePanelOn()
+    {
+        Guide.gameObject.SetActive(true);
+        CloseGuide.gameObject.SetActive(true);
+        OpenGuide.gameObject.SetActive(false);
+    }
+
+    public void GuidePanelOff()
+    {
+        Guide.gameObject.SetActive(false);
+        CloseGuide.gameObject.SetActive(false);
+        OpenGuide.gameObject.SetActive(true);
     }
 }
