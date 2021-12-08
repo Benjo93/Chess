@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class VirtualBoard
 {
@@ -235,7 +236,7 @@ public class VirtualBoard
         }
     }
 
-    public void VirtualMovePiece(int[] from, int[] to)
+    public float VirtualMovePiece(int[] from, int[] to)
     {
         VirtualRefreshBlocks();
 
@@ -257,13 +258,8 @@ public class VirtualBoard
             }
         }
 
-        /*
-        if ((pieces[to[0], to[1]].GetPName() == "w_knight" || pieces[to[0], to[1]].GetPName() == "b_knight") && PiecesAdjacent(to))
-        {
-            Enable_Knight_Options();
-            HighlightAdjacentPieces(to);
-        }
-        */
+        float[] f_diff = new float[] { from[0] - to[0], from[1] - to[1] };
+        return Mathf.Sqrt(f_diff[0] * f_diff[0] + f_diff[1] * f_diff[1]);
     }
 
     public void VirtualUndoMovePiece(int[] from, int[] to)

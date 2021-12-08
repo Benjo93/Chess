@@ -25,7 +25,7 @@ public class AI : Player
 
     public int moves_examined = 0;
 
-    float[] material_values = new float[] { 1, 4, 8, 8, 10, 20 };
+    float[] material_values = new float[] { 1, 4, 8, 8, 10, 30 };
 
     // Distance to king. 
     float[,] dist_map_friend = new float[8, 8];
@@ -46,8 +46,6 @@ public class AI : Player
         bm.input_requested = false;
 
         VirtualBoard vbm = new VirtualBoard(bm.GetPieces(), gm.GetTeam());
-
-        //Debug.Log(vbm.ShowVirtualBoard());
 
         UpdateDistMaps(vbm);
         BuildRMaps(vbm);
@@ -100,9 +98,12 @@ public class AI : Player
                 foreach (var to in moves)
                 {
                     int[] from = piece.position;
-                    vbm.VirtualMovePiece(from, to);
+                    float energy = vbm.VirtualMovePiece(from, to);
 
                     float _val = SolveBoard(vbm, 1, 1, corp);
+
+                    //_val *= (1 / energy);
+
                     if (_val > _best)
                     {
                         _best = _val;
@@ -144,8 +145,6 @@ public class AI : Player
                 }
             }
         }
-
-        //Debug.Log("Best: " + _best);
 
         if (_move)
         {
@@ -193,6 +192,30 @@ public class AI : Player
         // Set the intial value of the branch to the current board evaluation.
         float current_value = EvaluateBoard(vbm);
 
+        // Check for moves.
+        foreach (var (piece, moves) in all_moves)
+        {
+            foreach (var to in moves)
+            {
+                int[] from = piece.position;
+
+                float energy = vbm.VirtualMovePiece(from, to);
+
+                // Branch Move.
+                float value = SolveBoard(vbm, min_max, depth + 1, corp);
+
+                //value *= (1 / energy);
+
+                // Maximize.
+                if (min_max > 0) if (value > current_value) current_value = value;
+
+                // Minimize. 
+                if (min_max < 0) if (value < current_value) current_value = value;
+
+                vbm.VirtualUndoMovePiece(from, to);
+            }
+        }
+
         // Check for attacks.
         foreach (var (piece, attacks) in all_attacks)
         {
@@ -205,8 +228,6 @@ public class AI : Player
                 //float prob_success = (7f - roll_needed) / 6f; 
 
                 int[] from = piece.position;
-
-                //Debug.Log("from: " + from[0] + ", " + from[1] + ", to: " + to[0] + ", " + to[1]);
 
                 VirtualPiece captured_piece = vbm.VirtualAttackPiece(from, to);
 
@@ -221,28 +242,6 @@ public class AI : Player
                 if (min_max < 0) if (value_success < current_value) current_value = value_success;
 
                 vbm.VirtualUndoAttackPiece(from, to, captured_piece);
-            }
-        }
-
-        // Check for moves.
-        foreach (var (piece, moves) in all_moves)
-        {
-            foreach (var to in moves)
-            {
-                int[] from = piece.position;
-
-                vbm.VirtualMovePiece(from, to);
-
-                // Branch Move.
-                float value_below = SolveBoard(vbm, min_max, depth + 1, corp);
-
-                // Maximize.
-                if (min_max > 0) if (value_below > current_value) current_value = value_below;
-
-                // Minimize. 
-                if (min_max < 0) if (value_below < current_value) current_value = value_below;
-
-                vbm.VirtualUndoMovePiece(from, to);
             }
         }
 
@@ -295,7 +294,7 @@ public class AI : Player
                 eval -= material_values[Mathf.Abs(piece.piece_id) - 1];
 
                 // Evaluate Distance from enemy pieces to king.
-                e_dist_sum += dist_map_enemy[piece.position[0], piece.position[1]];
+                e_dist_sum -= dist_map_enemy[piece.position[0], piece.position[1]];
                 e_dist_count++;
 
                 // Evaluate Risk and Reward. 
@@ -310,10 +309,8 @@ public class AI : Player
         float f_avg_dist = f_dist_sum / f_dist_count;
         float e_avg_dist = e_dist_sum / e_dist_count;
 
-        //Debug.Log("f: " + f_avg_dist + ", e: " + e_avg_dist);
-
         eval += f_avg_dist;
-        eval -= e_avg_dist;
+        eval += e_avg_dist;
 
         eval += risk_value;
         eval += reward_value;
@@ -362,7 +359,7 @@ public class AI : Player
                 float f_dist_val = 1f / f_dist;
                 float e_dist_val = 1f / e_dist;
 
-                float scalar = 10.0f;
+                float scalar = 1.0f;
 
                 // Add the distance value to the dist maps.
                 dist_map_friend[p, q] = f_dist_val * scalar;
