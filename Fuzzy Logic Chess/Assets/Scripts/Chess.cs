@@ -50,6 +50,7 @@ public class Chess : MonoBehaviour
     public static bool fullscreen;
     public static float difficulty;
     public static float turnSpeed;
+    public static bool distributed_ai;
 
     // Array of integers that correspond to the die roll needed for the column row pair. 
     private static int[,] roll_needed = new int[,]
@@ -157,6 +158,7 @@ public class Chess : MonoBehaviour
             sw.WriteLine(player1Index + "," + player2Index + "," + block1Index + "," + block2Index);
             sw.WriteLine(difficulty.ToString());
             sw.WriteLine(turnSpeed.ToString());
+            sw.WriteLine(distributed_ai ? "1" : "0");
             sw.Close();
         }
     }
@@ -194,6 +196,7 @@ public class Chess : MonoBehaviour
                 block2Index = Convert.ToInt32(colorState[3]);
                 difficulty = (float)Convert.ToDecimal(sr.ReadLine());
                 turnSpeed = (float)Convert.ToDecimal(sr.ReadLine());
+                distributed_ai = sr.ReadLine().Equals("1");
                 sr.Close();
             }
         }
@@ -208,6 +211,7 @@ public class Chess : MonoBehaviour
             block2Index = 0;
             difficulty = .25f;
             turnSpeed = .5f;
+            distributed_ai = true;
             SaveSetting();
         }
     }

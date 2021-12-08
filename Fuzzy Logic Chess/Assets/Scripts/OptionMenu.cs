@@ -14,6 +14,7 @@ public class OptionMenu : MonoBehaviour
     [SerializeField] private Button square2;
     [SerializeField] private Slider difficulty;
     [SerializeField] private Slider turnSpeed;
+    [SerializeField] private Toggle distributed_ai;
     // Start is called before the first frame update
     void Start()
     {
@@ -89,6 +90,11 @@ public class OptionMenu : MonoBehaviour
         Chess.turnSpeed = turnSpeed.value;
     }
 
+    public void SetDistributedAI()
+    {
+        Chess.distributed_ai = distributed_ai.isOn;
+    }
+
     private void LoadFromChess()
     {
         volume.value = Chess.volume;
@@ -100,5 +106,6 @@ public class OptionMenu : MonoBehaviour
         square2.GetComponent<Image>().color = Chess.Colors.BOARD_DARK;
         difficulty.value = Chess.difficulty;
         turnSpeed.value = Chess.turnSpeed;
+        distributed_ai.isOn = Chess.distributed_ai;
     }
 }

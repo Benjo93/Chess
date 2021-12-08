@@ -35,8 +35,6 @@ public class AI : Player
     int[,] r_map_friend = new int[8, 8];
     int[,] r_map_enemy = new int[8, 8];
 
-    bool distributed_ai = true;
-
     public AI(string name, GameManager gm, BoardManager bm) : base(name, gm, bm)
     {
         // AI specific constructor.
@@ -65,7 +63,7 @@ public class AI : Player
         Piece _piece = null;
         int[] _to = new int[] { -1, -1 };
 
-        for (int corp = distributed_ai ? 1 : 0; corp <= (distributed_ai ? 3 : 0); corp++)
+        for (int corp = Chess.distributed_ai ? 1 : 0; corp <= (Chess.distributed_ai ? 3 : 0); corp++)
         {
             // Populate all attacks and moves.
             foreach (VirtualPiece piece in vbm.vpieces)
@@ -165,7 +163,7 @@ public class AI : Player
     private float SolveBoard(VirtualBoard vbm, int min_max, int depth, int corp)
     {
         // Ending Condition.
-        if (depth >= (distributed_ai ? 4 : 3))
+        if (depth >= (Chess.distributed_ai ? 4 : 3))
         {
             float eval = EvaluateBoard(vbm);
             return eval;
@@ -251,7 +249,7 @@ public class AI : Player
         // No moves left in this branch.
         if (all_attacks.Count == 0 && all_moves.Count == 0)
         {
-            if (distributed_ai) return SolveBoard(vbm, -min_max, depth + 1, 0);
+            if (Chess.distributed_ai) return SolveBoard(vbm, -min_max, depth + 1, 0);
             else return SolveBoard(vbm, min_max, depth + 1, 0);          
         }
 
