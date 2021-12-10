@@ -258,8 +258,7 @@ public class VirtualBoard
             }
         }
 
-        float[] f_diff = new float[] { from[0] - to[0], from[1] - to[1] };
-        return Mathf.Sqrt(f_diff[0] * f_diff[0] + f_diff[1] * f_diff[1]);
+        return 0f;
     }
 
     public void VirtualUndoMovePiece(int[] from, int[] to)
