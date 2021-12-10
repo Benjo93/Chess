@@ -197,9 +197,13 @@ public class BoardManager : MonoBehaviour
                         else if (selected_piece && blocks[index[0], index[1]].IsAttackable())
                         {
                             RefreshBlocks();
-                            int moves_used = Attack(selected_index, index);
-                            EndTurn(moves_used);
-                            //Autosave();
+
+                            StartCoroutine(DiceRollWait(selected_index, index));
+
+                            // moving this section to DiceRollWait()
+                            //int moves_used = Attack(selected_index, index);
+                            //EndTurn(moves_used);
+
                         }
                         else
                         {
@@ -1261,6 +1265,21 @@ public class BoardManager : MonoBehaviour
         DelegationButton.gameObject.SetActive(true);
         RevokeButton.gameObject.SetActive(true);
         EndTurnButton.gameObject.SetActive(true);
+    }
+
+    public IEnumerator DiceRollWait(int[] selected_index, int[] index)
+    {
+        Color originalColor = diceInstance.gameObject.GetComponent<SpriteRenderer>().color;
+        diceInstance.gameObject.GetComponent<SpriteRenderer>().color = Color.gray;
+        for (int i = 0; i < 10; i++)
+        {
+            diceInstance.RollDice();
+            yield return new WaitForSeconds(.1f);
+        }
+        diceInstance.gameObject.GetComponent<SpriteRenderer>().color = originalColor;
+        int moves_used = Attack(selected_index, index);
+        EndTurn(moves_used);
+        yield return null;
     }
     /* 
      * Attack:
