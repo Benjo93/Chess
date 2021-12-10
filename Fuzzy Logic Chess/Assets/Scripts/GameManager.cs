@@ -23,6 +23,8 @@ public class GameManager : MonoBehaviour
     // Text boxes for turn indicator
     public GameObject p1Turn;
     public GameObject p2Turn;
+    public GameObject guidePanel;
+
     private bool turn = false;
 
     public bool game_in_progress = false;
@@ -53,6 +55,11 @@ public class GameManager : MonoBehaviour
 
         // Initiate the first move.
         CompleteGameState(0);
+    }
+
+    public void ToggleGuidePanel(bool isOn)
+    {
+        guidePanel.SetActive(isOn);
     }
 
     public void RecolorPlayerIndicator()
