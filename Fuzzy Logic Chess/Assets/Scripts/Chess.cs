@@ -209,9 +209,9 @@ public class Chess : MonoBehaviour
             player2Index = 0;
             block1Index = 0;
             block2Index = 0;
-            difficulty = .25f;
+            difficulty = 1f;
             turnSpeed = .5f;
-            distributed_ai = true;
+            distributed_ai = false;
             SaveSetting();
         }
     }
