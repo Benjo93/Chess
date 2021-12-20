@@ -1,5 +1,7 @@
 # Senior Project - Fuzzy Logic Chess
 
+![SPACV1](https://user-images.githubusercontent.com/13397606/146833050-520ca442-d21d-48fb-a8e5-fc2ac7c6a7bb.jpg)
+
 ## Fuzzy-Logic Medieval Chess Corp Command
 The Corp Command F-L Medieval Chess variant builds on F-L Chess Medieval Chess to create gameplay  resembling  a  medieval  battle,  using the  standard  chess  board, with  real-world command  and  control considerations. The "armies" of chess pieces for command are divided into three "corp": 
 
